@@ -6,7 +6,15 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-import Home from '@/pages/Home';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import Dashboard from '@/pages/Dashboard';
+import Marketplace from '@/pages/Marketplace';
+import SaaDetail from '@/pages/SaaDetail';
+import LiveAuctions from '@/pages/LiveAuctions';
+import MyInvestments from '@/pages/MyInvestments';
+import SellMySaaS from '@/pages/SellMySaaS';
+import Wallet from '@/pages/Wallet';
+import AdminPanel from '@/pages/AdminPanel';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -35,7 +43,16 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route element={<DashboardLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/saas/:id" element={<SaaDetail />} />
+        <Route path="/auctions" element={<LiveAuctions />} />
+        <Route path="/investments" element={<MyInvestments />} />
+        <Route path="/sell" element={<SellMySaaS />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route path="/admin" element={<AdminPanel />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

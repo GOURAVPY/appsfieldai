@@ -1,0 +1,63 @@
+{
+  "name": "SaaSListing",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "owner_price": {
+      "type": "number"
+    },
+    "share_price": {
+      "type": "number"
+    },
+    "total_shares": {
+      "type": "number"
+    },
+    "shares_sold": {
+      "type": "number",
+      "default": 0
+    },
+    "monthly_revenue": {
+      "type": "number"
+    },
+    "growth_rate": {
+      "type": "number"
+    },
+    "auction_end_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "auction",
+        "sold",
+        "draft"
+      ],
+      "default": "active"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "seller_name": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
