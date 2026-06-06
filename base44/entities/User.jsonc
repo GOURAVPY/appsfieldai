@@ -1,17 +1,19 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
-      "description": "The role of the user in the app",
       "enum": [
         "admin",
         "user"
-      ]
+      ],
+      "default": "user"
+    },
+    "walletBalance": {
+      "type": "number",
+      "default": 10000,
+      "description": "User's wallet balance in dollars"
     }
-  },
-  "required": [
-    "role"
-  ],
-  "name": "User",
-  "type": "object"
+  }
 }

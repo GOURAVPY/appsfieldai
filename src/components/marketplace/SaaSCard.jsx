@@ -52,10 +52,10 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, delay = 0 }) {
-  const { name, category, ownerPrice, sharePrice, totalShares, sharesSold, monthlyRevenue, growth, rating, imageGradient, status, auctionEndDate, riskScore, aiScore } = listing;
-  const sharesLeft = totalShares - sharesSold;
-  const sharePercent = (sharesSold / totalShares) * 100;
+export default function SaaSCard({ listing, delay = 0, onBuyShare }) {
+  const { title, category, fullPrice, sharePrice, totalShares, soldShares, monthlyRevenue, growthRate, rating, imageGradient, status, auctionEndsAt, riskScore, aiScore } = listing;
+  const sharesLeft = totalShares - soldShares;
+  const sharePercent = (soldShares / totalShares) * 100;
 
   return (
     <motion.div
@@ -68,7 +68,7 @@ export default function SaaSCard({ listing, delay = 0 }) {
       <div className={`h-36 bg-gradient-to-br ${imageGradient} relative flex items-center justify-center overflow-hidden`}>
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
-        <span className="relative text-white font-display font-bold text-xl text-center px-4 leading-tight drop-shadow-lg">{name}</span>
+        <span className="relative text-white font-display font-bold text-xl text-center px-4 leading-tight drop-shadow-lg">{title}</span>
         
         {status === "auction" && (
           <Badge className="absolute top-3 right-3 bg-amber-500/90 text-white text-[10px] border-0 flex items-center gap-1">
@@ -92,15 +92,15 @@ export default function SaaSCard({ listing, delay = 0 }) {
         </div>
 
         {/* Countdown for auctions */}
-        {status === "auction" && auctionEndDate && (
-          <CountdownTimer endDate={auctionEndDate} />
+        {status === "auction" && auctionEndsAt && (
+          <CountdownTimer endDate={auctionEndsAt} />
         )}
 
         {/* Pricing */}
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="rounded-lg bg-secondary/40 p-2.5">
             <p className="text-[10px] text-muted-foreground">Full Price</p>
-            <p className="text-sm font-display font-bold">${ownerPrice.toLocaleString()}</p>
+            <p className="text-sm font-display font-bold">${fullPrice.toLocaleString()}</p>
           </div>
           <div className="rounded-lg bg-secondary/40 p-2.5">
             <p className="text-[10px] text-muted-foreground">Per Share</p>
@@ -112,20 +112,20 @@ export default function SaaSCard({ listing, delay = 0 }) {
         <div className="space-y-1.5">
           <div className="flex justify-between text-[11px]">
             <span className="text-muted-foreground">Shares sold</span>
-            <span className="font-medium">{sharesSold}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
+            <span className="font-medium">{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
           </div>
           <Progress value={sharePercent} className="h-2 [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-cyan-500" />
         </div>
 
         {/* Revenue & Growth */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><TrendingUp className="w-3 h-3 text-emerald-400" /> +{growth}% growth</span>
+          <span className="flex items-center gap-1"><TrendingUp className="w-3 h-3 text-emerald-400" /> +{growthRate}% growth</span>
           <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-amber-400" /> ${monthlyRevenue}/mo</span>
         </div>
 
         {/* Buttons */}
         <div className="flex gap-2 pt-1 mt-auto">
-          <Button size="sm" className="flex-1 bg-violet-600 hover:bg-violet-700 rounded-lg text-[11px] h-8">
+          <Button size="sm" onClick={() => onBuyShare?.(listing)} className="flex-1 bg-violet-600 hover:bg-violet-700 rounded-lg text-[11px] h-8">
             Buy Share
           </Button>
           <Button size="sm" variant="outline" className="flex-1 border-violet-500/30 text-violet-400 hover:bg-violet-500/10 rounded-lg text-[11px] h-8">

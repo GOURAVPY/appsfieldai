@@ -1,0 +1,23 @@
+{
+  "name": "OwnershipPurchase",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "ID of the user who bought full ownership"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing"
+    },
+    "fullPrice": {
+      "type": "number",
+      "description": "Full price paid"
+    }
+  },
+  "required": [
+    "userId",
+    "listingId",
+    "fullPrice"
+  ]
+}

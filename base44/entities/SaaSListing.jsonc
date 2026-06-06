@@ -2,37 +2,68 @@
   "name": "SaaSListing",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
+    "title": {
+      "type": "string",
+      "description": "The title of the SaaS listing"
     },
     "category": {
-      "type": "string"
-    },
-    "owner_price": {
-      "type": "number"
-    },
-    "share_price": {
-      "type": "number"
-    },
-    "total_shares": {
-      "type": "number"
-    },
-    "shares_sold": {
-      "type": "number",
-      "default": 0
-    },
-    "monthly_revenue": {
-      "type": "number"
-    },
-    "growth_rate": {
-      "type": "number"
-    },
-    "auction_end_date": {
       "type": "string",
-      "format": "date-time"
+      "description": "Category of the SaaS (e.g. CRM, AI & ML)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the SaaS"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Image URLs for the listing"
+    },
+    "imageGradient": {
+      "type": "string",
+      "description": "CSS gradient for card header"
+    },
+    "monthlyRevenue": {
+      "type": "number",
+      "description": "Monthly revenue in dollars"
+    },
+    "monthlyExpenses": {
+      "type": "number",
+      "default": 0,
+      "description": "Monthly expenses in dollars"
+    },
+    "fullPrice": {
+      "type": "number",
+      "description": "Full ownership price"
+    },
+    "sharePrice": {
+      "type": "number",
+      "description": "Price per individual share"
+    },
+    "totalShares": {
+      "type": "number",
+      "description": "Total number of shares"
+    },
+    "soldShares": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of shares already sold"
+    },
+    "growthRate": {
+      "type": "number",
+      "default": 0,
+      "description": "Growth rate percentage"
+    },
+    "rating": {
+      "type": "number",
+      "default": 5,
+      "description": "Rating out of 5"
+    },
+    "ownerUserId": {
+      "type": "string",
+      "description": "The user ID of the owner/seller"
     },
     "status": {
       "type": "string",
@@ -44,20 +75,38 @@
       ],
       "default": "active"
     },
-    "image_url": {
-      "type": "string"
+    "auctionEndsAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Auction end date-time"
     },
-    "seller_name": {
-      "type": "string"
+    "riskScore": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 5,
+      "description": "Risk score 1-10"
+    },
+    "aiScore": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 75,
+      "description": "AI evaluation score 0-100"
+    },
+    "sellerName": {
+      "type": "string",
+      "description": "Name of the seller"
     },
     "tags": {
       "type": "array",
       "items": {
         "type": "string"
-      }
+      },
+      "description": "List of tags"
     }
   },
   "required": [
-    "name"
+    "title"
   ]
 }

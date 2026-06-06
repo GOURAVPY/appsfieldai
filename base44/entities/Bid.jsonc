@@ -1,0 +1,23 @@
+{
+  "name": "Bid",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "ID of the user placing the bid"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing being bid on"
+    },
+    "bidAmount": {
+      "type": "number",
+      "description": "Bid amount in dollars"
+    }
+  },
+  "required": [
+    "userId",
+    "listingId",
+    "bidAmount"
+  ]
+}
