@@ -80,10 +80,10 @@ export default function Dashboard() {
         <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-5"
         >
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Own A SaaS.</span>{" "}
-          <span className="text-foreground">Or Own</span><br />
-          <span className="text-foreground">A Piece </span>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Of One.</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Split the Price.</span>{" "}
+          <br />
+          <span className="text-foreground">Own the </span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Software.</span>
         </motion.h1>
 
         {/* Subheadline */}
