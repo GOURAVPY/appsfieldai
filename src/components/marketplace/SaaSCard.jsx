@@ -104,13 +104,9 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
       </div>
 
       <div className="p-4 space-y-3 flex-1 flex flex-col">
-        {/* Category + Scores Row */}
-        <div className="flex items-center justify-between flex-wrap gap-1.5">
+        {/* Category Row */}
+        <div className="flex items-center gap-1.5">
           <Badge variant="outline" className="text-[10px] border-border/40">{category}</Badge>
-          <div className="flex items-center gap-1">
-            <RiskBadge score={riskScore} />
-            <AIScoreBadge score={aiScore} />
-          </div>
         </div>
 
         {/* Countdown for auctions */}
@@ -141,8 +137,8 @@ export default function SaaSCard({ listing, delay = 0, onBuyShare, onBuyFullOwne
 
         {/* Revenue & Growth */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><TrendingUp className="w-3 h-3 text-emerald-400" /> +{growthRate}% growth</span>
-          <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-amber-400" /> ${monthlyRevenue}/mo</span>
+          <span>+{growthRate}% growth</span>
+          <span>${monthlyRevenue}/mo</span>
         </div>
 
         {/* Buttons */}
