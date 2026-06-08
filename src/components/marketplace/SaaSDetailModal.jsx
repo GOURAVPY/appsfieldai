@@ -67,7 +67,7 @@ function ImageSlider({ images }) {
       {/* Prev Arrow */}
       <button
         onClick={prev}
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100"
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-100 hover:scale-110 transition-all"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
@@ -75,7 +75,7 @@ function ImageSlider({ images }) {
       {/* Next Arrow */}
       <button
         onClick={next}
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100"
+        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-100 hover:scale-110 transition-all"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
