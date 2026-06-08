@@ -90,8 +90,8 @@ export default function Dashboard() {
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
           className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto mb-8"
         >
-          Buy complete ownership of profitable SaaS businesses or invest in fractional ownership shares starting from{" "}
-          <strong className="text-foreground">just $100.</strong>
+          Buy complete ownership of profitable SaaS businesses or invest in fractional shares.{" "}
+          <strong className="text-foreground">Starting from just $100.</strong>
         </motion.p>
 
         {/* CTA Buttons */}

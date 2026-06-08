@@ -4,6 +4,12 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { Navigate } from 'react-router-dom';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -43,15 +49,21 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route element={<DashboardLayout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/saas/:id" element={<SaaSDetail />} />
-        <Route path="/auctions" element={<LiveAuctions />} />
-        <Route path="/investments" element={<MyInvestments />} />
-        <Route path="/sell" element={<SellMySaaS />} />
-        <Route path="/wallet" element={<Wallet />} />
-        <Route path="/admin" element={<AdminPanel />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/saas/:id" element={<SaaSDetail />} />
+          <Route path="/auctions" element={<LiveAuctions />} />
+          <Route path="/investments" element={<MyInvestments />} />
+          <Route path="/sell" element={<SellMySaaS />} />
+          <Route path="/wallet" element={<Wallet />} />
+          <Route path="/admin" element={<AdminPanel />} />
+        </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
