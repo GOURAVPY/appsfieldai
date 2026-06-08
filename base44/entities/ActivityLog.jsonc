@@ -1,0 +1,35 @@
+{
+  "name": "ActivityLog",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "login",
+        "register"
+      ],
+      "description": "Type of activity"
+    },
+    "fullName": {
+      "type": "string",
+      "description": "User's full name"
+    },
+    "email": {
+      "type": "string",
+      "description": "User's email"
+    },
+    "role": {
+      "type": "string",
+      "description": "User's role"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event occurred"
+    }
+  },
+  "required": [
+    "type",
+    "email"
+  ]
+}

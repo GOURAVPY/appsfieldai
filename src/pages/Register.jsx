@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Mail, Lock, User, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Lock, User, Loader2, AlertCircle } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "@/components/ui/use-toast";
 import AuthLayout from "@/components/AuthLayout";
@@ -26,9 +26,11 @@ export default function Register() {
     e.preventDefault();
     setError("");
     if (!fullName.trim()) { setError("Full name is required"); return; }
+    if (!email.trim()) { setError("Email is required"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError("Please enter a valid email address"); return; }
     if (!accountType) { setError("Please select an account type"); return; }
-    if (password !== confirmPassword) { setError("Passwords do not match"); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    if (password !== confirmPassword) { setError("Passwords do not match"); return; }
     setLoading(true);
     try {
       await base44.auth.register({ email, password, full_name: fullName, role: accountType });
@@ -45,12 +47,20 @@ export default function Register() {
     setLoading(true);
     try {
       const result = await base44.auth.verifyOtp({ email, otpCode });
+      // Fire-and-forget admin notification
+      base44.functions.invoke("notifyAdminRegister", {
+        fullName,
+        email,
+        role: accountType,
+        registeredAt: new Date().toISOString(),
+      }).catch(() => {});
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = "/";
+      toast({ title: "Account created!", description: "Registration successful. Redirecting..." });
+      setTimeout(() => { window.location.href = "/"; }, 600);
     } catch (err) {
-      setError(err.message || "Invalid verification code");
+      setError(err.message || "Invalid verification code. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +84,10 @@ export default function Register() {
     return (
       <AuthLayout icon={Mail} title="Verify your email" subtitle={`We sent a code to ${email}`}>
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <span>{error}</span>
+          </div>
         )}
         <div className="flex justify-center mb-6">
           <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} autoFocus autoComplete="one-time-code">
@@ -89,7 +102,7 @@ export default function Register() {
           </InputOTP>
         </div>
         <Button
-          className="w-full h-12 font-medium bg-cyan-500 hover:bg-cyan-600 text-white"
+          className="w-full h-12 font-medium bg-orange-500 hover:bg-orange-600 text-white"
           onClick={handleVerify}
           disabled={loading || otpCode.length < 6}
         >
@@ -127,7 +140,10 @@ export default function Register() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>
+        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -201,7 +217,7 @@ export default function Register() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full h-12 font-medium bg-cyan-500 hover:bg-cyan-600 text-white" disabled={loading}>
+        <Button type="submit" className="w-full h-12 font-medium bg-orange-500 hover:bg-orange-600 text-white" disabled={loading}>
           {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating account...</> : "Create account"}
         </Button>
       </form>

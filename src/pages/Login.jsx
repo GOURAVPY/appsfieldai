@@ -19,6 +19,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     if (!email.trim()) { setError("Email is required"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError("Please enter a valid email address"); return; }
     if (!password) { setError("Password is required"); return; }
     setLoading(true);
     try {
