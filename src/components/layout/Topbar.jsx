@@ -4,6 +4,7 @@ import { Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 const navLinks = [
   { to: "/marketplace", label: "Marketplace" },
@@ -54,6 +55,7 @@ export default function Topbar() {
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated && user ? (
             <>
+              <NotificationBell />
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/60 border border-white/5">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-white" />
