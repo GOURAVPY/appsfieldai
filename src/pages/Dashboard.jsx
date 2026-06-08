@@ -66,6 +66,16 @@ export default function Dashboard() {
           The Future of SaaS Ownership
         </motion.div>
 
+        {/* Robot mascot */}
+        <motion.img
+          src="https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png"
+          alt="AI mascot"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.12, type: "spring", stiffness: 200 }}
+          className="w-20 h-20 object-contain mx-auto mb-4"
+        />
+
         {/* Headline */}
         <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold leading-tight mb-5"
@@ -74,7 +84,6 @@ export default function Dashboard() {
           <span className="text-foreground">Or Own</span><br />
           <span className="text-foreground">A Piece </span>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Of One.</span>
-          <span className="ml-2">🤖</span>
         </motion.h1>
 
         {/* Subheadline */}
