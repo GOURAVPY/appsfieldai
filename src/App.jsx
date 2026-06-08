@@ -69,6 +69,7 @@ const AuthenticatedApp = () => {
           <Route path="/sell" element={<SellMySaaS />} />
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
