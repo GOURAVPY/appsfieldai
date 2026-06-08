@@ -96,7 +96,7 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
               </div>
               <div>
                 <p className="text-[10px] text-muted-foreground">Monthly Profit</p>
-                <p className="font-bold text-cyan-400">${monthlyProfit.toLocaleString()}</p>
+                <p className="font-bold text-[#f79a1b]">${monthlyProfit.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
           <div className="rounded-xl bg-secondary/40 p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Full Ownership Price</span>
-              <span className="font-display font-bold text-xl text-cyan-400">${listing.fullPrice?.toLocaleString()}</span>
+              <span className="font-display font-bold text-xl text-[#f79a1b]">${listing.fullPrice?.toLocaleString()}</span>
             </div>
             <hr className="border-border/30" />
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -135,7 +135,7 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
           <Button
             onClick={handleBuy}
             disabled={listing.status === "sold" || loading}
-            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-xl gap-2"
+            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl gap-2 text-white border-0"
           >
             {loading ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
