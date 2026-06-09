@@ -72,12 +72,14 @@ export default function WalletPage() {
   const getIcon = (type) => {
     if (type === "deposit" || type === "dividend" || type === "sale_revenue") return ArrowDownCircle;
     if (type === "withdrawal" || type === "withdrawal_request") return Send;
+    if (type === "full_ownership_purchase" || type === "share_purchase") return ArrowUpCircle;
     return ArrowUpCircle;
   };
 
   const getColor = (type, status) => {
     if (type === "deposit" || type === "dividend" || type === "sale_revenue") return "text-emerald-400";
     if (status === "pending") return "text-amber-400";
+    if (type === "full_ownership_purchase") return "text-violet-400";
     return "text-cyan-400";
   };
 

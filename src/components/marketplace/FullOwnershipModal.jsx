@@ -96,15 +96,19 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
       await base44.entities.OwnershipPurchase.create({
         userId: user.id,
         listingId: listing.id,
+        listingTitle: listing.title,
         fullPrice: listing.fullPrice,
+        purchaseType: "full_ownership",
+        status: "completed",
       });
 
       // 4. Create Transaction record
       await base44.entities.Transaction.create({
         userId: user.id,
-        type: "ownership_purchase",
+        type: "full_ownership_purchase",
         amount: -listing.fullPrice,
         listingId: listing.id,
+        listingTitle: listing.title,
         status: "completed",
       });
 

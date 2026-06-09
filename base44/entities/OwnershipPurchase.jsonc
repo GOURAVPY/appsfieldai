@@ -10,9 +10,31 @@
       "type": "string",
       "description": "ID of the SaaS listing"
     },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the SaaS listing at time of purchase"
+    },
     "fullPrice": {
       "type": "number",
       "description": "Full price paid"
+    },
+    "purchaseType": {
+      "type": "string",
+      "enum": [
+        "full_ownership"
+      ],
+      "default": "full_ownership",
+      "description": "Type of purchase"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "pending",
+        "failed"
+      ],
+      "default": "completed",
+      "description": "Purchase status"
     }
   },
   "required": [

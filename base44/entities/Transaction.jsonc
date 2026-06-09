@@ -10,7 +10,7 @@
       "type": "string",
       "enum": [
         "share_purchase",
-        "ownership_purchase",
+        "full_ownership_purchase",
         "deposit",
         "withdrawal",
         "dividend",
@@ -25,6 +25,10 @@
     "listingId": {
       "type": "string",
       "description": "Related SaaS listing ID"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the SaaS listing"
     },
     "status": {
       "type": "string",

@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { TrendingUp, DollarSign, BarChart3, ArrowUpRight, ArrowDownRight, Clock, PieChart as PieIcon } from "lucide-react";
+import { TrendingUp, DollarSign, BarChart3, ArrowUpRight, ArrowDownRight, Clock, PieChart as PieIcon, Building2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -14,6 +14,14 @@ export default function MyInvestments() {
     queryFn: async () => {
       const user = await base44.auth.me();
       return base44.entities.SharePurchase.filter({ userId: user.id }, ["-created_date"], 100);
+    },
+  });
+
+  const { data: fullOwnerships = [], isLoading: loadingOwnership } = useQuery({
+    queryKey: ["myFullOwnerships"],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      return base44.entities.OwnershipPurchase.filter({ userId: user.id }, ["-created_date"], 50);
     },
   });
 
@@ -74,17 +82,18 @@ export default function MyInvestments() {
     })),
   [holdings, listingTitles]);
 
-  const totalInvested = enrichedHoldings.reduce((s, h) => s + h.totalInvested, 0);
+  const totalFullOwnership = fullOwnerships.reduce((s, p) => s + (p.fullPrice || 0), 0);
+  const totalInvested = enrichedHoldings.reduce((s, h) => s + h.totalInvested, 0) + totalFullOwnership;
   const totalShares = enrichedHoldings.reduce((s, h) => s + h.totalShares, 0);
   const estimatedValue = totalInvested * 1.15; // placeholder: 15% growth assumption
   const profit = estimatedValue - totalInvested;
   const profitPct = totalInvested > 0 ? ((profit / totalInvested) * 100).toFixed(1) : "0";
 
-  const isLoading = loadingShares || loadingTx;
+  const isLoading = loadingShares || loadingOwnership || loadingTx;
 
   const txTypeMeta = {
     share_purchase: { label: "Share Purchase", color: "text-cyan-400", icon: ArrowDownRight },
-    ownership_purchase: { label: "Ownership Purchase", color: "text-violet-400", icon: ArrowDownRight },
+    full_ownership_purchase: { label: "Full Ownership", color: "text-violet-400", icon: ArrowDownRight },
     deposit: { label: "Deposit", color: "text-emerald-400", icon: ArrowUpRight },
     withdrawal: { label: "Withdrawal", color: "text-red-400", icon: ArrowDownRight },
     dividend: { label: "Dividend", color: "text-emerald-400", icon: ArrowUpRight },
@@ -177,6 +186,41 @@ export default function MyInvestments() {
         </Card>
       </div>
 
+      {/* Full Ownership Purchases */}
+      {fullOwnerships.length > 0 && (
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader><CardTitle className="text-base font-display">Full Ownership Purchases</CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {fullOwnerships.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
+                    <Building2 className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{p.listingTitle || `Listing ${(p.listingId || "").slice(0, 6)}`}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[10px]">Full Ownership</Badge>
+                      <span className="text-[11px] text-muted-foreground">{new Date(p.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-display font-bold">${(p.fullPrice || 0).toLocaleString()}</p>
+                  <p className="text-[11px] text-emerald-400 capitalize">{p.status || "completed"}</p>
+                </div>
+              </motion.div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Transaction History */}
       <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
         <CardHeader><CardTitle className="text-base font-display">Transaction History</CardTitle></CardHeader>
@@ -203,7 +247,7 @@ export default function MyInvestments() {
                     </div>
                   </div>
                   <span className={`text-sm font-medium ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
-                    {isPositive ? "+" : ""}{t.type === "share_purchase" || t.type === "ownership_purchase" ? "-" : ""}${Math.abs(t.amount).toLocaleString()}
+                    {isPositive ? "+" : ""}{t.type === "share_purchase" || t.type === "full_ownership_purchase" ? "-" : ""}${Math.abs(t.amount).toLocaleString()}
                   </span>
                 </div>
               );
