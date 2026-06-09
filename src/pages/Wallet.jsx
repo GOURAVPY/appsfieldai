@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, CreditCard, History, Plus, Send, Loader2 } from "lucide-react";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, CreditCard, History, Plus, Send, Loader2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,15 +37,21 @@ export default function WalletPage() {
   const handleDeposit = async () => {
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) { toast.error("Enter a valid amount"); return; }
+
+    const inIframe = window.self !== window.top;
+    if (inIframe) {
+      toast.error("Card payment only works from the published app. Please open the app directly.");
+      return;
+    }
+
     setLoading(true);
-    await base44.auth.updateMe({ walletBalance: balance + amt });
-    await base44.entities.Transaction.create({ userId: user.id, type: "deposit", amount: amt, status: "completed" });
-    queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-    queryClient.invalidateQueries({ queryKey: ["transactions"] });
-    setDepositOpen(false);
-    setAmount("");
-    setLoading(false);
-    toast.success(`$${amt.toLocaleString()} added to your wallet`);
+    const res = await base44.functions.invoke("walletDeposit", { amount: amt });
+    if (res.data?.url) {
+      window.location.href = res.data.url;
+    } else {
+      toast.error("Could not start checkout. Try again.");
+      setLoading(false);
+    }
   };
 
   const handleWithdraw = async () => {
@@ -169,11 +175,17 @@ export default function WalletPage() {
         <DialogContent className="bg-card border-border/40 max-w-sm rounded-2xl">
           <DialogHeader><DialogTitle className="font-display">Add Funds</DialogTitle></DialogHeader>
           <div className="space-y-3">
+            <div className="bg-secondary/40 rounded-xl p-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <Shield className="w-4 h-4 text-emerald-400" />
+              Secure payment via Stripe. Your funds will appear instantly after payment.
+            </div>
             <div className="space-y-1"><Label className="text-xs">Amount ($)</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="100" className="bg-secondary/50 border-border/30 rounded-xl" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDepositOpen(false)} className="border-border/40 rounded-xl">Cancel</Button>
-            <Button onClick={handleDeposit} disabled={loading} className="bg-gradient-to-r from-emerald-600 to-green-600 rounded-xl">{loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Deposit"}</Button>
+            <Button onClick={handleDeposit} disabled={loading} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl gap-2 text-white border-0">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CreditCard className="w-4 h-4" /> Pay with Stripe</>}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -183,12 +195,16 @@ export default function WalletPage() {
         <DialogContent className="bg-card border-border/40 max-w-sm rounded-2xl">
           <DialogHeader><DialogTitle className="font-display">Withdraw Funds</DialogTitle></DialogHeader>
           <div className="space-y-3">
+            <div className="bg-secondary/40 rounded-xl p-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <Shield className="w-4 h-4 text-amber-400" />
+              Withdrawals are reviewed by our team and processed within 24-48 hours.
+            </div>
             <div className="space-y-1"><Label className="text-xs">Amount ($)</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="100" className="bg-secondary/50 border-border/30 rounded-xl" /></div>
             <p className="text-xs text-muted-foreground">Available: ${balance.toLocaleString()}</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setWithdrawOpen(false)} className="border-border/40 rounded-xl">Cancel</Button>
-            <Button onClick={handleWithdraw} disabled={loading} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">{loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Withdraw"}</Button>
+            <Button onClick={handleWithdraw} disabled={loading} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">{loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Request Withdrawal"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

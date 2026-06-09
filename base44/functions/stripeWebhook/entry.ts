@@ -31,8 +31,43 @@ Deno.serve(async (req) => {
 
     const session = event.data.object;
     const metadata = session.metadata || {};
-    const { listingId, type, quantity } = metadata;
+    const { listingId, type, quantity, userId, amount } = metadata;
     const amountPaid = session.amount_total / 100; // Convert cents to dollars
+
+    // Handle wallet deposits
+    if (type === 'wallet_deposit') {
+      if (!userId || !amount) {
+        console.error('Missing userId or amount for wallet deposit');
+        return Response.json({ error: 'Missing metadata' }, { status: 400 });
+      }
+
+      // Get current user to read wallet balance
+      const users = await base44.asServiceRole.entities.User.filter({ id: userId });
+      const targetUser = users[0];
+      if (!targetUser) {
+        console.error('User not found:', userId);
+        return Response.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      const depositAmount = parseFloat(amount);
+      const currentBalance = targetUser.walletBalance || 0;
+
+      // Update wallet balance
+      await base44.asServiceRole.entities.User.update(userId, {
+        walletBalance: currentBalance + depositAmount,
+      });
+
+      // Create transaction
+      await base44.asServiceRole.entities.Transaction.create({
+        userId,
+        type: 'deposit',
+        amount: depositAmount,
+        status: 'completed',
+      });
+
+      console.log(`Wallet deposit: $${depositAmount} for user ${userId}`);
+      return Response.json({ received: true });
+    }
 
     if (!listingId || !type) {
       console.error('Missing metadata in session');
