@@ -1,0 +1,33 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "senderId": {
+      "type": "string",
+      "description": "User ID of the sender"
+    },
+    "receiverId": {
+      "type": "string",
+      "description": "User ID of the receiver (listing owner)"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the message has been read"
+    }
+  },
+  "required": [
+    "senderId",
+    "receiverId",
+    "listingId",
+    "content"
+  ]
+}

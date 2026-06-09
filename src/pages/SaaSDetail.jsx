@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BuyShareModal from "@/components/marketplace/BuyShareModal";
 import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
 import QnAPanel from "@/components/marketplace/QnAPanel";
+import ChatPanel from "@/components/marketplace/ChatPanel";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -131,6 +132,18 @@ export default function SaaSDetail() {
   const queryClient = useQueryClient();
   const [buyShareListing, setBuyShareListing] = useState(null);
   const [buyFullListing, setBuyFullListing] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(async (authed) => {
+      if (authed) {
+        try {
+          const me = await base44.auth.me();
+          setCurrentUser(me);
+        } catch (_) { }
+      }
+    });
+  }, []);
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["saasListing", id],
@@ -301,6 +314,9 @@ export default function SaaSDetail() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <QnAPanel listing={listing} />
           </motion.div>
+
+          {/* Private Chat */}
+          <ChatPanel listing={listing} currentUser={currentUser} />
 
           {/* Recent Bids */}
           {bids.length > 0 && (
