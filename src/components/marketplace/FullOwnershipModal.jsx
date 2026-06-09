@@ -18,6 +18,7 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
   const validateAndGetError = () => {
     if (listing.status === "sold") return "This SaaS has already been sold.";
     if (listing.status === "draft") return "This listing is not yet published.";
+    if (listing.status !== "active") return "Full ownership is only available for active listings.";
     if (isAuctionExpired) return "The auction for this listing has expired.";
     return "";
   };
@@ -25,6 +26,12 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
   const handleStripeCheckout = async () => {
     const validationError = validateAndGetError();
     if (validationError) { setError(validationError); return; }
+
+    const isAuthed = await base44.auth.isAuthenticated();
+    if (!isAuthed) {
+      setError("Please log in to purchase full ownership.");
+      return;
+    }
 
     setStripeLoading(true);
     setError("");
@@ -57,6 +64,12 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
   const handleBuy = async () => {
     const validationError = validateAndGetError();
     if (validationError) { setError(validationError); return; }
+
+    const isAuthed = await base44.auth.isAuthenticated();
+    if (!isAuthed) {
+      setError("Please log in to purchase full ownership.");
+      return;
+    }
 
     setLoading(true);
     setError("");
