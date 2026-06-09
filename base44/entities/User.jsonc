@@ -10,10 +10,15 @@
       ],
       "default": "user"
     },
+    "requireListingApproval": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether new SaaS listings require admin approval"
+    },
     "walletBalance": {
       "type": "number",
-      "default": 10000,
-      "description": "User's wallet balance in dollars"
+      "default": 0,
+      "description": "User's wallet balance"
     }
   }
 }

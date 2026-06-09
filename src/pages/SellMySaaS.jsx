@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Upload, DollarSign, Info, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, Info, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,9 +14,10 @@ import AIValuationTool from "@/components/marketplace/AIValuationTool";
 const CATEGORIES = ["CRM", "AI & ML", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance"];
 
 export default function SellMySaaS() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [revenueProofFile, setRevenueProofFile] = useState(null);
   const [productImageFile, setProductImageFile] = useState(null);
   const [form, setForm] = useState({
@@ -25,14 +27,51 @@ export default function SellMySaaS() {
     features: "", auctionDuration: "7",
   });
 
-  const updateForm = (key, value) => setForm((f) => ({ ...f, [key]: value }));
+  const updateForm = (key, value) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    if (errors[key]) setErrors((e) => ({ ...e, [key]: "" }));
+  };
+
+  const validateStep = (stepNum) => {
+    const newErrors = {};
+    if (stepNum === 1) {
+      if (!form.title.trim()) newErrors.title = "SaaS name is required";
+      if (!form.description.trim()) newErrors.description = "Description is required";
+      if (!form.sellerName.trim()) newErrors.sellerName = "Seller name is required";
+    }
+    if (stepNum === 2) {
+      if (!form.fullPrice || parseFloat(form.fullPrice) <= 0) newErrors.fullPrice = "Full price is required";
+      if (!form.sharePrice || parseFloat(form.sharePrice) <= 0) newErrors.sharePrice = "Share price is required";
+      if (!form.monthlyRevenue || parseFloat(form.monthlyRevenue) <= 0) newErrors.monthlyRevenue = "Monthly revenue is required";
+      if (form.monthlyExpenses === "" || parseFloat(form.monthlyExpenses) < 0) newErrors.monthlyExpenses = "Monthly expenses is required";
+      if (!form.auctionDuration || parseInt(form.auctionDuration) < 1) newErrors.auctionDuration = "Auction duration is required";
+      if (!form.totalShares || parseInt(form.totalShares) < 1) newErrors.totalShares = "Total shares is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = (nextStep) => {
+    const currentStep = nextStep - 1;
+    if (validateStep(currentStep)) setStep(nextStep);
+  };
 
   const handleSubmit = async () => {
+    if (!validateStep(2)) return;
     setLoading(true);
     try {
       const user = await base44.auth.me();
       const auctionDurationMs = (parseInt(form.auctionDuration) || 7) * 86400000;
       const auctionEndsAt = new Date(Date.now() + auctionDurationMs).toISOString();
+
+      // Check if admin approval is required
+      let status = "pending";
+      try {
+        const admins = await base44.entities.User.filter({ role: "admin" }, null, 1);
+        if (admins.length > 0) {
+          status = admins[0].requireListingApproval === false ? "active" : "pending";
+        }
+      } catch { /* fallback to pending */ }
 
       let proofUrls = [];
       if (revenueProofFile) {
@@ -57,7 +96,7 @@ export default function SellMySaaS() {
         monthlyExpenses: parseFloat(form.monthlyExpenses) || 0,
         growthRate: parseFloat(form.growthRate) || 0,
         features: form.features ? form.features.split(",").map((f) => f.trim()).filter(Boolean) : [],
-        status: "pending",
+        status,
         auctionEndsAt,
         ownerUserId: user.id,
         revenueProofFiles: proofUrls,
@@ -65,8 +104,11 @@ export default function SellMySaaS() {
         imageGradient: "from-violet-600 to-purple-700",
       });
 
-      setSubmitted(true);
-      toast.success("Your SaaS listing is submitted for admin approval.");
+      toast.success(status === "active"
+        ? "Your SaaS listing is now live on the marketplace!"
+        : "Your SaaS listing is submitted for admin approval."
+      );
+      navigate("/investments");
     } catch (err) {
       toast.error("Failed to submit listing. Please try again.");
     } finally {
@@ -74,20 +116,7 @@ export default function SellMySaaS() {
     }
   };
 
-  if (submitted) {
-    return (
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
-          <CheckCircle className="w-8 h-8 text-emerald-400" />
-        </div>
-        <h2 className="text-xl font-display font-bold">Listing Submitted!</h2>
-        <p className="text-sm text-muted-foreground mt-2 max-w-sm">Your SaaS listing is submitted for admin approval. It will appear in the marketplace once approved.</p>
-        <Button className="mt-6 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl" onClick={() => { setSubmitted(false); setStep(1); setForm({ title: "", category: "CRM", description: "", sellerName: "", fullPrice: "", sharePrice: "", totalShares: "50", monthlyRevenue: "", monthlyExpenses: "", growthRate: "", features: "", auctionDuration: "7" }); setRevenueProofFile(null); setProductImageFile(null); }}>
-          List Another SaaS
-        </Button>
-      </motion.div>
-    );
-  }
+  const fieldError = (name) => errors[name] ? "border-red-500/50" : "";
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -116,8 +145,9 @@ export default function SellMySaaS() {
             <CardHeader><CardTitle className="text-base font-display">SaaS Details</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs">SaaS Name</Label>
-                <Input value={form.title} onChange={(e) => updateForm("title", e.target.value)} placeholder="e.g., Real Estate Agent SaaS" className="bg-secondary/50 border-border/30 rounded-xl" />
+                <Label className="text-xs">SaaS Name *</Label>
+                <Input value={form.title} onChange={(e) => updateForm("title", e.target.value)} placeholder="e.g., Real Estate Agent SaaS" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("title")}`} />
+                {errors.title && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.title}</p>}
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -127,13 +157,15 @@ export default function SellMySaaS() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Seller Name</Label>
-                  <Input value={form.sellerName} onChange={(e) => updateForm("sellerName", e.target.value)} placeholder="Your name or company" className="bg-secondary/50 border-border/30 rounded-xl" />
+                  <Label className="text-xs">Seller Name *</Label>
+                  <Input value={form.sellerName} onChange={(e) => updateForm("sellerName", e.target.value)} placeholder="Your name or company" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("sellerName")}`} />
+                  {errors.sellerName && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.sellerName}</p>}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Description</Label>
-                <Textarea value={form.description} onChange={(e) => updateForm("description", e.target.value)} placeholder="Describe your SaaS business..." className="bg-secondary/50 border-border/30 rounded-xl h-24" />
+                <Label className="text-xs">Description *</Label>
+                <Textarea value={form.description} onChange={(e) => updateForm("description", e.target.value)} placeholder="Describe your SaaS business..." className={`bg-secondary/50 border-border/30 rounded-xl h-24 ${fieldError("description")}`} />
+                {errors.description && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.description}</p>}
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">Key Features (comma separated)</Label>
@@ -143,7 +175,7 @@ export default function SellMySaaS() {
                 <Label className="text-xs">Product Image / Screenshot</Label>
                 <Input type="file" accept="image/*" onChange={(e) => setProductImageFile(e.target.files?.[0] || null)} className="bg-secondary/50 border-border/30 rounded-xl text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-violet-500/20 file:text-violet-400" />
               </div>
-              <Button onClick={() => setStep(2)} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Next Step</Button>
+              <Button onClick={() => handleNext(2)} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Next Step</Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -156,26 +188,31 @@ export default function SellMySaaS() {
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Full Ownership Price ($)</Label>
-                  <Input type="number" value={form.fullPrice} onChange={(e) => updateForm("fullPrice", e.target.value)} placeholder="5000" className="bg-secondary/50 border-border/30 rounded-xl" />
+                  <Label className="text-xs">Full Ownership Price ($) *</Label>
+                  <Input type="number" value={form.fullPrice} onChange={(e) => updateForm("fullPrice", e.target.value)} placeholder="5000" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("fullPrice")}`} />
+                  {errors.fullPrice && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.fullPrice}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Price Per Share ($)</Label>
-                  <Input type="number" value={form.sharePrice} onChange={(e) => updateForm("sharePrice", e.target.value)} placeholder="100" className="bg-secondary/50 border-border/30 rounded-xl" />
+                  <Label className="text-xs">Price Per Share ($) *</Label>
+                  <Input type="number" value={form.sharePrice} onChange={(e) => updateForm("sharePrice", e.target.value)} placeholder="100" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("sharePrice")}`} />
+                  {errors.sharePrice && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.sharePrice}</p>}
                 </div>
               </div>
               <div className="grid sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Total Shares</Label>
-                  <Input type="number" value={form.totalShares} onChange={(e) => updateForm("totalShares", e.target.value)} placeholder="50" className="bg-secondary/50 border-border/30 rounded-xl" />
+                  <Label className="text-xs">Total Shares *</Label>
+                  <Input type="number" value={form.totalShares} onChange={(e) => updateForm("totalShares", e.target.value)} placeholder="50" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("totalShares")}`} />
+                  {errors.totalShares && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.totalShares}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Monthly Revenue ($)</Label>
-                  <Input type="number" value={form.monthlyRevenue} onChange={(e) => updateForm("monthlyRevenue", e.target.value)} placeholder="1200" className="bg-secondary/50 border-border/30 rounded-xl" />
+                  <Label className="text-xs">Monthly Revenue ($) *</Label>
+                  <Input type="number" value={form.monthlyRevenue} onChange={(e) => updateForm("monthlyRevenue", e.target.value)} placeholder="1200" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("monthlyRevenue")}`} />
+                  {errors.monthlyRevenue && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.monthlyRevenue}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Monthly Expenses ($)</Label>
-                  <Input type="number" value={form.monthlyExpenses} onChange={(e) => updateForm("monthlyExpenses", e.target.value)} placeholder="300" className="bg-secondary/50 border-border/30 rounded-xl" />
+                  <Label className="text-xs">Monthly Expenses ($) *</Label>
+                  <Input type="number" value={form.monthlyExpenses} onChange={(e) => updateForm("monthlyExpenses", e.target.value)} placeholder="300" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("monthlyExpenses")}`} />
+                  {errors.monthlyExpenses && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.monthlyExpenses}</p>}
                 </div>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
@@ -184,8 +221,9 @@ export default function SellMySaaS() {
                   <Input type="number" value={form.growthRate} onChange={(e) => updateForm("growthRate", e.target.value)} placeholder="18" className="bg-secondary/50 border-border/30 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Auction Duration (days)</Label>
-                  <Input type="number" value={form.auctionDuration} onChange={(e) => updateForm("auctionDuration", e.target.value)} placeholder="7" className="bg-secondary/50 border-border/30 rounded-xl" />
+                  <Label className="text-xs">Auction Duration (days) *</Label>
+                  <Input type="number" value={form.auctionDuration} onChange={(e) => updateForm("auctionDuration", e.target.value)} placeholder="7" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("auctionDuration")}`} />
+                  {errors.auctionDuration && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.auctionDuration}</p>}
                 </div>
               </div>
               <AIValuationTool
@@ -199,7 +237,7 @@ export default function SellMySaaS() {
 
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(1)} className="border-border/40 rounded-xl">Back</Button>
-                <Button onClick={() => setStep(3)} className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Next Step</Button>
+                <Button onClick={() => handleNext(3)} className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Next Step</Button>
               </div>
             </CardContent>
           </Card>
@@ -226,7 +264,7 @@ export default function SellMySaaS() {
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(2)} className="border-border/40 rounded-xl">Back</Button>
-                <Button onClick={handleSubmit} disabled={loading || !form.title} className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 rounded-xl">
+                <Button onClick={handleSubmit} disabled={loading} className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 rounded-xl">
                   {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
                   List My SaaS
                 </Button>

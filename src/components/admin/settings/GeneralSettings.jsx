@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Settings, Save, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 export default function GeneralSettings() {
   const [siteName, setSiteName] = useState("");
@@ -13,11 +15,30 @@ export default function GeneralSettings() {
   const [defaultShares, setDefaultShares] = useState("");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [enableRegistration, setEnableRegistration] = useState(true);
+  const [requireListingApproval, setRequireListingApproval] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleSave = () => {
+  useEffect(() => {
+    (async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user.requireListingApproval !== undefined) setRequireListingApproval(user.requireListingApproval);
+      } catch { /* use defaults */ }
+      setLoading(false);
+    })();
+  }, []);
+
+  const handleSave = async () => {
     setSaving(true);
-    setTimeout(() => setSaving(false), 800);
+    try {
+      await base44.auth.updateMe({ requireListingApproval });
+      toast.success("Settings saved successfully.");
+    } catch {
+      toast.error("Failed to save settings.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const Field = ({ label, children }) => (
@@ -116,6 +137,7 @@ export default function GeneralSettings() {
         <div className="divide-y divide-border/20">
           <ToggleRow label="Maintenance Mode" checked={maintenanceMode} onChange={setMaintenanceMode} />
           <ToggleRow label="Enable Registration" checked={enableRegistration} onChange={setEnableRegistration} />
+          <ToggleRow label="Require Listing Approval" checked={requireListingApproval} onChange={setRequireListingApproval} />
         </div>
       </div>
 
