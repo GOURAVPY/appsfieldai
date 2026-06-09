@@ -105,6 +105,9 @@ export default function FullOwnershipModal({ listing, open, onClose, onSuccess }
       // 4. Create Transaction record
       await base44.entities.Transaction.create({
         userId: user.id,
+        userName: user.full_name || "",
+        userEmail: user.email || "",
+        userRole: user.role || "",
         type: "full_ownership_purchase",
         amount: -listing.fullPrice,
         listingId: listing.id,

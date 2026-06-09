@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, DollarSign, Clock, CheckCircle, Ban, Eye, Trash2, Pencil, X } from "lucide-react";
+import { Users, Store, Gavel, DollarSign, Clock, CheckCircle, Ban, Eye, Trash2, Pencil, X, Receipt, ArrowDownRight } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,11 @@ export default function AdminPanel() {
   const { data: allUsers = [] } = useQuery({
     queryKey: ["allUsers"],
     queryFn: () => base44.entities.User.list(),
+  });
+
+  const { data: allTransactions = [] } = useQuery({
+    queryKey: ["allTransactions"],
+    queryFn: () => base44.entities.Transaction.filter({}, ["-created_date"], 100),
   });
 
   const enrichedBids = useMemo(() => {
@@ -189,6 +194,58 @@ export default function AdminPanel() {
                   <span className="text-sm font-display font-bold text-amber-400 flex-shrink-0 ml-3">${b.bidAmount?.toLocaleString()}</span>
                 </div>
               ))
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Transaction History */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-display flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-violet-400" />
+              Transaction History
+              <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allTransactions.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {allTransactions.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No transactions yet</p>
+            ) : (
+              allTransactions.slice(0, 30).map((t) => {
+                const isPositive = t.amount > 0;
+                const typeLabel = {
+                  share_purchase: "Share Purchase",
+                  full_ownership_purchase: "Full Ownership",
+                  deposit: "Deposit", withdrawal: "Withdrawal",
+                  dividend: "Dividend", sale_revenue: "Sale Revenue",
+                }[t.type] || t.type;
+                return (
+                  <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0">
+                        <ArrowDownRight className={`w-4 h-4 ${isPositive ? "text-emerald-400" : "text-red-400"}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-medium">{typeLabel}</p>
+                          {t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}
+                          {t.userEmail && <p className="text-xs text-muted-foreground">{t.userEmail}</p>}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          {t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}
+                          <Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : t.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{t.status}</Badge>
+                          <span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`text-sm font-display font-bold shrink-0 ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+                      {isPositive ? "+" : ""}{t.type === "share_purchase" || t.type === "full_ownership_purchase" ? "-" : ""}${Math.abs(t.amount).toLocaleString()}
+                    </span>
+                  </div>
+                );
+              })
             )}
           </CardContent>
         </Card>

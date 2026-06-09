@@ -100,6 +100,13 @@ export default function MyInvestments() {
     sale_revenue: { label: "Sale Revenue", color: "text-amber-400", icon: ArrowUpRight },
   };
 
+  const paymentMethodLabel = (t) => {
+    // If the transaction is a purchase with listing info, assume wallet unless Stripe
+    if (t.type === "share_purchase" || t.type === "full_ownership_purchase") return "Wallet";
+    if (t.type === "deposit") return "Stripe";
+    return "System";
+  };
+
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -236,17 +243,24 @@ export default function MyInvestments() {
               const meta = txTypeMeta[t.type] || { label: t.type, color: "text-muted-foreground", icon: Clock };
               const isPositive = t.amount > 0;
               return (
-                <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center">
+                <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0">
                       <meta.icon className={`w-4 h-4 ${meta.color}`} />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{meta.label}</p>
-                      <p className="text-[11px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-medium">{meta.label}</p>
+                        {t.listingTitle && <p className="text-xs text-muted-foreground truncate">{t.listingTitle}</p>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : t.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{t.status}</Badge>
+                        <span className="text-[10px] text-muted-foreground">{paymentMethodLabel(t)}</span>
+                        <span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      </div>
                     </div>
                   </div>
-                  <span className={`text-sm font-medium ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+                  <span className={`text-sm font-medium shrink-0 ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
                     {isPositive ? "+" : ""}{t.type === "share_purchase" || t.type === "full_ownership_purchase" ? "-" : ""}${Math.abs(t.amount).toLocaleString()}
                   </span>
                 </div>

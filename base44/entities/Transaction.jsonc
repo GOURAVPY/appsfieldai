@@ -6,6 +6,18 @@
       "type": "string",
       "description": "ID of the user"
     },
+    "userName": {
+      "type": "string",
+      "description": "Full name of the user"
+    },
+    "userEmail": {
+      "type": "string",
+      "description": "Email of the user"
+    },
+    "userRole": {
+      "type": "string",
+      "description": "Role of the user"
+    },
     "type": {
       "type": "string",
       "enum": [

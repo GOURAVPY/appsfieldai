@@ -96,9 +96,13 @@ export default function BuyShareModal({ listing, open, onClose, onSuccess }) {
       // 4. Create Transaction record
       await base44.entities.Transaction.create({
         userId: user.id,
+        userName: user.full_name || "",
+        userEmail: user.email || "",
+        userRole: user.role || "",
         type: "share_purchase",
         amount: -totalAmount,
         listingId: listing.id,
+        listingTitle: listing.title,
         status: "completed",
       });
 
