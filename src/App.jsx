@@ -23,6 +23,7 @@ import AdminPanel from '@/pages/AdminPanel';
 import AdminSettings from '@/pages/AdminSettings';
 import AdminRoute from '@/components/AdminRoute';
 import NotificationsPage from '@/pages/NotificationsPage';
+import GlobalLoader from '@/components/GlobalLoader';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -94,6 +95,7 @@ function App() {
           <ScrollToTop />
           <AuthenticatedApp />
         </Router>
+        <GlobalLoader />
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
