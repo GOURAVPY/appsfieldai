@@ -52,7 +52,7 @@ export default function NotificationBell() {
         const user = await base44.auth.me();
         return base44.entities.Notification.filter(
           { userId: user.id },
-          ["-created_date"],
+          "-created_date",
           30
         );
       } catch {
@@ -60,6 +60,7 @@ export default function NotificationBell() {
       }
     },
     refetchInterval: 15000,
+    staleTime: 0,
   });
 
   const unreadCount = notifications.filter((n) => !(n.isRead || n.read)).length;

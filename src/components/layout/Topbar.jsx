@@ -116,9 +116,12 @@ export default function Topbar() {
           <div className="pt-3 border-t border-white/5 space-y-2">
             {isAuthenticated && user ? (
               <>
-                <div className="flex items-center gap-2 px-4 py-2 text-sm text-foreground">
-                  <User className="w-4 h-4 text-orange-400" />
-                  {user.full_name || user.email}
+                <div className="flex items-center justify-between px-4 py-2">
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <User className="w-4 h-4 text-orange-400" />
+                    {user.full_name || user.email}
+                  </div>
+                  <NotificationBell />
                 </div>
                 <Button
                   size="sm"
