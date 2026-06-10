@@ -33,6 +33,15 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
         status: "pending",
       });
       try { await base44.functions.invoke("notifyAdminReservation", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, listingId: listing.id, requestId: reservation.id, phone, budget, message }); } catch (_) {}
+      // Create user notification
+      try {
+        await base44.entities.Notification.create({
+          userId: user.id, role: "user", type: "reserve_submitted",
+          title: "Reservation Submitted",
+          message: `Your spot reservation for "${listing.title}" has been submitted. The admin will review it soon.`,
+          listingId: listing.id, relatedRequestId: reservation.id, isRead: false,
+        });
+      } catch (_) {}
       toast.success("Spot reserved! The admin will contact you soon.");
       onClose();
     } catch (e) {

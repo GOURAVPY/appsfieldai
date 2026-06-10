@@ -33,6 +33,15 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
         status: "pending",
       });
       try { await base44.functions.invoke("notifyAdminAcquisitionRequest", { userName: user.full_name, userEmail: user.email, listingTitle: listing.title, listingId: listing.id, requestId: request.id, phone, offerAmount: parseFloat(offerAmount) || listing.fullPrice }); } catch (_) {}
+      // Create user notification
+      try {
+        await base44.entities.Notification.create({
+          userId: user.id, role: "user", type: "acquisition_submitted",
+          title: "Acquisition Request Submitted",
+          message: `Your acquisition request for "${listing.title}" has been submitted. The admin will review it soon.`,
+          listingId: listing.id, relatedRequestId: request.id, isRead: false,
+        });
+      } catch (_) {}
       toast.success("Acquisition request submitted! The admin will review and contact you.");
       onClose();
     } catch (e) {
