@@ -46,18 +46,14 @@ export default function NotificationBell() {
   const { data: notifications = [] } = useQuery({
     queryKey: ["myNotifications"],
     queryFn: async () => {
-      try {
-        const authed = await base44.auth.isAuthenticated();
-        if (!authed) return [];
-        const user = await base44.auth.me();
-        return base44.entities.Notification.filter(
-          { userId: user.id },
-          "-created_date",
-          30
-        );
-      } catch {
-        return [];
-      }
+      const authed = await base44.auth.isAuthenticated();
+      if (!authed) return [];
+      const user = await base44.auth.me();
+      return base44.entities.Notification.filter(
+        { userId: user.id },
+        "-created_date",
+        30
+      );
     },
     refetchInterval: 15000,
     staleTime: 0,

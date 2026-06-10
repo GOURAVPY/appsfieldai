@@ -186,13 +186,17 @@ Deno.serve(async (req) => {
 
     if (!subject) return Response.json({ success: true });
 
-    // Send email
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: userEmail,
-      subject,
-      body: bodyHtml,
-      isHtml: true,
-    });
+    // Send email (non-blocking — failure should not prevent in-app notification)
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: userEmail,
+        subject,
+        body: bodyHtml,
+        isHtml: true,
+      });
+    } catch (e) {
+      console.error("Email send failed:", e.message);
+    }
 
     // Create in-app notification for the user
     if (notifType && userId) {
