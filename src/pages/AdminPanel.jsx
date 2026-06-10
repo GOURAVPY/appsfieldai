@@ -38,12 +38,12 @@ export default function AdminPanel() {
 
   const { data: allReservations = [] } = useQuery({
     queryKey: ["allReservations"],
-    queryFn: () => base44.entities.DealReservations.filter({}, ["-created_date"], 100),
+    queryFn: () => base44.entities.DealReservations.list("-created_date", 100),
   });
 
   const { data: allAcquisitions = [] } = useQuery({
     queryKey: ["allAcquisitions"],
-    queryFn: () => base44.entities.AcquisitionRequests.filter({}, ["-created_date"], 100),
+    queryFn: () => base44.entities.AcquisitionRequests.list("-created_date", 100),
   });
 
   const enrichedBids = useMemo(() => {

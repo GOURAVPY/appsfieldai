@@ -19,13 +19,13 @@ export default function MyRequests() {
 
   const { data: reservations = [], isLoading: loadingRes } = useQuery({
     queryKey: ["myReservations", userId],
-    queryFn: () => base44.entities.DealReservations.filter({ userId }, ["-created_date"], 50),
+    queryFn: () => base44.entities.DealReservations.filter({ userId }, "-created_date", 50),
     enabled: !!userId,
   });
 
   const { data: acquisitions = [], isLoading: loadingAcq } = useQuery({
     queryKey: ["myAcquisitions", userId],
-    queryFn: () => base44.entities.AcquisitionRequests.filter({ userId }, ["-created_date"], 50),
+    queryFn: () => base44.entities.AcquisitionRequests.filter({ userId }, "-created_date", 50),
     enabled: !!userId,
   });
 
