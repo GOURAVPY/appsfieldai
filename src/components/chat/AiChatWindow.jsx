@@ -12,7 +12,7 @@ function MessageBubble({ message }) {
   return (
     <div className={`flex gap-2.5 ${isUser ? "justify-end" : "justify-start"}`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shrink-0 mt-0.5">
           <Bot className="w-4 h-4 text-white" />
         </div>
       )}
@@ -20,7 +20,7 @@ function MessageBubble({ message }) {
         <div
           className={`rounded-2xl px-4 py-2.5 text-sm ${
             isUser
-              ? "bg-violet-500 text-white rounded-br-md"
+              ? "bg-orange-500 text-white rounded-br-md"
               : "bg-secondary rounded-bl-md"
           }`}
         >
@@ -35,7 +35,7 @@ function MessageBubble({ message }) {
                 ol: ({ children }) => <ol className="my-1 ml-4 list-decimal">{children}</ol>,
                 li: ({ children }) => <li className="my-0.5">{children}</li>,
                 a: ({ children, ...props }) => (
-                  <a {...props} target="_blank" rel="noopener noreferrer" className="text-violet-300 underline">
+                  <a {...props} target="_blank" rel="noopener noreferrer" className="text-orange-300 underline">
                     {children}
                   </a>
                 ),
@@ -140,8 +140,8 @@ export default function AiChatWindow() {
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 flex items-center justify-center mb-4">
-              <Bot className="w-8 h-8 text-violet-400" />
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 flex items-center justify-center mb-4">
+              <Bot className="w-8 h-8 text-orange-400" />
             </div>
             <h3 className="font-display font-semibold text-base mb-1">AI Listing Assistant</h3>
             <p className="text-xs text-muted-foreground mb-5 max-w-xs">
@@ -152,7 +152,7 @@ export default function AiChatWindow() {
                 <button
                   key={i}
                   onClick={() => setNewMsg(prompt)}
-                  className="text-xs px-3 py-1.5 rounded-full bg-secondary/60 hover:bg-violet-500/20 hover:text-violet-400 transition-colors text-muted-foreground border border-border/30"
+                  className="text-xs px-3 py-1.5 rounded-full bg-secondary/60 hover:bg-orange-500/20 hover:text-orange-400 transition-colors text-muted-foreground border border-border/30"
                 >
                   {prompt}
                 </button>
@@ -173,11 +173,11 @@ export default function AiChatWindow() {
             ))}
             {sending && (
               <div className="flex gap-2.5 justify-start">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shrink-0 mt-0.5">
                   <Bot className="w-4 h-4 text-white" />
                 </div>
                 <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
-                  <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+                  <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
                 </div>
               </div>
             )}
@@ -201,7 +201,7 @@ export default function AiChatWindow() {
             onClick={sendMessage}
             disabled={!newMsg.trim() || sending}
             size="icon"
-            className="w-10 h-10 rounded-xl bg-violet-500 hover:bg-violet-600 flex-shrink-0"
+            className="w-10 h-10 rounded-xl bg-orange-500 hover:bg-orange-600 flex-shrink-0"
           >
             {sending ? (
               <Loader2 className="w-4 h-4 animate-spin" />

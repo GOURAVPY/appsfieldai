@@ -15,7 +15,7 @@ export default function AiChatPage() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex items-center gap-2 mt-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
