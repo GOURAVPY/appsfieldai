@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 export default function ChatPanel({ listing, currentUser, style }) {
   const [expanded, setExpanded] = useState(false);
@@ -56,9 +57,18 @@ export default function ChatPanel({ listing, currentUser, style }) {
     if (!newMsg.trim() || sending) return;
     setSending(true);
     try {
+      const receiver = isOwner
+        ? messages.find((m) => m.senderId !== currentUser.id)?.senderId
+        : ownerId;
+
+      if (!receiver) {
+        toast.error("No recipient found. Wait for a buyer to message first.");
+        return;
+      }
+
       await base44.entities.Message.create({
         senderId: currentUser.id,
-        receiverId: isOwner ? messages.find((m) => m.senderId !== currentUser.id)?.senderId : ownerId,
+        receiverId: receiver,
         listingId: listing.id,
         content: newMsg.trim(),
       });

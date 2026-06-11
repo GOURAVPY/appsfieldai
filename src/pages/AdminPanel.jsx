@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
+import QnAManager from "@/components/admin/QnAManager";
+import ChatMonitor from "@/components/admin/ChatMonitor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -672,6 +674,12 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Q&A Manager */}
+      <QnAManager />
+
+      {/* Chat Monitor */}
+      <ChatMonitor />
 
       {/* Dividend Panel */}
       <DividendPanel />
