@@ -24,6 +24,7 @@ import AdminSettings from '@/pages/AdminSettings';
 import AdminRoute from '@/components/AdminRoute';
 import NotificationsPage from '@/pages/NotificationsPage';
 import AiChatPage from '@/pages/AiChat';
+import MyInvestments from '@/pages/MyInvestments';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -71,6 +72,7 @@ const AuthenticatedApp = () => {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/chats" element={<AiChatPage />} />
           <Route path="/sell" element={<SellMySaaS />} />
+          <Route path="/investments" element={<MyInvestments />} />
         </Route>
       </Route>
 

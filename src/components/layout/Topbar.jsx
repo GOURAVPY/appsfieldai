@@ -9,6 +9,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 const publicNavLinks = [
   { to: "/marketplace", label: "Marketplace" },
   { to: "/auctions", label: "Live Auctions" },
+  { to: "/investments", label: "Investments" },
   { to: "/requests", label: "My Requests" },
 ];
 
