@@ -6,6 +6,10 @@
       "type": "string",
       "description": "ID of the user placing the bid"
     },
+    "userName": {
+      "type": "string",
+      "description": "Full name of the bidder"
+    },
     "listingId": {
       "type": "string",
       "description": "ID of the SaaS listing being bid on"
@@ -13,6 +17,15 @@
     "bidAmount": {
       "type": "number",
       "description": "Bid amount in dollars"
+    },
+    "autoBid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether auto-bid is enabled"
+    },
+    "maxAutoBid": {
+      "type": "number",
+      "description": "Maximum amount for auto-bidding"
     }
   },
   "required": [
