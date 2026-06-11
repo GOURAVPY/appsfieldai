@@ -42,8 +42,8 @@ Respond with this exact JSON structure only, no other text:
   "estimated_share_price": number (per share, roughly full_price / 50),
   "valuation_multiple": number (the MRR multiple used),
   "confidence": "low" | "medium" | "high",
-  "summary": "1-2 sentence summary in Hindi explaining the valuation",
-  "breakdown": "3-4 bullet points explaining key factors affecting this valuation (in Hindi)"
+  "summary": "1-2 sentence summary in English explaining the valuation",
+  "breakdown": "3-4 bullet points explaining key factors affecting this valuation (in English)"
 }`,
         response_json_schema: {
           type: "object",
