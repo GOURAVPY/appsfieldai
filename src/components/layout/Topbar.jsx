@@ -10,6 +10,7 @@ const publicNavLinks = [
   { to: "/marketplace", label: "Marketplace" },
   { to: "/auctions", label: "Live Auctions" },
   { to: "/requests", label: "My Requests" },
+  { to: "/chats", label: "Chats" },
 ];
 
 export default function Topbar() {
