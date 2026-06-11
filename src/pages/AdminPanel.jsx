@@ -53,6 +53,11 @@ export default function AdminPanel() {
     queryFn: () => base44.entities.AcquisitionRequests.list("-created_date", 100),
   });
 
+  const { data: allBidRequests = [] } = useQuery({
+    queryKey: ["allBidRequests"],
+    queryFn: () => base44.entities.BidRequests.list("-created_date", 100),
+  });
+
   const enrichedBids = useMemo(() => {
     const listingMap = {};
     allListings.forEach((l) => { listingMap[l.id] = l.title; });
@@ -168,6 +173,33 @@ export default function AdminPanel() {
     await base44.entities.AcquisitionRequests.delete(a.id);
     queryClient.invalidateQueries({ queryKey: ["allAcquisitions"] });
     toast.success("Acquisition request deleted");
+  };
+
+  // Bid Request actions
+  const handleBidRequestAction = async (br, status) => {
+    await base44.entities.BidRequests.update(br.id, { status });
+    queryClient.invalidateQueries({ queryKey: ["allBidRequests"] });
+    const labels = { approved: "approved", rejected: "rejected", contacted: "marked as contacted" };
+    toast.success(`Bid request ${labels[status]}`);
+    try {
+      await base44.functions.invoke("notifyBidStatus", {
+        userId: br.userId,
+        userEmail: br.userEmail,
+        userName: br.userName,
+        listingTitle: br.listingTitle,
+        listingId: br.listingId,
+        requestType: "bid_request",
+        status,
+        requestId: br.id,
+        bidAmount: br.bidAmount,
+      });
+    } catch (e) { console.error("notify bid status failed", e); }
+  };
+
+  const handleBidRequestDelete = async (br) => {
+    await base44.entities.BidRequests.delete(br.id);
+    queryClient.invalidateQueries({ queryKey: ["allBidRequests"] });
+    toast.success("Bid request deleted");
   };
 
   const statusBadge = (s) => {
@@ -430,6 +462,85 @@ export default function AdminPanel() {
                       <Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "deal_closed")} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 h-7 text-[11px]"><BadgeCheck className="w-3 h-3 mr-1" /> Close Deal</Button>
                     )}
                     <Button size="sm" variant="ghost" onClick={() => handleAcquisitionDelete(a)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Bid Requests */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
+        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-display flex items-center gap-2">
+              <Gavel className="w-4 h-4 text-amber-400" />
+              Bid Requests
+              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{allBidRequests.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/30">
+            {allBidRequests.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p>
+            ) : (
+              allBidRequests.map((br) => (
+                <div key={br.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium">{br.userName || "Unknown"}</p>
+                      <span className="text-xs text-muted-foreground">{br.userEmail}</span>
+                      <div className="flex items-center gap-0.5 ml-1">
+                        {br.userEmail && (
+                          <>
+                            <a href={`mailto:${br.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Email user"><Mail className="w-3 h-3" /></a>
+                            <button onClick={() => doCopy(`bid-email-${br.id}`, br.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy email">{copied[`bid-email-${br.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
+                          </>
+                        )}
+                        {br.userPhone && (
+                          <>
+                            <a href={`tel:${br.userPhone}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Call user"><Phone className="w-3 h-3" /></a>
+                            <button onClick={() => doCopy(`bid-phone-${br.id}`, br.userPhone)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors" title="Copy phone">{copied[`bid-phone-${br.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-violet-400">{br.listingTitle || "Unknown Listing"}</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {br.userPhone && (
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {br.userPhone}
+                        </span>
+                      )}
+                      {br.bidAmount > 0 && (
+                        <span className="text-[11px] text-amber-400 flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" /> ${br.bidAmount?.toLocaleString()}
+                        </span>
+                      )}
+                      {statusBadge(br.status)}
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(br.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                    </div>
+                    {br.message && (
+                      <div className="flex items-start gap-1 text-[11px] text-muted-foreground">
+                        <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />
+                        <span className="line-clamp-2">{br.message}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                    {br.status === "pending" && (
+                      <>
+                        <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "approved")} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" /> Approve</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "rejected")} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" /> Reject</Button>
+                      </>
+                    )}
+                    {br.status !== "pending" && br.status !== "cancelled" && (
+                      <Button size="sm" variant="ghost" onClick={() => handleBidRequestAction(br, "contacted")} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 h-7 text-[11px]"><Phone className="w-3 h-3 mr-1" /> Contacted</Button>
+                    )}
+                    <Button size="sm" variant="ghost" onClick={() => handleBidRequestDelete(br)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
                   </div>
                 </div>
               ))

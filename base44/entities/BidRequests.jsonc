@@ -1,0 +1,55 @@
+{
+  "name": "BidRequests",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "ID of the user who placed the bid"
+    },
+    "userName": {
+      "type": "string",
+      "description": "Full name of the bidder"
+    },
+    "userEmail": {
+      "type": "string",
+      "description": "Email of the bidder"
+    },
+    "userPhone": {
+      "type": "string",
+      "description": "Phone number of the bidder"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the SaaS listing"
+    },
+    "bidAmount": {
+      "type": "number",
+      "description": "Bid amount in dollars"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "contacted",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Bid request status"
+    },
+    "message": {
+      "type": "string",
+      "description": "Optional message from the bidder"
+    }
+  },
+  "required": [
+    "userId",
+    "listingId",
+    "bidAmount"
+  ]
+}

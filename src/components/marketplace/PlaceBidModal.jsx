@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Gavel, DollarSign, AlertCircle, Clock, Users, Zap, TrendingUp, History, ShieldCheck } from "lucide-react";
+import { X, Gavel, DollarSign, AlertCircle, Clock, Users, Zap, TrendingUp, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 function CountdownTimer({ endDate }) {
@@ -32,24 +32,32 @@ function CountdownTimer({ endDate }) {
 }
 
 export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userPhone, setUserPhone] = useState("");
   const [bidAmount, setBidAmount] = useState("");
-  const [autoBidEnabled, setAutoBidEnabled] = useState(false);
-  const [maxAutoBid, setMaxAutoBid] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [confirmed, setConfirmed] = useState(false);
   const [bids, setBids] = useState([]);
   const [userId, setUserId] = useState(null);
 
-  // Fetch bids for this listing
   useEffect(() => {
-    if (!listing?.id) return;
+    if (!listing?.id || !open) return;
     base44.entities.Bid.filter({ listingId: listing.id }, "-created_date").then(setBids).catch(() => {});
-    base44.auth.me().then((u) => u && setUserId(u.id)).catch(() => {});
-  }, [listing?.id]);
+    base44.auth.me().then((u) => {
+      if (u) {
+        setUserId(u.id);
+        setUserName(u.full_name || "");
+        setUserEmail(u.email || "");
+      }
+    }).catch(() => {});
+  }, [listing?.id, open]);
 
   const sharePrice = listing?.sharePrice || 10;
   const fullPrice = listing?.fullPrice || 0;
+  const minBid = sharePrice * 0.5;
 
   const highestBid = useMemo(() => {
     if (!bids.length) return 0;
@@ -57,13 +65,12 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
   }, [bids]);
 
   const minNextBid = useMemo(() => {
-    if (highestBid === 0) return sharePrice * 0.5;
+    if (highestBid === 0) return minBid;
     return Math.ceil(highestBid * 1.05);
-  }, [highestBid, sharePrice]);
+  }, [highestBid, minBid]);
 
   const totalBidders = useMemo(() => {
-    const ids = new Set(bids.map((b) => b.userId));
-    return ids.size;
+    return new Set(bids.map((b) => b.userId)).size;
   }, [bids]);
 
   const userRank = useMemo(() => {
@@ -81,9 +88,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
   }, [fullPrice, sharePrice]);
 
   const bidHistory = useMemo(() => {
-    return [...bids]
-      .sort((a, b) => b.bidAmount - a.bidAmount)
-      .slice(0, 3);
+    return [...bids].sort((a, b) => b.bidAmount - a.bidAmount).slice(0, 3);
   }, [bids]);
 
   const isExpired = useMemo(() => {
@@ -96,64 +101,63 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
   const quickBids = useMemo(() => {
     const base = highestBid > 0 ? highestBid : minNextBid;
     return [
-      { label: `+$50`, amount: Math.ceil((base + 50) / 5) * 5 },
-      { label: `+$100`, amount: Math.ceil((base + 100) / 5) * 5 },
-      { label: `+$250`, amount: Math.ceil((base + 250) / 5) * 5 },
+      { label: "+$50", amount: Math.ceil((base + 50) / 5) * 5 },
+      { label: "+$100", amount: Math.ceil((base + 100) / 5) * 5 },
+      { label: "+$250", amount: Math.ceil((base + 250) / 5) * 5 },
       { label: "Max Bid", amount: fullPrice },
     ];
   }, [highestBid, minNextBid, fullPrice]);
 
-  const handleBid = async () => {
-    setError("");
+  const validate = () => {
+    const errs = {};
+    if (!userId) errs.form = "You must be logged in to place a bid.";
+    if (!isActive) errs.form = "This auction is no longer active.";
+    if (isExpired) errs.form = "This auction has ended.";
+    if (!userName.trim()) errs.userName = "Full name is required";
+    if (!userEmail.trim()) errs.userEmail = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) errs.userEmail = "Enter a valid email";
+    if (!userPhone.trim()) errs.userPhone = "Phone number is required";
     const amount = parseFloat(bidAmount);
+    if (!amount || isNaN(amount)) errs.bidAmount = "Bid amount is required";
+    else if (amount < minNextBid) errs.bidAmount = `Minimum bid is $${minNextBid.toLocaleString()}`;
+    if (!confirmed) errs.confirmed = "Please confirm this is a booking interest bid";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
-    if (!userId) {
-      setError("You must be logged in to place a bid.");
-      return;
-    }
-    if (!isActive) {
-      setError("This auction is no longer active.");
-      return;
-    }
-    if (isExpired) {
-      setError("This auction has ended.");
-      return;
-    }
-    if (!amount || amount < minNextBid) {
-      setError(`Minimum bid is $${minNextBid.toLocaleString()}`);
-      return;
-    }
-    if (autoBidEnabled && maxAutoBid && parseFloat(maxAutoBid) < amount) {
-      setError("Max auto-bid must be greater than or equal to your bid.");
-      return;
-    }
-    if (!confirmed) {
-      setError("Please confirm you understand this is a booking interest bid.");
-      return;
-    }
+  const handleBid = async () => {
+    if (!validate()) return;
 
     setLoading(true);
     try {
-      const bid = await base44.entities.Bid.create({
+      const amount = parseFloat(bidAmount);
+      const bidReq = await base44.entities.BidRequests.create({
         userId,
+        userName: userName.trim(),
+        userEmail: userEmail.trim(),
+        userPhone: userPhone.trim(),
         listingId: listing.id,
+        listingTitle: listing.title,
         bidAmount: amount,
-        autoBid: autoBidEnabled,
-        maxAutoBid: autoBidEnabled ? parseFloat(maxAutoBid) || amount : 0,
-        userName: (await base44.auth.me()).full_name || "",
+        status: "pending",
+        message: message.trim(),
       });
 
       // Admin notification
       try {
-        await base44.entities.Notification.create({
-          userId: "admin",
-          role: "admin",
-          type: "outbid",
-          title: "New Auction Bid",
-          message: `$${amount.toLocaleString()} bid on "${listing.title}"`,
-          listingId: listing.id,
-          isRead: false,
-        });
+        const admins = await base44.entities.User.filter({ role: "admin" });
+        for (const admin of admins) {
+          await base44.entities.Notification.create({
+            userId: admin.id,
+            role: "admin",
+            type: "listing_submitted",
+            title: "New Bid Received",
+            message: `${userName.trim()} bid $${amount.toLocaleString()} on "${listing.title}"`,
+            listingId: listing.id,
+            relatedRequestId: bidReq.id,
+            isRead: false,
+          });
+        }
       } catch (_) {}
 
       // User notification
@@ -161,10 +165,11 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
         await base44.entities.Notification.create({
           userId,
           role: "user",
-          type: "outbid",
-          title: "Bid Placed",
-          message: `You placed a $${amount.toLocaleString()} bid on "${listing.title}"${autoBidEnabled ? " with auto-bid enabled" : ""}.`,
+          type: "reserve_submitted",
+          title: "Bid Submitted",
+          message: `Your bid of $${amount.toLocaleString()} on "${listing.title}" has been submitted. Admin will review and contact you if shortlisted.`,
           listingId: listing.id,
+          relatedRequestId: bidReq.id,
           isRead: false,
         });
       } catch (_) {}
@@ -173,11 +178,10 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
       onSuccess?.();
       onClose();
       setBidAmount("");
-      setAutoBidEnabled(false);
-      setMaxAutoBid("");
+      setMessage("");
       setConfirmed(false);
     } catch (e) {
-      setError(e?.message || "Something went wrong. Please try again.");
+      setErrors({ form: e?.message || "Something went wrong. Please try again." });
     } finally {
       setLoading(false);
     }
@@ -232,7 +236,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
                 <p className="font-display font-bold text-sm text-amber-400">${highestBid > 0 ? highestBid.toLocaleString() : "—"}</p>
               </div>
               <div className="rounded-xl bg-secondary/40 p-3">
-                <p className="text-[10px] text-muted-foreground">Minimum Next Bid</p>
+                <p className="text-[10px] text-muted-foreground">Minimum Bid</p>
                 <p className="font-display font-bold text-sm">${minNextBid.toLocaleString()}</p>
               </div>
             </div>
@@ -241,23 +245,20 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
             {listing.auctionEndsAt && (
               <div className="flex items-center justify-between rounded-xl bg-secondary/40 p-3 mb-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="w-3.5 h-3.5" />
-                  Auction Ends
+                  <Clock className="w-3.5 h-3.5" /> Auction Ends
                 </div>
                 <CountdownTimer endDate={listing.auctionEndsAt} />
               </div>
             )}
 
-            {/* Total Bidders & User Rank */}
+            {/* Bidders & Rank */}
             <div className="flex items-center justify-between text-xs mb-4">
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Users className="w-3.5 h-3.5" />
                 <span>{totalBidders} bidder{totalBidders !== 1 ? "s" : ""}</span>
               </div>
               {userRank && (
-                <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[10px]">
-                  Your Rank: #{userRank}
-                </Badge>
+                <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[10px]">Your Rank: #{userRank}</Badge>
               )}
               {estimatedSaving !== null && estimatedSaving > 0 && (
                 <div className="flex items-center gap-1 text-emerald-400">
@@ -276,41 +277,71 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
                 <div className="space-y-1.5">
                   {bidHistory.map((b, i) => (
                     <div key={b.id} className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground truncate max-w-[60%]">
-                        {b.userName || "User"}
-                      </span>
-                      <span className={`font-mono font-semibold ${i === 0 ? "text-amber-400" : "text-muted-foreground"}`}>
-                        ${b.bidAmount.toLocaleString()}
-                      </span>
+                      <span className="text-muted-foreground truncate max-w-[60%]">{b.userName || "User"}</span>
+                      <span className={`font-mono font-semibold ${i === 0 ? "text-amber-400" : "text-muted-foreground"}`}>${b.bidAmount.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Bid Input */}
+            {/* Contact Fields */}
             <div className="space-y-3 mb-4">
               <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">Your Bid Amount ($)</label>
+                <label className="text-xs text-muted-foreground mb-1 block">Full Name <span className="text-red-400">*</span></label>
+                <Input
+                  placeholder="John Doe"
+                  value={userName}
+                  onChange={(e) => { setUserName(e.target.value); setErrors((p) => ({ ...p, userName: "" })); }}
+                  className={`bg-secondary/60 border-border/40 rounded-xl h-9 text-sm ${errors.userName ? "border-red-500/50" : ""}`}
+                />
+                {errors.userName && <p className="text-xs text-red-400 mt-0.5">{errors.userName}</p>}
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Email Address <span className="text-red-400">*</span></label>
+                <Input
+                  type="email"
+                  placeholder="john@example.com"
+                  value={userEmail}
+                  onChange={(e) => { setUserEmail(e.target.value); setErrors((p) => ({ ...p, userEmail: "" })); }}
+                  className={`bg-secondary/60 border-border/40 rounded-xl h-9 text-sm ${errors.userEmail ? "border-red-500/50" : ""}`}
+                />
+                {errors.userEmail && <p className="text-xs text-red-400 mt-0.5">{errors.userEmail}</p>}
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Phone Number <span className="text-red-400">*</span></label>
+                <Input
+                  placeholder="+1 234 567 8900"
+                  value={userPhone}
+                  onChange={(e) => { setUserPhone(e.target.value); setErrors((p) => ({ ...p, userPhone: "" })); }}
+                  className={`bg-secondary/60 border-border/40 rounded-xl h-9 text-sm ${errors.userPhone ? "border-red-500/50" : ""}`}
+                />
+                {errors.userPhone && <p className="text-xs text-red-400 mt-0.5">{errors.userPhone}</p>}
+              </div>
+            </div>
+
+            {/* Bid Amount */}
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Your Bid Amount ($) <span className="text-red-400">*</span></label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     type="number"
                     placeholder={`Min $${minNextBid.toLocaleString()}`}
                     value={bidAmount}
-                    onChange={(e) => { setBidAmount(e.target.value); setError(""); }}
-                    className="pl-9 bg-secondary/60 border-border/40 rounded-xl h-10 text-sm"
+                    onChange={(e) => { setBidAmount(e.target.value); setErrors((p) => ({ ...p, bidAmount: "" })); }}
+                    className={`pl-9 bg-secondary/60 border-border/40 rounded-xl h-10 text-sm ${errors.bidAmount ? "border-red-500/50" : ""}`}
                   />
                 </div>
+                {errors.bidAmount && <p className="text-xs text-red-400 mt-0.5">{errors.bidAmount}</p>}
               </div>
-
-              {/* Quick Bid Buttons */}
               <div className="flex gap-2 flex-wrap">
                 {quickBids.map((qb) => (
                   <button
                     key={qb.label}
                     type="button"
-                    onClick={() => { setBidAmount(qb.amount.toString()); setError(""); }}
+                    onClick={() => { setBidAmount(qb.amount.toString()); setErrors((p) => ({ ...p, bidAmount: "" })); }}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary/60 border border-border/30 text-muted-foreground hover:text-foreground hover:border-amber-500/30 hover:bg-amber-500/5 transition-all"
                   >
                     {qb.label} ${qb.amount.toLocaleString()}
@@ -319,83 +350,46 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
               </div>
             </div>
 
-            {/* Auto Bid Toggle */}
-            <div className="rounded-xl bg-secondary/30 p-3 mb-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-violet-400" />
-                  <span className="text-xs font-medium">Auto Bid</span>
-                </div>
-                <Switch
-                  checked={autoBidEnabled}
-                  onCheckedChange={setAutoBidEnabled}
-                  className="data-[state=checked]:bg-violet-600"
-                />
-              </div>
-              <AnimatePresence>
-                {autoBidEnabled && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="pt-2 border-t border-border/30">
-                      <label className="text-[10px] text-muted-foreground mb-1.5 block">
-                        Max Auto-Bid Amount ($)
-                      </label>
-                      <Input
-                        type="number"
-                        placeholder="Enter max amount"
-                        value={maxAutoBid}
-                        onChange={(e) => setMaxAutoBid(e.target.value)}
-                        className="bg-secondary/60 border-border/40 rounded-xl h-9 text-sm"
-                      />
-                      <p className="text-[10px] text-muted-foreground mt-1.5">
-                        System will auto-increase your bid up to this amount when someone outbids you.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Message */}
+            <div className="mb-4">
+              <label className="text-xs text-muted-foreground mb-1.5 block">Message (optional)</label>
+              <Textarea
+                placeholder="Any additional details..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="bg-secondary/60 border-border/40 rounded-xl h-16 resize-none text-sm"
+              />
             </div>
 
-            {/* Confirmation Checkbox */}
+            {/* Confirmation */}
             <label className="flex items-start gap-2.5 mb-4 cursor-pointer group">
               <input
                 type="checkbox"
                 checked={confirmed}
-                onChange={(e) => { setConfirmed(e.target.checked); setError(""); }}
+                onChange={(e) => { setConfirmed(e.target.checked); setErrors((p) => ({ ...p, confirmed: "" })); }}
                 className="mt-0.5 accent-amber-500 w-4 h-4 rounded"
               />
               <span className="text-[11px] text-muted-foreground group-hover:text-foreground/80 transition-colors leading-relaxed">
                 I understand this is a booking interest bid, not a payment.
               </span>
             </label>
+            {errors.confirmed && <p className="text-xs text-red-400 -mt-3 mb-3">{errors.confirmed}</p>}
 
             {/* Error */}
-            {error && (
+            {errors.form && (
               <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 rounded-lg p-2.5 mb-4">
                 <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                {error}
+                {errors.form}
               </div>
             )}
 
-            {/* Expired / Inactive Warning */}
+            {/* Expired Warning */}
             {isExpired && (
               <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 rounded-lg p-2.5 mb-4">
-                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                This auction has ended. Bidding is closed.
-              </div>
-            )}
-            {!isActive && !isExpired && (
-              <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 rounded-lg p-2.5 mb-4">
-                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                This auction is not currently active.
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" /> This auction has ended.
               </div>
             )}
 
-            {/* Submit */}
             <Button
               onClick={handleBid}
               disabled={loading || isExpired || !isActive}
@@ -407,9 +401,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
                   Placing Bid...
                 </div>
               ) : (
-                <>
-                  <Gavel className="w-4 h-4 mr-2" /> Confirm Bid
-                </>
+                <><Gavel className="w-4 h-4 mr-2" /> Confirm Bid</>
               )}
             </Button>
           </motion.div>

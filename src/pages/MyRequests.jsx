@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
-  ClipboardList, CalendarCheck, Building2, Clock, X, CheckCircle,
+  ClipboardList, CalendarCheck, Building2, Clock, X, CheckCircle, Gavel,
   Ban, DollarSign, MessageSquare, Loader2, FileText, TrendingUp, BadgeCheck
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,7 @@ const TABS = [
   { id: "all", label: "All" },
   { id: "reserve_spot", label: "Reserve Spots" },
   { id: "acquisition_request", label: "Acquisitions" },
+  { id: "bid_request", label: "Bid Requests" },
   { id: "pending", label: "Pending" },
   { id: "approved", label: "Approved" },
 ];
@@ -81,8 +82,9 @@ function StatusTimeline({ currentStatus }) {
 
 function RequestCard({ item, type, onCancel }) {
   const isSpot = type === "reserve_spot";
-  const amount = isSpot ? item.budget : item.offerAmount;
-  const note = isSpot ? item.message : item.notes;
+  const isBid = type === "bid_request";
+  const amount = isSpot ? item.budget : isBid ? item.bidAmount : item.offerAmount;
+  const note = isSpot ? item.message : isBid ? item.message : item.notes;
   const cfg = statusConfig[item.status] || statusConfig.pending;
   const StatusIcon = cfg.icon;
 
@@ -98,9 +100,11 @@ function RequestCard({ item, type, onCancel }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap mb-2">
-                <Badge className={`text-[10px] border ${isSpot ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}>
+                <Badge className={`text-[10px] border ${isSpot ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : isBid ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}>
                   {isSpot ? (
                     <><CalendarCheck className="w-3 h-3 mr-1" /> Reserve Spot</>
+                  ) : isBid ? (
+                    <><Gavel className="w-3 h-3 mr-1" /> Bid Request</>
                   ) : (
                     <><Building2 className="w-3 h-3 mr-1" /> Acquisition</>
                   )}
@@ -174,6 +178,7 @@ function EmptyState({ tab }) {
     all:               { title: "No requests yet", desc: "Browse the marketplace to reserve a spot or request an acquisition." },
     reserve_spot:      { title: "No spot reservations", desc: "You haven't reserved any spots yet." },
     acquisition_request: { title: "No acquisition requests", desc: "You haven't submitted any acquisition requests yet." },
+    bid_request:       { title: "No bid requests", desc: "You haven't placed any bid requests yet." },
     pending:           { title: "No pending requests", desc: "All your requests have been processed." },
     approved:          { title: "No approved requests", desc: "None of your requests have been approved yet." },
   };
@@ -214,6 +219,12 @@ export default function MyRequests() {
     enabled: !!userId,
   });
 
+  const { data: bidRequests = [], isLoading: loadingBids } = useQuery({
+    queryKey: ["myBidRequests", userId],
+    queryFn: () => base44.entities.BidRequests.filter({ userId }, "-created_date", 50),
+    enabled: !!userId,
+  });
+
   const handleCancelReservation = async (r) => {
     await base44.entities.DealReservations.update(r.id, { status: "cancelled" });
     queryClient.invalidateQueries({ queryKey: ["myReservations"] });
@@ -240,18 +251,33 @@ export default function MyRequests() {
     } catch (_) {}
   };
 
+  const handleCancelBidRequest = async (br) => {
+    await base44.entities.BidRequests.update(br.id, { status: "cancelled" });
+    queryClient.invalidateQueries({ queryKey: ["myBidRequests"] });
+    toast.success("Bid request cancelled");
+    try {
+      await base44.functions.invoke("notifyAdminRequestCancelled", {
+        userName: br.userName, userEmail: br.userEmail,
+        listingTitle: br.listingTitle, requestType: "bid_request",
+        listingId: br.listingId, requestId: br.id,
+      });
+    } catch (_) {}
+  };
+
   const allItems = useMemo(() => {
     return [
       ...reservations.map((r) => ({ ...r, _type: "reserve_spot" })),
       ...acquisitions.map((a) => ({ ...a, _type: "acquisition_request" })),
+      ...bidRequests.map((br) => ({ ...br, _type: "bid_request", budget: 0, offerAmount: 0, message: br.message || "", notes: "" })),
     ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-  }, [reservations, acquisitions]);
+  }, [reservations, acquisitions, bidRequests]);
 
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
       if (activeTab === "all") return true;
       if (activeTab === "reserve_spot") return item._type === "reserve_spot";
       if (activeTab === "acquisition_request") return item._type === "acquisition_request";
+      if (activeTab === "bid_request") return item._type === "bid_request";
       if (activeTab === "pending") return item.status === "pending";
       if (activeTab === "approved") return ["approved", "contacted", "deal_in_progress", "deal_closed"].includes(item.status);
       return true;
@@ -262,11 +288,12 @@ export default function MyRequests() {
     all: allItems.length,
     reserve_spot: allItems.filter((i) => i._type === "reserve_spot").length,
     acquisition_request: allItems.filter((i) => i._type === "acquisition_request").length,
+    bid_request: allItems.filter((i) => i._type === "bid_request").length,
     pending: allItems.filter((i) => i.status === "pending").length,
     approved: allItems.filter((i) => ["approved", "contacted", "deal_in_progress", "deal_closed"].includes(i.status)).length,
   }), [allItems]);
 
-  const isLoading = loadingUser || loadingRes || loadingAcq;
+  const isLoading = loadingUser || loadingRes || loadingAcq || loadingBids;
 
   return (
     <div className="space-y-6">
@@ -331,7 +358,7 @@ export default function MyRequests() {
                   key={`${item._type}-${item.id}`}
                   item={item}
                   type={item._type}
-                  onCancel={item._type === "reserve_spot" ? handleCancelReservation : handleCancelAcquisition}
+                  onCancel={item._type === "reserve_spot" ? handleCancelReservation : item._type === "bid_request" ? handleCancelBidRequest : handleCancelAcquisition}
                 />
               ))}
             </motion.div>
