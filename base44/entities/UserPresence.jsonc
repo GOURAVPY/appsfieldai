@@ -1,0 +1,23 @@
+{
+  "name": "UserPresence",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "isOnline": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user is online"
+    },
+    "lastSeenAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last activity timestamp"
+    }
+  },
+  "required": [
+    "userId"
+  ]
+}

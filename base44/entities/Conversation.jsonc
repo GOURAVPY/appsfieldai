@@ -1,0 +1,50 @@
+{
+  "name": "Conversation",
+  "type": "object",
+  "properties": {
+    "listingId": {
+      "type": "string",
+      "description": "ID of the SaaS listing"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Title of the SaaS listing"
+    },
+    "buyerId": {
+      "type": "string",
+      "description": "ID of the buyer"
+    },
+    "sellerId": {
+      "type": "string",
+      "description": "ID of the seller/owner"
+    },
+    "lastMessage": {
+      "type": "string",
+      "description": "Preview of the last message"
+    },
+    "lastMessageAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last message"
+    },
+    "lastMessageSenderId": {
+      "type": "string",
+      "description": "ID of the last message sender"
+    },
+    "buyerUnread": {
+      "type": "number",
+      "default": 0,
+      "description": "Unread count for buyer"
+    },
+    "sellerUnread": {
+      "type": "number",
+      "default": 0,
+      "description": "Unread count for seller"
+    }
+  },
+  "required": [
+    "listingId",
+    "buyerId",
+    "sellerId"
+  ]
+}
