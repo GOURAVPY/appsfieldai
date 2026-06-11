@@ -4,8 +4,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ClipboardList, CalendarCheck, Building2, Clock, X, CheckCircle,
-  Ban, DollarSign, MessageSquare, Loader2, FileText, TrendingUp, BadgeCheck
+  Ban, DollarSign, MessageSquare, FileText, TrendingUp, BadgeCheck
 } from "lucide-react";
+import Loader from "@/components/Loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -312,7 +313,7 @@ export default function MyRequests() {
       {/* Content */}
       {isLoading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
+          <Loader type="inline" text="Loading..." />
         </div>
       ) : (
         <AnimatePresence mode="wait">
