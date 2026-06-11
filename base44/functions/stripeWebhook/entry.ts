@@ -5,18 +5,13 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     const sig = req.headers.get('stripe-signature');
-
-    if (!sig || !stripeKey) {
-      return Response.json({ error: 'Missing signature or key' }, { status: 400 });
-    }
+    if (!sig || !stripeKey) return Response.json({ error: 'Missing signature or key' }, { status: 400 });
 
     const body = await req.text();
     const endpointSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
 
-    // Verify webhook signature
     let event;
     try {
-      // Using Stripe's library for verification
       const { default: Stripe } = await import('npm:stripe@17.7.0');
       const stripe = new Stripe(stripeKey);
       event = await stripe.webhooks.constructEventAsync(body, sig, endpointSecret);
@@ -25,6 +20,31 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Webhook signature verification failed' }, { status: 400 });
     }
 
+    // Handle subscription checkout completion
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      if (session.mode === 'subscription') {
+        const { userId, marketplaceId, planKey } = session.metadata || {};
+        console.log(`Subscription: user=${userId}, plan=${planKey}, marketplace=${marketplaceId}`);
+        if (marketplaceId) {
+          await base44.asServiceRole.entities.Marketplace.update(marketplaceId, { status: "active" });
+        }
+        return Response.json({ received: true });
+      }
+    }
+
+    // Handle subscription cancellation
+    if (event.type === 'customer.subscription.deleted') {
+      const sub = event.data.object;
+      const { marketplaceId } = sub.metadata || {};
+      console.log(`Subscription cancelled: marketplace=${marketplaceId}`);
+      if (marketplaceId) {
+        await base44.asServiceRole.entities.Marketplace.update(marketplaceId, { status: "suspended" });
+      }
+      return Response.json({ received: true });
+    }
+
+    // Only handle checkout.session.completed for one-time purchases below
     if (event.type !== 'checkout.session.completed') {
       return Response.json({ received: true });
     }
@@ -32,7 +52,7 @@ Deno.serve(async (req) => {
     const session = event.data.object;
     const metadata = session.metadata || {};
     const { listingId, type, quantity, userId, amount } = metadata;
-    const amountPaid = session.amount_total / 100; // Convert cents to dollars
+    const amountPaid = session.amount_total / 100;
 
     // Handle wallet deposits
     if (type === 'wallet_deposit') {
@@ -40,31 +60,16 @@ Deno.serve(async (req) => {
         console.error('Missing userId or amount for wallet deposit');
         return Response.json({ error: 'Missing metadata' }, { status: 400 });
       }
-
-      // Get current user to read wallet balance
       const users = await base44.asServiceRole.entities.User.filter({ id: userId });
       const targetUser = users[0];
       if (!targetUser) {
         console.error('User not found:', userId);
         return Response.json({ error: 'User not found' }, { status: 404 });
       }
-
       const depositAmount = parseFloat(amount);
       const currentBalance = targetUser.walletBalance || 0;
-
-      // Update wallet balance
-      await base44.asServiceRole.entities.User.update(userId, {
-        walletBalance: currentBalance + depositAmount,
-      });
-
-      // Create transaction
-      await base44.asServiceRole.entities.Transaction.create({
-        userId,
-        type: 'deposit',
-        amount: depositAmount,
-        status: 'completed',
-      });
-
+      await base44.asServiceRole.entities.User.update(userId, { walletBalance: currentBalance + depositAmount });
+      await base44.asServiceRole.entities.Transaction.create({ userId, type: 'deposit', amount: depositAmount, status: 'completed' });
       console.log(`Wallet deposit: $${depositAmount} for user ${userId}`);
       return Response.json({ received: true });
     }
@@ -74,7 +79,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing metadata' }, { status: 400 });
     }
 
-    // Get the listing
     const listings = await base44.asServiceRole.entities.SaaSListing.filter({ id: listingId });
     const listing = listings[0];
     if (!listing) {
@@ -85,54 +89,15 @@ Deno.serve(async (req) => {
     const qty = parseInt(quantity) || 1;
 
     if (type === 'share') {
-      // Update sold shares
-      await base44.asServiceRole.entities.SaaSListing.update(listingId, {
-        soldShares: (listing.soldShares || 0) + qty,
-      });
-
-      // Create SharePurchase record
-      await base44.asServiceRole.entities.SharePurchase.create({
-        userId: listing.ownerUserId || 'guest',
-        listingId,
-        sharesBought: qty,
-        pricePerShare: listing.sharePrice,
-        totalAmount: amountPaid,
-      });
-
-      // Create Transaction
-      await base44.asServiceRole.entities.Transaction.create({
-        userId: listing.ownerUserId || 'guest',
-        type: 'share_purchase',
-        amount: amountPaid,
-        listingId,
-        status: 'completed',
-      });
-
+      await base44.asServiceRole.entities.SaaSListing.update(listingId, { soldShares: (listing.soldShares || 0) + qty });
+      await base44.asServiceRole.entities.SharePurchase.create({ userId: listing.ownerUserId || 'guest', listingId, sharesBought: qty, pricePerShare: listing.sharePrice, totalAmount: amountPaid });
+      await base44.asServiceRole.entities.Transaction.create({ userId: listing.ownerUserId || 'guest', type: 'share_purchase', amount: amountPaid, listingId, status: 'completed' });
       console.log(`Share purchase: ${qty} shares of ${listing.title} for $${amountPaid}`);
     } else if (type === 'ownership') {
-      // Mark as sold
-      await base44.asServiceRole.entities.SaaSListing.update(listingId, {
-        status: 'sold',
-        soldShares: listing.totalShares,
-      });
-
-      // Create OwnershipPurchase record
-      await base44.asServiceRole.entities.OwnershipPurchase.create({
-        userId: listing.ownerUserId || 'guest',
-        listingId,
-        fullPrice: amountPaid,
-      });
-
-      // Create Transaction
-      await base44.asServiceRole.entities.Transaction.create({
-        userId: listing.ownerUserId || 'guest',
-        type: 'ownership_purchase',
-        amount: amountPaid,
-        listingId,
-        status: 'completed',
-      });
-
-      console.log(`Full ownership purchase: ${listing.title} for $${amountPaid}`);
+      await base44.asServiceRole.entities.SaaSListing.update(listingId, { status: 'sold', soldShares: listing.totalShares });
+      await base44.asServiceRole.entities.OwnershipPurchase.create({ userId: listing.ownerUserId || 'guest', listingId, fullPrice: amountPaid });
+      await base44.asServiceRole.entities.Transaction.create({ userId: listing.ownerUserId || 'guest', type: 'ownership_purchase', amount: amountPaid, listingId, status: 'completed' });
+      console.log(`Full ownership: ${listing.title} for $${amountPaid}`);
     }
 
     return Response.json({ received: true });

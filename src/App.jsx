@@ -25,6 +25,8 @@ import AdminRoute from '@/components/AdminRoute';
 import NotificationsPage from '@/pages/NotificationsPage';
 import AiChatPage from '@/pages/AiChat';
 import MyInvestments from '@/pages/MyInvestments';
+import Pricing from '@/pages/Pricing';
+import MarketplaceDashboard from '@/pages/MarketplaceDashboard';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
@@ -65,6 +67,8 @@ const AuthenticatedApp = () => {
       {/* Protected routes — require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<DashboardLayout />}>
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/dashboard" element={<MarketplaceDashboard />} />
           <Route path="/requests" element={<MyRequests />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/chats" element={<AiChatPage />} />
