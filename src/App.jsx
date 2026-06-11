@@ -25,6 +25,7 @@ import AdminRoute from '@/components/AdminRoute';
 import NotificationsPage from '@/pages/NotificationsPage';
 import AiChatPage from '@/pages/AiChat';
 import MyInvestments from '@/pages/MyInvestments';
+import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -32,11 +33,7 @@ const AuthenticatedApp = () => {
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   // Handle authentication errors
