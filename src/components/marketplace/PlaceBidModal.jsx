@@ -65,18 +65,24 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
     }
   }, [open, listing?.id]);
 
-  const sharePrice = listing?.sharePrice || 10;
-  const fullPrice = listing?.fullPrice || 0;
+  const sharePrice = Number(listing?.sharePrice) || 10;
+  const fullPrice = Number(listing?.fullPrice) || 0;
+  const MIN_INCREMENT = 50;
+  const MAX_BID_MULTIPLIER = 10;
   const minBid = sharePrice * 0.5;
 
   const highestBid = useMemo(() => {
     if (!bids.length) return 0;
-    return Math.max(...bids.map((b) => b.bidAmount));
-  }, [bids]);
+    const amounts = bids.map((b) => {
+      const n = Number(b.bidAmount);
+      return isNaN(n) || n < 0 || n > fullPrice * MAX_BID_MULTIPLIER ? 0 : n;
+    });
+    return Math.max(0, ...amounts);
+  }, [bids, fullPrice]);
 
   const minNextBid = useMemo(() => {
     if (highestBid === 0) return minBid;
-    return Math.ceil(highestBid * 1.05);
+    return highestBid + MIN_INCREMENT;
   }, [highestBid, minBid]);
 
   const totalBidders = useMemo(() => {
