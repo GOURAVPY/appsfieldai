@@ -115,14 +115,16 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
   const isActive = listing?.status === "auction";
 
   const quickBids = useMemo(() => {
-    const base = highestBid > 0 ? highestBid : minNextBid;
+    const base = Number(highestBid > 0 ? highestBid : minNextBid);
+    const safe = isNaN(base) || base < 0 ? minBid : base;
+    const maxBid = fullPrice * MAX_BID_MULTIPLIER;
     return [
-      { label: "+$50", amount: Math.ceil((base + 50) / 5) * 5 },
-      { label: "+$100", amount: Math.ceil((base + 100) / 5) * 5 },
-      { label: "+$250", amount: Math.ceil((base + 250) / 5) * 5 },
+      { label: "+$50", amount: Math.min(Math.ceil((safe + 50) / 5) * 5, maxBid) },
+      { label: "+$100", amount: Math.min(Math.ceil((safe + 100) / 5) * 5, maxBid) },
+      { label: "+$250", amount: Math.min(Math.ceil((safe + 250) / 5) * 5, maxBid) },
       { label: "Max Bid", amount: fullPrice },
     ];
-  }, [highestBid, minNextBid, fullPrice]);
+  }, [highestBid, minNextBid, minBid, fullPrice]);
 
   const validate = () => {
     const errs = {};
@@ -134,8 +136,11 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) errs.userEmail = "Enter a valid email";
     if (!userPhone.trim()) errs.userPhone = "Phone number is required";
     const amount = parseFloat(bidAmount);
+    const maxAllowed = fullPrice * MAX_BID_MULTIPLIER;
     if (!amount || isNaN(amount)) errs.bidAmount = "Bid amount is required";
+    else if (amount < 0) errs.bidAmount = "Bid amount cannot be negative";
     else if (amount < minNextBid) errs.bidAmount = `Minimum bid is $${minNextBid.toLocaleString()}`;
+    else if (amount > maxAllowed) errs.bidAmount = `Bid cannot exceed $${maxAllowed.toLocaleString()} (10x full price)`;
     if (!confirmed) errs.confirmed = "Please confirm this is a booking interest bid";
     setErrors(errs);
     return Object.keys(errs).length === 0;
