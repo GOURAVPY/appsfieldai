@@ -57,13 +57,24 @@
     },
     "subdomain": {
       "type": "string",
-      "description": "Custom subdomain"
+      "description": "Platform subdomain (e.g. mystore)"
     },
     "customDomain": {
       "type": "string",
-      "description": "Custom domain URL"
+      "description": "Custom domain URL (e.g. deals.clientbrand.com)"
     },
-    "domainStatus": {
+    "verificationStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "verified",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Domain verification status"
+    },
+    "sslStatus": {
       "type": "string",
       "enum": [
         "pending",
@@ -71,7 +82,16 @@
         "failed"
       ],
       "default": "pending",
-      "description": "Domain verification status"
+      "description": "SSL certificate status"
+    },
+    "dnsInstructions": {
+      "type": "string",
+      "description": "DNS setup instructions for the user"
+    },
+    "connectedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the custom domain was connected"
     },
     "status": {
       "type": "string",

@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Store, Palette, Tag, Settings, Globe, Mail, Shield, FileText, ArrowLeft, Save, Type as TypeIcon } from "lucide-react";
+import { Store, Palette, Tag, Settings, Globe, Mail, Shield, FileText, ArrowLeft, Save } from "lucide-react";
+import DomainManager from "@/components/marketplace/DomainManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,7 @@ import { toast } from "sonner";
 const tabs = [
   { id: "general", label: "General", icon: Settings },
   { id: "branding", label: "Branding", icon: Palette },
+  { id: "domain", label: "Domain", icon: Globe },
   { id: "pages", label: "Legal Pages", icon: FileText },
   { id: "policies", label: "Approvals", icon: Shield },
 ];
@@ -139,6 +141,11 @@ export default function MarketplaceSettings({ marketplace, onBack }) {
               </div>
             </div>
           </>
+        )}
+
+        {/* Domain Tab */}
+        {activeTab === "domain" && (
+          <DomainManager marketplace={marketplace} onUpdate={() => queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] })} />
         )}
 
         {/* Legal Pages Tab */}

@@ -54,7 +54,6 @@ export default function MarketplaceDashboard() {
             <Button variant="outline" className="border-border/40 rounded-xl gap-1.5"><Zap className="w-4 h-4" /> Plans</Button>
           </Link>
           <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5"><Rocket className="w-4 h-4" /> Setup Wizard</Button>
-          <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl gap-1.5"><Plus className="w-4 h-4" /> Quick Create</Button>
         </div>
       </motion.div>
 
@@ -106,7 +105,7 @@ export default function MarketplaceDashboard() {
                     <div className="flex gap-2">
                       <Button size="sm" variant="ghost" onClick={() => { setSelectedMarketplace(m); setView("settings"); }} className="h-8 text-xs"><Settings className="w-3 h-3 mr-1" />Settings</Button>
                       <Button size="sm" variant="ghost" onClick={() => { setSelectedMarketplace(m); setView("wizard"); }} className="h-8 text-xs"><Rocket className="w-3 h-3 mr-1" />Setup</Button>
-                      <Button size="sm" variant="ghost" className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
+                      <Button size="sm" variant="ghost" onClick={() => window.open(`https://${m.subdomain || m.slug}.yourplatform.com`, "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
                     </div>
                   </CardContent>
                 </Card>
