@@ -1,0 +1,58 @@
+{
+  "name": "Payout",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID"
+    },
+    "vendorId": {
+      "type": "string",
+      "description": "Vendor ID"
+    },
+    "vendorName": {
+      "type": "string",
+      "description": "Vendor name"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Payout amount"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "paid",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Payout status"
+    },
+    "payoutMethod": {
+      "type": "string",
+      "enum": [
+        "bank_transfer",
+        "paypal",
+        "stripe",
+        "manual"
+      ],
+      "default": "bank_transfer",
+      "description": "Payout method"
+    },
+    "payoutDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the payout was processed"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "vendorId",
+    "amount"
+  ]
+}

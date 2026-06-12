@@ -1,0 +1,61 @@
+{
+  "name": "Coupon",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID (marketplace-wide coupon)"
+    },
+    "code": {
+      "type": "string",
+      "description": "Coupon code (e.g. LAUNCH50)"
+    },
+    "discountType": {
+      "type": "string",
+      "enum": [
+        "percentage",
+        "fixed"
+      ],
+      "default": "percentage",
+      "description": "Discount type"
+    },
+    "discountValue": {
+      "type": "number",
+      "description": "Discount value (percentage or fixed amount)"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Coupon valid from"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Coupon valid until"
+    },
+    "usageLimit": {
+      "type": "number",
+      "description": "Maximum number of uses (null = unlimited)"
+    },
+    "usedCount": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times used"
+    },
+    "softwareId": {
+      "type": "string",
+      "description": "Specific software ID (null = marketplace-wide)"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether coupon is active"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "code",
+    "discountType",
+    "discountValue"
+  ]
+}

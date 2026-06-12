@@ -4,34 +4,91 @@
   "properties": {
     "marketplaceId": {
       "type": "string",
-      "description": "The ID of the marketplace this listing belongs to (multi-tenant isolation)"
+      "description": "The ID of the marketplace this listing belongs to"
     },
     "vendorId": {
       "type": "string",
-      "description": "The ID of the approved vendor who listed this (for multi-vendor mode)"
+      "description": "The ID of the approved vendor who listed this"
     },
-    "title": {
+    "ownerId": {
       "type": "string",
-      "description": "The title of the SaaS listing"
+      "description": "The user ID of the original owner/seller"
     },
-    "category": {
+    "softwareName": {
       "type": "string",
-      "description": "Category of the SaaS (e.g. CRM, AI & ML)"
+      "description": "Software name / title"
     },
-    "description": {
+    "slug": {
       "type": "string",
-      "description": "Detailed description of the SaaS"
+      "description": "URL-friendly unique slug"
     },
-    "images": {
+    "logo": {
+      "type": "string",
+      "description": "Logo image URL"
+    },
+    "screenshots": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Image URLs for the listing"
+      "description": "Screenshot image URLs"
     },
-    "imageGradient": {
+    "demoVideoUrl": {
       "type": "string",
-      "description": "CSS gradient for card header"
+      "description": "Demo video URL"
+    },
+    "shortDescription": {
+      "type": "string",
+      "description": "Short description / tagline"
+    },
+    "fullDescription": {
+      "type": "string",
+      "description": "Full detailed description"
+    },
+    "category": {
+      "type": "string",
+      "description": "Category name (e.g. CRM, AI & ML)"
+    },
+    "categoryId": {
+      "type": "string",
+      "description": "Linked SoftwareCategory ID"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of key features"
+    },
+    "pricingType": {
+      "type": "string",
+      "enum": [
+        "free",
+        "paid",
+        "subscription",
+        "lifetime_deal",
+        "custom_quote"
+      ],
+      "default": "paid",
+      "description": "Pricing model"
+    },
+    "price": {
+      "type": "number",
+      "description": "Current price"
+    },
+    "discountPrice": {
+      "type": "number",
+      "description": "Discounted deal price"
+    },
+    "dealStartDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Deal start date"
+    },
+    "dealEndDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Deal end date"
     },
     "monthlyRevenue": {
       "type": "number",
@@ -41,10 +98,6 @@
       "type": "number",
       "default": 0,
       "description": "Monthly expenses in dollars"
-    },
-    "fullPrice": {
-      "type": "number",
-      "description": "Full ownership price"
     },
     "sharePrice": {
       "type": "number",
@@ -69,25 +122,25 @@
       "default": 5,
       "description": "Rating out of 5"
     },
-    "ownerUserId": {
-      "type": "string",
-      "description": "The user ID of the original owner/seller"
-    },
-    "fullOwnerUserId": {
-      "type": "string",
-      "description": "The user ID of the buyer who purchased full ownership"
-    },
     "status": {
       "type": "string",
       "enum": [
-        "active",
-        "auction",
-        "sold",
         "draft",
         "pending",
-        "rejected"
+        "approved",
+        "rejected",
+        "suspended",
+        "active",
+        "auction",
+        "sold"
       ],
-      "default": "active"
+      "default": "pending",
+      "description": "Listing status"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the software is featured"
     },
     "auctionEndsAt": {
       "type": "string",
@@ -98,15 +151,13 @@
       "type": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 5,
-      "description": "Risk score 1-10"
+      "default": 5
     },
     "aiScore": {
       "type": "number",
       "minimum": 0,
       "maximum": 100,
-      "default": 75,
-      "description": "AI evaluation score 0-100"
+      "default": 75
     },
     "sellerName": {
       "type": "string",
@@ -119,12 +170,9 @@
       },
       "description": "List of tags"
     },
-    "features": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "List of key features"
+    "imageGradient": {
+      "type": "string",
+      "description": "CSS gradient for card header"
     },
     "revenueProofFiles": {
       "type": "array",
@@ -135,6 +183,6 @@
     }
   },
   "required": [
-    "title"
+    "softwareName"
   ]
 }

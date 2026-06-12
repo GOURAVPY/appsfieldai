@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Store, Settings, Globe, Zap, Plus, Rocket, ExternalLink, Users } from "lucide-react";
+import { Store, Settings, Globe, Zap, Plus, Rocket, ExternalLink, Users, LayoutDashboard } from "lucide-react";
 import VendorManagement from "@/components/vendor/VendorManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -121,6 +121,7 @@ export default function MarketplaceDashboard() {
                       </div>
                     )}
                     <div className="flex gap-2 flex-wrap">
+                      <Link to={`/admin-hub/${m.id}`}><Button size="sm" variant="ghost" className="h-8 text-xs bg-violet-500/10 text-violet-400 hover:bg-violet-500/20"><LayoutDashboard className="w-3 h-3 mr-1" />Admin Hub</Button></Link>
                       <Button size="sm" variant="ghost" onClick={() => { setSelectedMarketplace(m); setView("settings"); }} className="h-8 text-xs"><Settings className="w-3 h-3 mr-1" />Settings</Button>
                       <Button size="sm" variant="ghost" onClick={() => { setSelectedMarketplace(m); setView("wizard"); }} className="h-8 text-xs"><Rocket className="w-3 h-3 mr-1" />Setup</Button>
                       {m.type === "multi_vendor" && (

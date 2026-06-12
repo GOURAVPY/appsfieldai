@@ -29,6 +29,7 @@ import Pricing from '@/pages/Pricing';
 import MarketplaceDashboard from '@/pages/MarketplaceDashboard';
 import VendorRegister from '@/pages/VendorRegister';
 import VendorDashboard from '@/pages/VendorDashboard';
+import AdminHub from '@/pages/AdminHub';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
@@ -77,6 +78,7 @@ const AuthenticatedApp = () => {
           <Route path="/sell" element={<SellMySaaS />} />
           <Route path="/vendor/register" element={<VendorRegister />} />
           <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+          <Route path="/admin-hub/:marketplaceId" element={<AdminHub />} />
           <Route path="/investments" element={<MyInvestments />} />
         </Route>
       </Route>

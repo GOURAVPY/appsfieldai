@@ -1,0 +1,103 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID"
+    },
+    "customerId": {
+      "type": "string",
+      "description": "Customer user ID"
+    },
+    "customerName": {
+      "type": "string",
+      "description": "Customer name"
+    },
+    "customerEmail": {
+      "type": "string",
+      "description": "Customer email"
+    },
+    "vendorId": {
+      "type": "string",
+      "description": "Vendor ID"
+    },
+    "vendorName": {
+      "type": "string",
+      "description": "Vendor name"
+    },
+    "softwareId": {
+      "type": "string",
+      "description": "SaaS listing ID"
+    },
+    "softwareName": {
+      "type": "string",
+      "description": "Software name"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Total order amount"
+    },
+    "commissionRate": {
+      "type": "number",
+      "default": 0,
+      "description": "Applied commission percentage"
+    },
+    "commissionAmount": {
+      "type": "number",
+      "default": 0,
+      "description": "Commission amount earned by marketplace"
+    },
+    "vendorEarning": {
+      "type": "number",
+      "default": 0,
+      "description": "Vendor earning after commission"
+    },
+    "paymentGateway": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "razorpay",
+        "manual",
+        "other"
+      ],
+      "default": "stripe",
+      "description": "Payment gateway used"
+    },
+    "paymentStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+        "partial_refund"
+      ],
+      "default": "pending",
+      "description": "Payment status"
+    },
+    "orderStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "cancelled",
+        "refunded"
+      ],
+      "default": "pending",
+      "description": "Order fulfillment status"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Order creation timestamp"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "customerId",
+    "softwareId",
+    "amount"
+  ]
+}

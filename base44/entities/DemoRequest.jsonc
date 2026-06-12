@@ -1,0 +1,52 @@
+{
+  "name": "DemoRequest",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID"
+    },
+    "softwareId": {
+      "type": "string",
+      "description": "SaaS listing ID"
+    },
+    "softwareName": {
+      "type": "string",
+      "description": "Software name"
+    },
+    "customerName": {
+      "type": "string",
+      "description": "Customer name"
+    },
+    "customerEmail": {
+      "type": "string",
+      "description": "Customer email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "message": {
+      "type": "string",
+      "description": "Message / requirements"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "contacted",
+        "scheduled",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Demo request status"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "softwareId",
+    "customerName",
+    "customerEmail"
+  ]
+}

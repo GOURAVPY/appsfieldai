@@ -1,0 +1,32 @@
+{
+  "name": "SoftwareCategory",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Category name (e.g. CRM, AI, Analytics)"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly slug"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon name or emoji"
+    },
+    "sortOrder": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "name",
+    "slug"
+  ]
+}
