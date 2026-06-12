@@ -3,16 +3,18 @@ import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2, DollarSign, FileText, Users, ChevronLeft, ChevronRight, Images, CalendarCheck } from "lucide-react";
+import { ArrowLeft, Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, Building2, DollarSign, FileText, Users, ChevronLeft, ChevronRight, Images, CalendarCheck, Video, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
+import DemoRequestModal from "@/components/marketplace/DemoRequestModal";
 import QnAPanel from "@/components/marketplace/QnAPanel";
 import ChatPanel from "@/components/marketplace/ChatPanel";
 import FinancialCharts from "@/components/marketplace/FinancialCharts";
+import { toast } from "sonner";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -133,7 +135,10 @@ export default function SaaSDetail() {
   const queryClient = useQueryClient();
   const [reserveSpotListing, setReserveSpotListing] = useState(null);
   const [requestAcqListing, setRequestAcqListing] = useState(null);
+  const [demoRequestListing, setDemoRequestListing] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", content: "" });
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (authed) => {
@@ -311,6 +316,62 @@ export default function SaaSDetail() {
             </Card>
           )}
 
+          {/* Write a Review */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
+              <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><MessageSquareText className="w-4 h-4 text-yellow-400" /> Write a Review</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button key={star} onClick={() => setReviewForm({ ...reviewForm, rating: star })} className="p-1">
+                        <Star className={`w-5 h-5 ${star <= reviewForm.rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"}`} />
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    value={reviewForm.title}
+                    onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
+                    placeholder="Review title (optional)"
+                    className="w-full h-9 rounded-xl bg-secondary/50 border border-border/30 px-3 text-sm"
+                  />
+                  <textarea
+                    value={reviewForm.content}
+                    onChange={(e) => setReviewForm({ ...reviewForm, content: e.target.value })}
+                    placeholder="Share your experience..."
+                    rows={3}
+                    className="w-full rounded-xl bg-secondary/50 border border-border/30 px-3 py-2 text-sm resize-none"
+                  />
+                  <Button
+                    onClick={async () => {
+                      if (!reviewForm.content.trim()) { toast.error("Please write your review."); return; }
+                      if (!currentUser) { toast.error("Please login to write a review."); return; }
+                      setReviewSubmitting(true);
+                      await base44.entities.Review.create({
+                        marketplaceId: listing.marketplaceId,
+                        softwareId: listing.id,
+                        softwareName: listing.softwareName || listing.title,
+                        userId: currentUser.id,
+                        userName: currentUser.full_name || "Anonymous",
+                        rating: reviewForm.rating,
+                        title: reviewForm.title,
+                        content: reviewForm.content,
+                        status: "pending",
+                      });
+                      setReviewSubmitting(false);
+                      setReviewForm({ rating: 5, title: "", content: "" });
+                      toast.success("Review submitted! Awaiting approval.");
+                    }}
+                    disabled={reviewSubmitting}
+                    className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 rounded-xl h-9 text-sm text-black font-medium"
+                  >
+                    {reviewSubmitting ? "Submitting..." : "Submit Review"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           {/* Q&A Panel */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <QnAPanel listing={listing} />
@@ -410,6 +471,9 @@ export default function SaaSDetail() {
                     <Button variant="outline" className="w-full border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-xl h-10 text-sm" onClick={() => setRequestAcqListing(listing)}>
                       <Building2 className="w-4 h-4 mr-2" /> Request Acquisition
                     </Button>
+                    <Button variant="outline" className="w-full border-blue-500/30 text-blue-400 hover:bg-blue-500/10 rounded-xl h-10 text-sm" onClick={() => setDemoRequestListing(listing)}>
+                      <Video className="w-4 h-4 mr-2" /> Request Demo
+                    </Button>
                     {listing.status === "auction" && (
                       <Button variant="outline" className="w-full border-amber-500/20 text-amber-400 hover:bg-amber-500/10 rounded-xl h-10 text-sm">
                         <Gavel className="w-4 h-4 mr-2" /> Place Bid
@@ -437,6 +501,7 @@ export default function SaaSDetail() {
 
       <ReserveSpotModal listing={reserveSpotListing} open={!!reserveSpotListing} onClose={() => setReserveSpotListing(null)} />
       <RequestAcquisitionModal listing={requestAcqListing} open={!!requestAcqListing} onClose={() => setRequestAcqListing(null)} />
+      <DemoRequestModal listing={demoRequestListing} open={!!demoRequestListing} onClose={() => setDemoRequestListing(null)} />
     </div>
   );
 }

@@ -7,6 +7,8 @@ import MarketplaceFilters from "@/components/marketplace/MarketplaceFilters";
 import BuyShareModal from "@/components/marketplace/BuyShareModal";
 import FullOwnershipModal from "@/components/marketplace/FullOwnershipModal";
 import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
+import DemoRequestModal from "@/components/marketplace/DemoRequestModal";
+import { toast } from "sonner";
 
 const revenueMap = {
   "All": () => true, "Under $500": (v) => v < 500, "$500-$1,000": (v) => v >= 500 && v < 1000,
@@ -33,6 +35,27 @@ export default function Marketplace() {
   const [viewDetailListing, setViewDetailListing] = useState(null);
   const [buyShareListing, setBuyShareListing] = useState(null);
   const [buyFullListing, setBuyFullListing] = useState(null);
+  const [demoRequestListing, setDemoRequestListing] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
+
+  React.useEffect(() => {
+    base44.auth.isAuthenticated().then(async (authed) => {
+      if (authed) {
+        try { setCurrentUser(await base44.auth.me()); } catch (_) {}
+      }
+    });
+  }, []);
+
+  const { data: favs = [] } = useQuery({
+    queryKey: ["myFavs", currentUser?.id],
+    queryFn: () => base44.entities.Favorite.filter({ userId: currentUser?.id }),
+    enabled: !!currentUser?.id,
+  });
+
+  React.useEffect(() => {
+    if (favs.length > 0) setFavoriteIds(new Set(favs.map((f) => f.listingId)));
+  }, [favs]);
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["saasListings"],
@@ -66,6 +89,26 @@ export default function Marketplace() {
     queryClient.invalidateQueries({ queryKey: ["saasListings"] });
   };
 
+  const handleFavoriteToggle = async (listing) => {
+    if (!currentUser) { toast.error("Please login to save favorites"); return; }
+    const existing = favs.find((f) => f.listingId === listing.id);
+    if (existing) {
+      await base44.entities.Favorite.delete(existing.id);
+      setFavoriteIds((prev) => { const next = new Set(prev); next.delete(listing.id); return next; });
+      toast.success("Removed from favorites");
+    } else {
+      await base44.entities.Favorite.create({
+        userId: currentUser.id,
+        marketplaceId: listing.marketplaceId,
+        listingId: listing.id,
+        listingTitle: listing.softwareName || listing.title,
+      });
+      setFavoriteIds((prev) => new Set(prev).add(listing.id));
+      toast.success("Added to favorites!");
+    }
+    queryClient.invalidateQueries({ queryKey: ["myFavs", currentUser?.id] });
+  };
+
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -92,7 +135,7 @@ export default function Marketplace() {
         <>
           <div className={`grid sm:grid-cols-2 gap-4 ${gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
             {sorted.map((l, i) => (
-              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onViewDetails={setViewDetailListing} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} />
+              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onViewDetails={setViewDetailListing} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} onFavoriteToggle={handleFavoriteToggle} isFavorited={favoriteIds.has(l.id)} />
             ))}
           </div>
 
@@ -121,6 +164,11 @@ export default function Marketplace() {
         listingId={viewDetailListing?.id}
         open={!!viewDetailListing}
         onClose={() => setViewDetailListing(null)}
+      />
+      <DemoRequestModal
+        listing={demoRequestListing}
+        open={!!demoRequestListing}
+        onClose={() => setDemoRequestListing(null)}
       />
     </div>
   );

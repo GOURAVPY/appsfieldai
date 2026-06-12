@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink } from "lucide-react";
+import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 function CountdownTimer({ endDate }) {
   const target = new Date(endDate).getTime();
@@ -53,12 +55,20 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestAcquisition, onViewDetails }) {
+export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestAcquisition, onViewDetails, onFavoriteToggle, isFavorited }) {
   const navigate = useNavigate();
+  const [favLoading, setFavLoading] = React.useState(false);
   const { title, category, fullPrice, sharePrice, totalShares, soldShares, monthlyRevenue, growthRate, rating, imageGradient, status, auctionEndsAt, riskScore, aiScore } = listing;
   const isSold = status === "sold";
   const sharesLeft = totalShares - soldShares;
   const sharePercent = (soldShares / totalShares) * 100;
+
+  const handleFavToggle = async (e) => {
+    e.stopPropagation();
+    setFavLoading(true);
+    if (onFavoriteToggle) await onFavoriteToggle(listing);
+    setFavLoading(false);
+  };
 
   return (
     <motion.div
@@ -101,6 +111,14 @@ export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestA
           <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
           <span className="text-white text-[11px] font-medium">{rating}</span>
         </div>
+        <button
+          onClick={handleFavToggle}
+          className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all z-10 ${
+            isFavorited ? "bg-pink-500/30 text-pink-400" : "bg-black/40 text-white/60 hover:bg-black/60 hover:text-pink-300"
+          }`}
+        >
+          <Heart className={`w-4 h-4 ${isFavorited ? "fill-pink-400" : ""}`} />
+        </button>
       </div>
 
       <div className="p-4 space-y-3 flex-1 flex flex-col">

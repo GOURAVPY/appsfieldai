@@ -1,0 +1,27 @@
+{
+  "name": "Favorite",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace ID"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "SaaS listing ID"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Software name at time of favoriting"
+    }
+  },
+  "required": [
+    "userId",
+    "marketplaceId",
+    "listingId"
+  ]
+}

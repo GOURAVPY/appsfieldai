@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { Menu, X, LogOut, User, Store } from "lucide-react";
+import { Menu, X, LogOut, User, Store, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
@@ -19,6 +19,7 @@ export default function Topbar() {
   const navLinks = [
     ...publicNavLinks,
     { to: "/dashboard", label: "My Marketplaces" },
+    { to: "/my-account", label: "My Account", icon: ShoppingCart },
     { to: "/vendor/dashboard", label: "Vendor", icon: Store },
     ...(user?.role === "admin" || user?.role === "super_admin" ? [{ to: "/admin", label: "Admin" }] : []),
   ];

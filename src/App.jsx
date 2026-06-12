@@ -30,6 +30,7 @@ import MarketplaceDashboard from '@/pages/MarketplaceDashboard';
 import VendorRegister from '@/pages/VendorRegister';
 import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
+import CustomerDashboard from '@/pages/CustomerDashboard';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
@@ -79,6 +80,7 @@ const AuthenticatedApp = () => {
           <Route path="/vendor/register" element={<VendorRegister />} />
           <Route path="/vendor/dashboard" element={<VendorDashboard />} />
           <Route path="/admin-hub/:marketplaceId" element={<AdminHub />} />
+          <Route path="/my-account" element={<CustomerDashboard />} />
           <Route path="/investments" element={<MyInvestments />} />
         </Route>
       </Route>
