@@ -3,10 +3,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const { marketplaceId } = await req.json();
+
+    // ═══ STANDARD MIDDLEWARE: Auth + Tenant Ownership ═══
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { marketplaceId } = await req.json();
+    const marketplaces = await base44.entities.Marketplace.filter({ id: marketplaceId });
+    const marketplace = marketplaces[0];
+    if (!marketplace) return Response.json({ error: 'Marketplace not found' }, { status: 404 });
+    if (marketplace.status === 'suspended') return Response.json({ error: 'Marketplace is suspended' }, { status: 403 });
+    if (marketplace.ownerId !== user.id) return Response.json({ error: 'Forbidden — you do not own this marketplace' }, { status: 403 });
 
     const [listings, vendors, orders, payouts, demos, reviews, customers] = await Promise.all([
       base44.entities.SaaSListing.filter({ marketplaceId }),

@@ -3,11 +3,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const { vendorId, marketplaceId } = await req.json();
+
+    // ═══ STANDARD MIDDLEWARE: Auth + Tenant Access ═══
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { vendorId, marketplaceId } = await req.json();
+    const marketplaces = await base44.entities.Marketplace.filter({ id: marketplaceId });
+    const marketplace = marketplaces[0];
+    if (!marketplace) return Response.json({ error: 'Marketplace not found' }, { status: 404 });
 
+    // ── Vendor ownership ──
     const vendor = await base44.entities.Vendor.get(vendorId);
     if (!vendor || vendor.userId !== user.id) {
       return Response.json({ error: 'Vendor not found or access denied' }, { status: 403 });
@@ -34,7 +40,6 @@ Deno.serve(async (req) => {
     const totalEarnings = totalSales - totalCommission;
     const totalPaidOut = payouts.filter(p => p.status === 'paid').reduce((s, p) => s + (p.amount || 0), 0);
 
-    // Monthly breakdown
     const monthlySales = {};
     orders.filter(o => o.paymentStatus === 'paid').forEach(o => {
       const month = new Date(o.createdAt || o.created_date).toISOString().slice(0, 7);
