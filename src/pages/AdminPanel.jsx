@@ -63,9 +63,10 @@ export default function AdminPanel() {
   ];
 
   const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.title}" approved`); };
+  const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.title}" is now live on auction - 7 days`); };
   const handleReject = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.title}" rejected`); };
   const handleDelete = async (l) => { await base44.entities.SaaSListing.delete(l.id); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.title}" deleted`); };
-  const openEdit = (l) => { setEditListing(l); setEditForm({ title: l.title, category: l.category, fullPrice: l.fullPrice, sharePrice: l.sharePrice, monthlyRevenue: l.monthlyRevenue, monthlyExpenses: l.monthlyExpenses, description: l.description || "" }); };
+  const openEdit = (l) => { setEditListing(l); setEditForm({ title: l.title, category: l.category, fullPrice: l.fullPrice, sharePrice: l.sharePrice, monthlyRevenue: l.monthlyRevenue, monthlyExpenses: l.monthlyExpenses, description: l.description || "", auctionEndsAt: l.auctionEndsAt || "" }); };
   const handleEditSave = async () => {
     if (!editListing) return;
     await base44.entities.SaaSListing.update(editListing.id, { ...editForm, fullPrice: parseFloat(editForm.fullPrice) || 0, sharePrice: parseFloat(editForm.sharePrice) || 0, monthlyRevenue: parseFloat(editForm.monthlyRevenue) || 0, monthlyExpenses: parseFloat(editForm.monthlyExpenses) || 0 });
@@ -143,6 +144,7 @@ export default function AdminPanel() {
                 <div className="flex gap-1">
                   <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="text-muted-foreground hover:text-foreground h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => handleApprove(l)} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-8 text-xs"><CheckCircle className="w-3.5 h-3.5 mr-1" />Approve</Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 h-8 text-xs"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleReject(l)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 text-xs"><Ban className="w-3.5 h-3.5 mr-1" />Reject</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="text-red-400/60 hover:text-red-400 hover:bg-red-500/10 h-8 text-xs"><Trash2 className="w-3.5 h-3.5" /></Button>
                 </div>
@@ -298,7 +300,8 @@ export default function AdminPanel() {
               <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-secondary/50 flex items-center justify-center"><Store className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-sm font-medium">{l.title}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${l.fullPrice?.toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div></div>
                 <div className="flex items-center gap-2">
-                  <Badge className={`text-[10px] border ${l.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : l.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : l.status === "auction" ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{l.status}</Badge>
+                  <Badge className={`text-[10px] border ${l.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : l.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : l.status === "auction" ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{l.status}</Badge>
+                  {l.status !== "auction" && <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="h-8 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>}
                   <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="text-red-400/60 hover:text-red-400 h-8 text-xs"><Trash2 className="w-3.5 h-3.5" /></Button>
                 </div>
@@ -348,6 +351,7 @@ export default function AdminPanel() {
               <div><label className="text-xs text-muted-foreground">Monthly Expenses</label><Input type="number" value={editForm.monthlyExpenses || ""} onChange={e => setEditForm(f => ({ ...f, monthlyExpenses: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
             </div>
             <div><label className="text-xs text-muted-foreground">Description</label><Input value={editForm.description || ""} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            <div><label className="text-xs text-muted-foreground">Auction End Date (ISO)</label><Input value={editForm.auctionEndsAt || ""} onChange={e => setEditForm(f => ({ ...f, auctionEndsAt: e.target.value }))} placeholder="2026-06-20T00:00:00.000Z" className="bg-secondary/50 border-border/30 rounded-xl mt-1 text-xs" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditListing(null)} className="border-border/40 rounded-xl">Cancel</Button>
