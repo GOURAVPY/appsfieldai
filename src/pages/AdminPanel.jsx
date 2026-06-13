@@ -50,7 +50,7 @@ export default function AdminPanel() {
   const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.list("-created_date", 100) });
 
   const enrichedBids = useMemo(() => {
-    const lm = {}; allListings.forEach(l => lm[l.id] = l.softwareName || "Unknown");
+    const lm = {}; allListings.forEach(l => lm[l.id] = l.title);
     const um = {}; allUsers.forEach(u => um[u.id] = u.full_name || u.email);
     return allBids.map(b => ({ ...b, listingTitle: lm[b.listingId] || "Unknown", bidderName: um[b.userId] || "Unknown" }));
   }, [allBids, allListings, allUsers]);
@@ -58,14 +58,6 @@ export default function AdminPanel() {
   const pendingListings = allListings.filter(l => l.status === "pending");
   const auctionListings = allListings.filter(l => l.status === "auction");
   const rejectedListings = allListings.filter(l => l.status === "rejected");
-
-  const auctionListingsWithBids = useMemo(() => {
-    return auctionListings.map(l => ({
-      ...l,
-      bids: enrichedBids.filter(b => b.listingId === l.id).sort((a, b) => b.bidAmount - a.bidAmount),
-      highestBid: enrichedBids.filter(b => b.listingId === l.id).reduce((max, b) => Math.max(max, b.bidAmount), 0),
-    }));
-  }, [auctionListings, enrichedBids]);
 
   const stats = [
     { icon: Store, label: "Total Listings", value: allListings.length, color: "from-violet-500 to-purple-500" },
@@ -281,52 +273,6 @@ export default function AdminPanel() {
         </Card>
       </motion.div>
 
-      {/* Active Auctions */}
-      {auctionListingsWithBids.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }}>
-          <Card className="border-border/40 bg-card/60 backdrop-blur-xl border-amber-500/20">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base font-display flex items-center gap-2"><Gavel className="w-4 h-4 text-amber-400" />Active Auctions<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{auctionListingsWithBids.length}</Badge></CardTitle>
-            </CardHeader>
-            <CardContent className="divide-y divide-border/30">
-              {auctionListingsWithBids.map(l => (
-                <div key={l.id} className="py-3 first:pt-0 last:pb-0 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><Gavel className="w-4 h-4 text-amber-400" /></div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium">{l.softwareName || "Untitled"}</p>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] text-muted-foreground">Ends {l.auctionEndsAt ? new Date(l.auctionEndsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "N/A"}</span>
-                          {l.highestBid > 0 && <span className="text-[11px] text-amber-400 font-bold">Top: ${l.highestBid.toLocaleString()}</span>}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-7 text-[11px] text-muted-foreground hover:text-foreground"><Pencil className="w-3 h-3 mr-1" />Listing</Button>
-                    </div>
-                  </div>
-                  {l.bids.length > 0 && (
-                    <div className="ml-12 space-y-1.5">
-                      <p className="text-[10px] text-muted-foreground font-medium">Bids ({l.bids.length})</p>
-                      {l.bids.map(b => (
-                        <div key={b.id} className="flex items-center gap-2 bg-secondary/30 rounded-lg px-3 py-1.5">
-                          <span className="text-xs font-medium text-foreground flex-1 truncate">{b.bidderName}</span>
-                          <span className="text-xs font-display font-bold text-amber-400">${b.bidAmount?.toLocaleString()}</span>
-                          {b.autoBid && <Badge className="text-[8px] bg-cyan-500/10 text-cyan-400 border-cyan-500/20">Auto</Badge>}
-                          <Button size="sm" variant="ghost" onClick={() => openBidEdit(b)} className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"><Pencil className="w-3 h-3" /></Button>
-                          <Button size="sm" variant="ghost" onClick={() => handleBidDelete(b)} className="h-6 w-6 p-0 text-red-400/60 hover:text-red-400"><Trash2 className="w-3 h-3" /></Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
       {/* Transaction History */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
         <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
@@ -427,13 +373,6 @@ export default function AdminPanel() {
           <div className="space-y-3">
             {editBid && <p className="text-xs text-muted-foreground">Bidder: <span className="text-foreground">{editBid.bidderName}</span> · Listing: <span className="text-violet-400">{editBid.listingTitle}</span></p>}
             <div><label className="text-xs text-muted-foreground">Bid Amount ($)</label><Input type="number" value={editBidForm.bidAmount || ""} onChange={e => setEditBidForm(f => ({ ...f, bidAmount: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-            <div className="flex items-center gap-3 bg-secondary/30 rounded-xl p-3">
-              <label className="flex items-center gap-2 cursor-pointer text-sm">
-                <input type="checkbox" checked={editBidForm.autoBid || false} onChange={e => setEditBidForm(f => ({ ...f, autoBid: e.target.checked }))} className="rounded accent-amber-500" />
-                <span className="text-muted-foreground">Auto Bid</span>
-              </label>
-              {editBidForm.autoBid && <div className="flex-1 ml-2"><Input type="number" placeholder="Max auto-bid" value={editBidForm.maxAutoBid || ""} onChange={e => setEditBidForm(f => ({ ...f, maxAutoBid: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl text-xs h-8" /></div>}
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditBid(null)} className="border-border/40 rounded-xl">Cancel</Button>
