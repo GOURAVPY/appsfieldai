@@ -55,7 +55,7 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestAcquisition, onViewDetails, onFavoriteToggle, isFavorited }) {
+export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onViewDetails, onFavoriteToggle, isFavorited }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
   const { softwareName, category, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75 } = listing || {};
@@ -124,9 +124,12 @@ export default function SaaSCard({ listing, delay = 0, onReserveSpot, onRequestA
       </div>
 
       <div className="p-4 space-y-3 flex-1 flex flex-col">
-        {/* Category Row */}
-        <div className="flex items-center gap-1.5">
+        {/* Category + Marketplace Row */}
+        <div className="flex items-center gap-1.5 flex-wrap">
           <Badge variant="outline" className="text-[10px] border-border/40">{category}</Badge>
+          {marketplaceName && (
+            <Badge variant="secondary" className="text-[10px] bg-violet-500/10 text-violet-400 border-violet-500/20">{marketplaceName}</Badge>
+          )}
         </div>
 
         {/* Countdown for auctions */}

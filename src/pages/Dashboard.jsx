@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -34,6 +34,17 @@ export default function Dashboard() {
     queryKey: ["saasListings"],
     queryFn: () => base44.entities.SaaSListing.list(),
   });
+
+  const { data: marketplaces = [] } = useQuery({
+    queryKey: ["marketplaces"],
+    queryFn: () => base44.entities.Marketplace.list(),
+  });
+
+  const marketplaceMap = useMemo(() => {
+    const map = {};
+    marketplaces.forEach((m) => { map[m.id] = m.name; });
+    return map;
+  }, [marketplaces]);
 
   const publicListings = listings.filter((l) => l.status === "active" || l.status === "auction" || l.status === "sold");
 
@@ -199,6 +210,7 @@ export default function Dashboard() {
               <SaaSCard
                 key={l.id}
                 listing={l}
+                marketplaceName={marketplaceMap[l.marketplaceId]}
                 delay={i * 0.04}
                 onViewDetails={setViewDetailListing}
                 onReserveSpot={setReserveSpotListing}
