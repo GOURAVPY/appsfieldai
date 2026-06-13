@@ -10,6 +10,7 @@ import SaaSCard from "@/components/marketplace/SaaSCard";
 import ReserveSpotModal from "@/components/marketplace/ReserveSpotModal";
 import RequestAcquisitionModal from "@/components/marketplace/RequestAcquisitionModal";
 import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
+import DemoRequestModal from "@/components/marketplace/DemoRequestModal";
 
 const CATEGORIES = ["All Categories", "AI & ML", "CRM", "Analytics", "E-commerce", "Marketing", "Productivity", "Finance", "Developer Tools", "Design Tools"];
 const SORT_OPTIONS = ["Newest", "Oldest", "Highest Revenue", "Lowest Price", "Highest Price"];
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [viewDetailListing, setViewDetailListing] = useState(null);
   const [reserveSpotListing, setReserveSpotListing] = useState(null);
   const [requestAcqListing, setRequestAcqListing] = useState(null);
+  const [demoRequestListing, setDemoRequestListing] = useState(null);
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["saasListings"],
@@ -215,6 +217,7 @@ export default function Dashboard() {
                 onViewDetails={setViewDetailListing}
                 onReserveSpot={setReserveSpotListing}
                 onRequestAcquisition={setRequestAcqListing}
+                onRequestDemo={setDemoRequestListing}
               />
             ))}
           </div>
@@ -242,6 +245,11 @@ export default function Dashboard() {
         listingId={viewDetailListing?.id}
         open={!!viewDetailListing}
         onClose={() => setViewDetailListing(null)}
+      />
+      <DemoRequestModal
+        listing={demoRequestListing}
+        open={!!demoRequestListing}
+        onClose={() => setDemoRequestListing(null)}
       />
     </div>
   );

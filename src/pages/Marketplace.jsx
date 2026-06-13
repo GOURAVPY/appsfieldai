@@ -139,7 +139,7 @@ export default function Marketplace() {
         <>
           <div className={`grid sm:grid-cols-2 gap-4 ${gridCols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
             {sorted.map((l, i) => (
-              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onViewDetails={setViewDetailListing} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} onFavoriteToggle={handleFavoriteToggle} isFavorited={favoriteIds.has(l.id)} />
+              <SaaSCard key={l.id} listing={l} delay={i * 0.05} onViewDetails={setViewDetailListing} onBuyShare={setBuyShareListing} onBuyFullOwnership={setBuyFullListing} onRequestDemo={setDemoRequestListing} onFavoriteToggle={handleFavoriteToggle} isFavorited={favoriteIds.has(l.id)} />
             ))}
           </div>
 

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart } from "lucide-react";
+import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -55,7 +55,7 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onViewDetails, onFavoriteToggle, isFavorited }) {
+export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
   const { softwareName, category, sellerName, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75 } = listing || {};
@@ -174,6 +174,9 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
           </Button>
           <Button size="sm" variant="outline" onClick={() => onRequestAcquisition?.(listing)} disabled={isSold} className="flex-1 border-orange-500/60 text-orange-400 hover:bg-orange-500/10 rounded-lg text-[11px] h-8 disabled:opacity-40">
             Request Acquisition
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => onRequestDemo?.(listing)} className="rounded-lg text-[11px] h-8 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10">
+            <Video className="w-3 h-3" />
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)} className="rounded-lg text-[11px] h-8 px-2 text-muted-foreground hover:text-foreground">
             <ExternalLink className="w-3 h-3" />
