@@ -8,6 +8,8 @@ import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
 import PlatformOverview from "@/components/admin/PlatformOverview";
 import PlanManager from "@/components/admin/PlanManager";
+import UserManager from "@/components/admin/UserManager";
+import MarketplaceManager from "@/components/admin/MarketplaceManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,8 @@ export default function AdminPanel() {
       { id: "platform", label: "Platform Overview", icon: Globe },
       { id: "plans", label: "Subscription Plans", icon: Ticket },
     ] : []),
+    { id: "users", label: "Users", icon: Users },
+    { id: "marketplaces", label: "Marketplaces", icon: Store },
     { id: "listings", label: "Listings & Requests", icon: Layers },
   ];
 
@@ -334,6 +338,8 @@ export default function AdminPanel() {
 
       {activeTab === "platform" && <PlatformOverview />}
       {activeTab === "plans" && <PlanManager />}
+      {activeTab === "users" && <UserManager />}
+      {activeTab === "marketplaces" && <MarketplaceManager />}
       {activeTab === "listings" && listingContent}
 
       {/* Edit Listing Modal */}
