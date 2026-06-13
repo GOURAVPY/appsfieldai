@@ -10,7 +10,6 @@ import PlatformOverview from "@/components/admin/PlatformOverview";
 import PlanManager from "@/components/admin/PlanManager";
 import UserManager from "@/components/admin/UserManager";
 import MarketplaceManager from "@/components/admin/MarketplaceManager";
-import AdminAuctionsManager from "@/components/admin/AdminAuctionsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,6 @@ export default function AdminPanel() {
     { id: "users", label: "Users", icon: Users },
     { id: "marketplaces", label: "Marketplaces", icon: Store },
     { id: "listings", label: "Listings & Requests", icon: Layers },
-    { id: "auctions", label: "Live Auctions", icon: Gavel },
   ];
 
   const doCopy = (key, text) => { navigator.clipboard.writeText(text); setCopied(p => ({ ...p, [key]: true })); setTimeout(() => setCopied(p => ({ ...p, [key]: false })), 1500); };
@@ -397,7 +395,6 @@ export default function AdminPanel() {
       {activeTab === "users" && <UserManager />}
       {activeTab === "marketplaces" && <MarketplaceManager />}
       {activeTab === "listings" && listingContent}
-      {activeTab === "auctions" && <AdminAuctionsManager />}
 
       {/* Edit Listing Modal */}
       <Dialog open={!!editListing} onOpenChange={() => setEditListing(null)}>
