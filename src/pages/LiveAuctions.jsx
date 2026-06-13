@@ -70,7 +70,10 @@ export default function LiveAuctions() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {listings.map((listing, i) => {
-            const sharesLeft = listing.totalShares - listing.soldShares;
+            const totalShares = listing.totalShares || 0;
+            const soldShares = listing.soldShares || 0;
+            const sharesLeft = totalShares - soldShares;
+            const sharePercent = totalShares > 0 ? (soldShares / totalShares) * 100 : 0;
             const gradient = listing.imageGradient || IMAGE_GRADIENTS[i % IMAGE_GRADIENTS.length];
 
             return (
@@ -83,10 +86,9 @@ export default function LiveAuctions() {
                 <Card className="border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden hover:border-amber-500/30 transition-all group">
                   <div className={`h-28 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}>
                     <div className="absolute inset-0 bg-black/20" />
-                    <h3 className="relative text-white font-display font-bold text-lg px-4 text-center">{listing.title}</h3>
+                    <h3 className="relative text-white font-display font-bold text-lg px-4 text-center">{listing.softwareName || "Untitled"}</h3>
                     <div className="absolute top-3 left-3 flex items-center gap-2">
                       <Badge className="bg-amber-500/90 text-white text-[10px] border-0"><Gavel className="w-3 h-3 mr-1" /> Live</Badge>
-                      {(listing.bids?.length > 5) && <Badge className="bg-red-500/90 text-white text-[10px] border-0">Hot</Badge>}
                     </div>
                   </div>
 
@@ -94,24 +96,24 @@ export default function LiveAuctions() {
                     <div className="grid grid-cols-3 gap-2 text-center text-xs">
                       <div className="bg-secondary/40 rounded-lg p-2">
                         <p className="text-muted-foreground text-[10px]">Full Price</p>
-                        <p className="font-display font-bold text-sm">${listing.fullPrice?.toLocaleString()}</p>
+                        <p className="font-display font-bold text-sm">${((listing.sharePrice || 0) * (listing.totalShares || 0)).toLocaleString()}</p>
                       </div>
                       <div className="bg-secondary/40 rounded-lg p-2">
                         <p className="text-muted-foreground text-[10px]">Per Share</p>
-                        <p className="font-display font-bold text-sm text-cyan-400">${listing.sharePrice}</p>
+                        <p className="font-display font-bold text-sm text-cyan-400">${listing.sharePrice || 0}</p>
                       </div>
                       <div className="bg-secondary/40 rounded-lg p-2">
                         <p className="text-muted-foreground text-[10px]">Growth</p>
-                        <p className="font-display font-bold text-sm text-emerald-400">+{listing.growthRate}%</p>
+                        <p className="font-display font-bold text-sm text-emerald-400">+{listing.growthRate || 0}%</p>
                       </div>
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex justify-between text-[11px]">
                         <span className="text-muted-foreground">Shares Sold</span>
-                        <span>{listing.soldShares}/{listing.totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
+                        <span>{soldShares}/{totalShares} <span className="text-muted-foreground">({sharesLeft} left)</span></span>
                       </div>
-                      <Progress value={(listing.soldShares / listing.totalShares) * 100} className="h-1.5 [&>div]:bg-gradient-to-r [&>div]:from-amber-500 [&>div]:to-orange-500" />
+                      <Progress value={sharePercent} className="h-1.5 [&>div]:bg-gradient-to-r [&>div]:from-amber-500 [&>div]:to-orange-500" />
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
