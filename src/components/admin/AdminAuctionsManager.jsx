@@ -88,8 +88,10 @@ export default function AdminAuctionsManager() {
 
   const handleEditSave = async () => {
     if (!selectedListing) return;
+    const displayName = editForm.softwareName || selectedListing.softwareName || selectedListing.title || "Untitled";
     await base44.entities.SaaSListing.update(selectedListing.id, {
       ...editForm,
+      softwareName: displayName,
       fullPrice: parseFloat(editForm.fullPrice) || 0,
       sharePrice: parseFloat(editForm.sharePrice) || 0,
       monthlyRevenue: parseFloat(editForm.monthlyRevenue) || 0,
