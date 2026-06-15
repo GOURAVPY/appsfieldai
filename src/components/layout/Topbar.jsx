@@ -9,8 +9,6 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 const publicNavLinks = [
   { to: "/marketplace", label: "Marketplace" },
   { to: "/auctions", label: "Live Auctions" },
-  { to: "/investments", label: "Investments" },
-  { to: "/requests", label: "My Requests" },
   { to: "/pricing", label: "Pricing" },
 ];
 
@@ -19,6 +17,10 @@ export default function Topbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const navLinks = [
     ...publicNavLinks,
+    ...(isAuthenticated ? [
+      { to: "/requests", label: "My Requests" },
+      { to: "/investments", label: "Investments" },
+    ] : []),
     { to: "/dashboard", label: "My Marketplaces" },
     { to: "/my-account", label: "My Account", icon: ShoppingCart },
     { to: "/vendor/dashboard", label: "Vendor", icon: Store },
