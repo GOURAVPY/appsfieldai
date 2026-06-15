@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -24,10 +24,17 @@ export default function DemoRequestModal({ listing, open, onClose }) {
     if (currentUser?.email) setForm((f) => ({ ...f, email: currentUser.email }));
   }, [currentUser]);
 
-  if (!open) return null;
+  // Reset form when modal opens with a different listing
+  useEffect(() => {
+    if (open) {
+      setForm({ name: "", email: "", phone: "", message: "" });
+      setSubmitted(false);
+    }
+  }, [open, listing?.id]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!form.name || !form.email) { toast.error("Name and email required."); return; }
+    if (!listing?.id) { toast.error("Invalid listing. Please try again."); return; }
     setLoading(true);
     try {
       await base44.entities.DemoRequest.create({
@@ -47,7 +54,9 @@ export default function DemoRequestModal({ listing, open, onClose }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [form, listing]);
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -73,7 +82,7 @@ export default function DemoRequestModal({ listing, open, onClose }) {
               <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Your email *" type="email" className="bg-secondary/50 border-border/30 rounded-xl h-9 text-sm" />
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="Phone (optional)" className="bg-secondary/50 border-border/30 rounded-xl h-9 text-sm" />
               <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="What would you like to know? (optional)" className="bg-secondary/50 border-border/30 rounded-xl h-20 text-sm" />
-              <Button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl h-10">
+              <Button type="button" onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl h-10">
                 {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}Submit Request
               </Button>
             </div>
