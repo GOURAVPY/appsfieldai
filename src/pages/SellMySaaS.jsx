@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import AIValuationTool from "@/components/marketplace/AIValuationTool";
@@ -71,7 +72,11 @@ export default function SellMySaaS() {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(2)) return;
+    if (!validateStep(2)) {
+      toast.error("Please complete all required pricing fields before submitting.");
+      setStep(2);
+      return;
+    }
     setLoading(true);
     try {
       const user = await base44.auth.me();
@@ -112,9 +117,10 @@ export default function SellMySaaS() {
       }
 
       const listing = await base44.entities.SaaSListing.create({
-        title: form.title,
+        softwareName: form.title,
         category: form.category,
-        description: form.description,
+        shortDescription: form.description?.slice(0, 200) || "",
+        fullDescription: form.description || "",
         sellerName: form.sellerName,
         fullPrice: parseFloat(form.fullPrice) || 0,
         sharePrice: parseFloat(form.sharePrice) || 0,
@@ -125,11 +131,11 @@ export default function SellMySaaS() {
         features: form.features ? form.features.split(",").map((f) => f.trim()).filter(Boolean) : [],
         status,
         auctionEndsAt,
-        ownerUserId: user.id,
+        ownerId: user.id,
         marketplaceId: listingMarketplaceId,
         vendorId,
         revenueProofFiles: proofUrls,
-        images: productImages,
+        screenshots: productImages,
         imageGradient: "from-orange-600 to-amber-600",
       });
 
@@ -218,9 +224,14 @@ export default function SellMySaaS() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs">Category</Label>
-                  <select value={form.category} onChange={(e) => updateForm("category", e.target.value)} className="w-full h-9 rounded-xl bg-secondary/50 border border-border/30 px-3 text-sm">
-                    {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
-                  </select>
+                  <Select value={form.category} onValueChange={(v) => updateForm("category", v)}>
+                    <SelectTrigger className="w-full h-9 rounded-xl bg-secondary/50 border border-border/30">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Seller Name *</Label>
