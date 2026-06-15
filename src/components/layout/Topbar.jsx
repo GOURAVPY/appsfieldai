@@ -11,6 +11,7 @@ const publicNavLinks = [
   { to: "/auctions", label: "Live Auctions" },
   { to: "/investments", label: "Investments" },
   { to: "/requests", label: "My Requests" },
+  { to: "/pricing", label: "Pricing" },
 ];
 
 export default function Topbar() {
