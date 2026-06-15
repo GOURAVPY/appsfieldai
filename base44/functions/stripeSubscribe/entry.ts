@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
       headers: { Authorization: `Bearer ${stripeKey}`, "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         "mode": "subscription",
-        "success_url": `https://share-saas-hq.base44.app/marketplace-dashboard?session_id={CHECKOUT_SESSION_ID}`,
+        "success_url": `https://share-saas-hq.base44.app/dashboard?session_id={CHECKOUT_SESSION_ID}`,
         "cancel_url": `https://share-saas-hq.base44.app/pricing`,
         "metadata[base44_app_id]": Deno.env.get("BASE44_APP_ID") || "",
         "metadata[userId]": user.id,
