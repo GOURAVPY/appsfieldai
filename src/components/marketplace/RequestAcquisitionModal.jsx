@@ -19,6 +19,9 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
 
   useEffect(() => {
     if (open) {
+      setPhone("");
+      setNotes("");
+      setErrors({});
       setOfferAmount(listing?.fullPrice?.toString() || "");
       base44.auth.me().then((u) => {
         if (u) {
@@ -126,7 +129,7 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">Phone Number <span className="text-red-400">*</span></label>
             <Input
-              placeholder="+1 234 567 8900"
+              placeholder="Enter your phone number"
               value={phone}
               onChange={(e) => { setPhone(e.target.value); setErrors((prev) => ({ ...prev, phone: "" })); }}
               className={`bg-secondary/50 border-border/30 rounded-xl ${errors.phone ? "border-red-500/50" : ""}`}
