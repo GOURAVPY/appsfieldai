@@ -349,10 +349,17 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder={`Min $${minNextBid.toLocaleString()}`}
                     value={bidAmount}
-                    onChange={(e) => { setBidAmount(e.target.value); setErrors((p) => ({ ...p, bidAmount: "" })); }}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "" || /^\d*\.?\d{0,2}$/.test(raw)) {
+                        setBidAmount(raw);
+                        setErrors((p) => ({ ...p, bidAmount: "" }));
+                      }
+                    }}
                     className={`pl-9 bg-secondary/60 border-border/40 rounded-xl h-10 text-sm ${errors.bidAmount ? "border-red-500/50" : ""}`}
                   />
                 </div>
