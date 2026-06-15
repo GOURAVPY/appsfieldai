@@ -246,11 +246,12 @@ export default function SellMySaaS() {
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">Key Features (comma separated)</Label>
-                <Input value={form.features} onChange={(e) => updateForm("features", e.target.value)} placeholder="Lead Management, Analytics, Email Integration" className="bg-secondary/50 border-border/30 rounded-xl" />
+                <Textarea value={form.features} onChange={(e) => updateForm("features", e.target.value)} placeholder="Lead Management, Analytics, Email Integration" className="bg-secondary/50 border-border/30 rounded-xl h-20" />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">Product Image / Screenshot</Label>
                 <Input type="file" accept="image/*" onChange={(e) => setProductImageFile(e.target.files?.[0] || null)} className="bg-secondary/50 border-border/30 rounded-xl text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-orange-500/20 file:text-orange-400" />
+                {productImageFile && <p className="text-[11px] text-emerald-400">Selected: {productImageFile.name}</p>}
               </div>
               <Button onClick={() => handleNext(2)} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl">Next Step</Button>
             </CardContent>
