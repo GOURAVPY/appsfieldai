@@ -28,19 +28,24 @@ export default function DemoRequestModal({ listing, open, onClose }) {
   const handleSubmit = async () => {
     if (!form.name || !form.email) { toast.error("Name and email required."); return; }
     setLoading(true);
-    await base44.entities.DemoRequest.create({
-      marketplaceId: listing.marketplaceId,
-      softwareId: listing.id,
-      softwareName: listing.softwareName || listing.title,
-      customerName: form.name,
-      customerEmail: form.email,
-      phone: form.phone,
-      message: form.message,
-      status: "pending",
-    });
-    setLoading(false);
-    setSubmitted(true);
-    toast.success("Demo request submitted!");
+    try {
+      await base44.entities.DemoRequest.create({
+        marketplaceId: listing.marketplaceId,
+        softwareId: listing.id,
+        softwareName: listing.softwareName || listing.title,
+        customerName: form.name,
+        customerEmail: form.email,
+        phone: form.phone,
+        message: form.message,
+        status: "pending",
+      });
+      setSubmitted(true);
+      toast.success("Demo request submitted!");
+    } catch (err) {
+      toast.error(err?.message || "Failed to submit demo request. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
