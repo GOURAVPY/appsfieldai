@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, ChevronDown } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -59,19 +59,26 @@ export default function AdminPanel() {
   const pendingListings = allListings.filter(l => l.status === "pending");
   const auctionListings = allListings.filter(l => l.status === "auction");
   const rejectedListings = allListings.filter(l => l.status === "rejected");
+  const activeListings = allListings.filter(l => l.status === "active");
+  const activeUsers = allUsers.filter(u => u.role !== "super_admin");
 
   const stats = [
-    { icon: Store, label: "Total Listings", value: allListings.length, color: "from-violet-500 to-purple-500" },
-    { icon: Gavel, label: "Active Auctions", value: auctionListings.length, color: "from-amber-500 to-orange-500" },
-    { icon: Clock, label: "Pending", value: pendingListings.length, color: "from-cyan-500 to-teal-500" },
-    { icon: Ban, label: "Rejected", value: rejectedListings.length, color: "from-red-500 to-rose-500" },
+    { icon: Users, label: "Total Users", value: allUsers.length, color: "from-violet-500 to-purple-500", iconBg: "bg-violet-500/10", iconColor: "text-violet-400" },
+    { icon: Globe, label: "Active Users", value: activeUsers.length, color: "from-emerald-500 to-teal-500", iconBg: "bg-emerald-500/10", iconColor: "text-emerald-400" },
+    { icon: Store, label: "Total Listings", value: allListings.length, color: "from-cyan-500 to-blue-500", iconBg: "bg-cyan-500/10", iconColor: "text-cyan-400" },
+    { icon: Gavel, label: "Active Auctions", value: auctionListings.length, color: "from-amber-500 to-orange-500", iconBg: "bg-amber-500/10", iconColor: "text-amber-400" },
   ];
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries();
+    toast.success("Data refreshed");
+  };
 
   const handleApprove = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "active" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" approved`); };
   const handleStartAuction = async (l) => { const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); await base44.entities.SaaSListing.update(l.id, { status: "auction", auctionEndsAt: endDate }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" is now live on auction - 7 days`); };
   const handleReject = async (l) => { await base44.entities.SaaSListing.update(l.id, { status: "rejected" }); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" rejected`); };
   const handleDelete = async (l) => { await base44.entities.SaaSListing.delete(l.id); queryClient.invalidateQueries({ queryKey: ["allListings"] }); toast.success(`"${l.softwareName || "Untitled"}" deleted`); };
-  const openEdit = (l) => { setEditListing(l); setEditForm({ softwareName: l.softwareName || "", category: l.category || "", sharePrice: l.sharePrice || 0, totalShares: l.totalShares || 0, monthlyRevenue: l.monthlyRevenue || 0, monthlyExpenses: l.monthlyExpenses || 0, growthRate: l.growthRate || 0, shortDescription: l.shortDescription || "", fullDescription: l.fullDescription || "", auctionEndsAt: l.auctionEndsAt || "", status: l.status || "pending", features: l.features || [] }); };
+  const openEdit = (l) => { setEditListing(l); setEditForm({ softwareName: l.softwareName || "", category: l.category || "", sharePrice: l.sharePrice || 0, totalShares: l.totalShares || 0, monthlyRevenue: l.monthlyRevenue || 0, monthlyExpenses: l.monthlyExpenses || 0, growthRate: l.growthRate || 0, shortDescription: l.shortDescription || "", fullDescription: l.fullDescription || "", auctionEndsAt: l.auctionEndsAt || "", status: l.status || "pending", features: l.features || [], rating: l.rating || 5 }); };
   const handleEditSave = async () => {
     if (!editListing) return;
     await base44.entities.SaaSListing.update(editListing.id, { ...editForm, sharePrice: parseFloat(editForm.sharePrice) || 0, totalShares: parseInt(editForm.totalShares) || 0, monthlyRevenue: parseFloat(editForm.monthlyRevenue) || 0, monthlyExpenses: parseFloat(editForm.monthlyExpenses) || 0, growthRate: parseFloat(editForm.growthRate) || 0, rating: parseFloat(editForm.rating) || 5 });
@@ -118,36 +125,21 @@ export default function AdminPanel() {
 
   const listingContent = (
     <>
-      {/* Stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-            <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-              <CardContent className="p-5">
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3`}><s.icon className="w-5 h-5 text-white" /></div>
-                <p className="text-2xl font-display font-bold">{isLoading ? "—" : s.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
       {/* Pending Approvals */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2"><Clock className="w-4 h-4 text-amber-400" />Pending Approvals<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{pendingListings.length}</Badge></CardTitle>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Clock className="w-4 h-4 text-amber-400" />Pending Approvals<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{pendingListings.length}</Badge></CardTitle>
           </CardHeader>
-          <CardContent className="divide-y divide-border/30">
+          <CardContent className="divide-y divide-border/20">
             {pendingListings.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No pending listings</p> : pendingListings.map(l => (
               <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center"><Store className="w-4 h-4 text-violet-400" /></div>
-                  <div><p className="text-sm font-medium">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.sellerName || "Unknown"} · {l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div>
+                  <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center"><Store className="w-4 h-4 text-violet-400" /></div>
+                  <div><p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.sellerName || "Unknown"} · {l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div>
                 </div>
                 <div className="flex gap-1">
-                  <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="text-muted-foreground hover:text-foreground h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="text-muted-foreground hover:text-foreground hover:bg-secondary/60 h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => handleApprove(l)} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-8 text-xs"><CheckCircle className="w-3.5 h-3.5 mr-1" />Approve</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 h-8 text-xs"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleReject(l)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 text-xs"><Ban className="w-3.5 h-3.5 mr-1" />Reject</Button>
@@ -160,15 +152,15 @@ export default function AdminPanel() {
       </motion.div>
 
       {/* Spot Reservations */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base font-display flex items-center gap-2"><CalendarCheck className="w-4 h-4 text-violet-400" />Spot Reservations<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allReservations.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/30">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><CalendarCheck className="w-4 h-4 text-violet-400" />Spot Reservations<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allReservations.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
             {allReservations.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No reservations yet</p> : allReservations.map(r => (
               <div key={r.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium">{r.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{r.userEmail}</span>
+                    <p className="text-sm font-medium text-foreground">{r.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{r.userEmail}</span>
                     <div className="flex items-center gap-0.5 ml-1">
                       {r.userEmail && <><a href={`mailto:${r.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground"><Mail className="w-3 h-3" /></a><button onClick={() => doCopy(`re-${r.id}`, r.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground">{copied[`re-${r.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button></>}
                     </div>
@@ -195,15 +187,15 @@ export default function AdminPanel() {
       </motion.div>
 
       {/* Acquisition Requests */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base font-display flex items-center gap-2"><Building2 className="w-4 h-4 text-violet-400" />Acquisition Requests<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allAcquisitions.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/30">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Building2 className="w-4 h-4 text-violet-400" />Acquisition Requests<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allAcquisitions.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
             {allAcquisitions.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No acquisition requests yet</p> : allAcquisitions.map(a => (
               <div key={a.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium">{a.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{a.userEmail}</span>
+                    <p className="text-sm font-medium text-foreground">{a.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{a.userEmail}</span>
                     <div className="flex items-center gap-0.5 ml-1">{a.userEmail && <><a href={`mailto:${a.userEmail}`} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground"><Mail className="w-3 h-3" /></a><button onClick={() => doCopy(`ae-${a.id}`, a.userEmail)} className="p-1 rounded hover:bg-secondary/50 text-muted-foreground hover:text-foreground">{copied[`ae-${a.id}`] ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}</button></>}</div>
                   </div>
                   <p className="text-xs text-violet-400">{a.listingTitle || "Unknown Listing"}</p>
@@ -228,15 +220,15 @@ export default function AdminPanel() {
       </motion.div>
 
       {/* Bid Requests */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base font-display flex items-center gap-2"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{allBidRequests.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/30">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Bid Requests<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allBidRequests.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
             {allBidRequests.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bid requests yet</p> : allBidRequests.map(br => (
               <div key={br.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium">{br.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{br.userEmail}</span>
+                    <p className="text-sm font-medium text-foreground">{br.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{br.userEmail}</span>
                   </div>
                   <p className="text-xs text-violet-400">{br.listingTitle || "Unknown Listing"}</p>
                   <div className="flex items-center gap-3 flex-wrap">
@@ -256,13 +248,13 @@ export default function AdminPanel() {
       </motion.div>
 
       {/* All Bids */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base font-display flex items-center gap-2"><Gavel className="w-4 h-4 text-amber-400" />All Bids<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{enrichedBids.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/30">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />All Bids<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{enrichedBids.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
             {enrichedBids.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No bids yet</p> : enrichedBids.map(b => (
               <div key={b.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-2">
-                <div className="flex items-center gap-3 min-w-0 flex-1"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><Gavel className="w-4 h-4 text-amber-400" /></div><div className="min-w-0"><p className="text-sm font-medium truncate">{b.bidderName}</p><p className="text-[11px] text-muted-foreground truncate">{b.listingTitle} · {new Date(b.created_date).toLocaleDateString()}</p></div></div>
+                <div className="flex items-center gap-3 min-w-0 flex-1"><div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center"><Gavel className="w-4 h-4 text-amber-400" /></div><div className="min-w-0"><p className="text-sm font-medium truncate text-foreground">{b.bidderName}</p><p className="text-[11px] text-muted-foreground truncate">{b.listingTitle} · {new Date(b.created_date).toLocaleDateString()}</p></div></div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="text-sm font-display font-bold text-amber-400">${b.bidAmount?.toLocaleString()}</span>
                   <Button size="sm" variant="ghost" onClick={() => openBidEdit(b)} className="h-7 text-[11px] text-muted-foreground hover:text-foreground"><Pencil className="w-3 h-3" /></Button>
@@ -275,10 +267,10 @@ export default function AdminPanel() {
       </motion.div>
 
       {/* Transaction History */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base font-display flex items-center gap-2"><Receipt className="w-4 h-4 text-violet-400" />Transaction History<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allTransactions.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/30">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Receipt className="w-4 h-4 text-violet-400" />Transaction History<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allTransactions.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
             {allTransactions.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No transactions yet</p> : allTransactions.slice(0, 30).map(t => {
               const isPos = t.amount > 0;
               const tl = { share_purchase: "Share Purchase", full_ownership_purchase: "Full Ownership", deposit: "Deposit", withdrawal: "Withdrawal", dividend: "Dividend", sale_revenue: "Sale Revenue" }[t.type] || t.type;
@@ -286,7 +278,7 @@ export default function AdminPanel() {
                 <div key={t.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center"><ArrowDownRight className={`w-4 h-4 ${isPos ? "text-emerald-400" : "text-red-400"}`} /></div>
-                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium">{tl}</p>{t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}</div><div className="flex items-center gap-2 mt-0.5 flex-wrap">{t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}<Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{t.status}</Badge><span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div></div>
+                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{tl}</p>{t.userName && <p className="text-xs text-violet-400">{t.userName}</p>}</div><div className="flex items-center gap-2 mt-0.5 flex-wrap">{t.listingTitle && <span className="text-[10px] text-muted-foreground">{t.listingTitle}</span>}<Badge className={`text-[10px] border ${t.status === "completed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{t.status}</Badge><span className="text-[10px] text-muted-foreground">{new Date(t.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div></div>
                   </div>
                   <span className={`text-sm font-display font-bold shrink-0 ${isPos ? "text-emerald-400" : "text-red-400"}`}>{isPos ? "+" : "-"}${Math.abs(t.amount).toLocaleString()}</span>
                 </div>
@@ -297,13 +289,13 @@ export default function AdminPanel() {
       </motion.div>
 
       {/* All Listings */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Store className="w-4 h-4 text-violet-400" />All Listings<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px]">{allListings.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="divide-y divide-border/30">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Store className="w-4 h-4 text-violet-400" />All Listings<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allListings.length}</Badge></CardTitle></CardHeader>
+          <CardContent className="divide-y divide-border/20">
             {allListings.map(l => (
               <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-secondary/50 flex items-center justify-center"><Store className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-sm font-medium">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div></div>
+                <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-lg bg-secondary/50 flex items-center justify-center"><Store className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div></div>
                 <div className="flex items-center gap-2">
                   <Badge className={`text-[10px] border ${l.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : l.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : l.status === "auction" ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{l.status}</Badge>
                   {l.status !== "auction" && <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="h-8 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>}
@@ -325,19 +317,19 @@ export default function AdminPanel() {
   const auctionContent = (
     <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-display flex items-center gap-2"><Gavel className="w-4 h-4 text-amber-400" />Live Auctions<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">{auctionListings.length}</Badge></CardTitle>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Live Auctions<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{auctionListings.length}</Badge></CardTitle>
           </CardHeader>
-          <CardContent className="divide-y divide-border/30">
+          <CardContent className="divide-y divide-border/20">
             {auctionListings.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No active auctions</p> : auctionListings.map(l => {
               const fullVal = ((l.sharePrice || 0) * (l.totalShares || 0));
               return (
                 <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${l.imageGradient || 'from-amber-600 to-orange-600'} flex items-center justify-center`}><Gavel className="w-5 h-5 text-white" /></div>
+                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${l.imageGradient || 'from-amber-600 to-orange-600'} flex items-center justify-center`}><Gavel className="w-5 h-5 text-white" /></div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium">{l.softwareName || "Untitled"}</p>
+                      <p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p>
                       <p className="text-[11px] text-muted-foreground">{l.category} · ${fullVal.toLocaleString()} valuation · {l.soldShares || 0}/{l.totalShares || 0} shares · +{l.growthRate || 0}% growth</p>
                     </div>
                   </div>
@@ -361,69 +353,120 @@ export default function AdminPanel() {
 
   return (
     <div className="space-y-6">
+      {/* Master Admin Panel Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-600 flex items-center justify-center"><Users className="w-5 h-5 text-white" /></div>
-          <div><h1 className="text-2xl font-display font-bold">Admin Panel</h1><p className="text-sm text-muted-foreground mt-1">Manage listings and platform operations.</p></div>
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Master Admin Panel</h1>
+            <p className="text-sm text-muted-foreground mt-1">Manage users, plans, and system settings</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button onClick={handleRefresh} variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary/60 rounded-xl h-9 text-sm">
+              <RefreshCw className="w-4 h-4 mr-2" />Refresh
+            </Button>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1a1a1a] border border-border/30">
+              <Crown className="w-4 h-4 text-amber-400" />
+              <span className="text-sm text-muted-foreground">Welcome, <span className="text-foreground font-medium">{currentUser?.full_name || currentUser?.email || "Admin"}</span></span>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2 flex-wrap mt-4">
+      </motion.div>
+
+      {/* Stats Cards Row */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((s, i) => (
+          <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+            <div className="bg-[#1a1a1a] border border-border/40 rounded-2xl p-5 hover:border-border/60 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className={`w-10 h-10 rounded-xl ${s.iconBg} flex items-center justify-center`}>
+                  <s.icon className={`w-5 h-5 ${s.iconColor}`} />
+                </div>
+              </div>
+              <p className="text-3xl font-display font-bold mt-3 text-foreground">{isLoading ? "—" : s.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Secondary Navigation Bar */}
+      <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <div className="flex gap-1 flex-wrap bg-[#1a1a1a] border border-border/40 rounded-2xl p-1.5">
           {tabs.map(tab => {
             const Icon = tab.icon;
-            return <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id ? "bg-gradient-to-r from-violet-600 to-cyan-600 text-white shadow-lg" : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"}`}><Icon className="w-4 h-4" />{tab.label}</button>;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-[#d93025] text-white shadow-lg shadow-red-500/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#252525]"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+                <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+              </button>
+            );
           })}
         </div>
       </motion.div>
 
-      {activeTab === "platform" && <PlatformOverview />}
-      {activeTab === "plans" && <PlanManager />}
-      {activeTab === "users" && <UserManager />}
-      {activeTab === "marketplaces" && <MarketplaceManager />}
-      {activeTab === "listings" && listingContent}
-      {activeTab === "auctions" && auctionContent}
+      {/* Content Area */}
+      <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
+        {activeTab === "platform" && <PlatformOverview />}
+        {activeTab === "plans" && <PlanManager />}
+        {activeTab === "users" && <UserManager />}
+        {activeTab === "marketplaces" && <MarketplaceManager />}
+        {activeTab === "listings" && listingContent}
+        {activeTab === "auctions" && auctionContent}
+      </motion.div>
 
       {/* Edit Listing Modal */}
       <Dialog open={!!editListing} onOpenChange={() => setEditListing(null)}>
-        <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
-          <DialogHeader><DialogTitle className="font-display">Edit Listing</DialogTitle></DialogHeader>
+        <DialogContent className="bg-[#1a1a1a] border-border/40 max-w-md rounded-2xl">
+          <DialogHeader><DialogTitle className="font-display text-foreground">Edit Listing</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><label className="text-xs text-muted-foreground">Software Name</label><Input value={editForm.softwareName || ""} onChange={e => setEditForm(f => ({ ...f, softwareName: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            <div><label className="text-xs text-muted-foreground">Software Name</label><Input value={editForm.softwareName || ""} onChange={e => setEditForm(f => ({ ...f, softwareName: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Category</label><Input value={editForm.category || ""} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-              <div><label className="text-xs text-muted-foreground">Status</label><Input value={editForm.status || ""} onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Category</label><Input value={editForm.category || ""} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Status</label><Input value={editForm.status || ""} onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Share Price ($)</label><Input type="number" value={editForm.sharePrice || ""} onChange={e => setEditForm(f => ({ ...f, sharePrice: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-              <div><label className="text-xs text-muted-foreground">Total Shares</label><Input type="number" value={editForm.totalShares || ""} onChange={e => setEditForm(f => ({ ...f, totalShares: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Share Price ($)</label><Input type="number" value={editForm.sharePrice || ""} onChange={e => setEditForm(f => ({ ...f, sharePrice: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Total Shares</label><Input type="number" value={editForm.totalShares || ""} onChange={e => setEditForm(f => ({ ...f, totalShares: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Monthly Revenue ($)</label><Input type="number" value={editForm.monthlyRevenue || ""} onChange={e => setEditForm(f => ({ ...f, monthlyRevenue: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-              <div><label className="text-xs text-muted-foreground">Monthly Expenses ($)</label><Input type="number" value={editForm.monthlyExpenses || ""} onChange={e => setEditForm(f => ({ ...f, monthlyExpenses: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Monthly Revenue ($)</label><Input type="number" value={editForm.monthlyRevenue || ""} onChange={e => setEditForm(f => ({ ...f, monthlyRevenue: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Monthly Expenses ($)</label><Input type="number" value={editForm.monthlyExpenses || ""} onChange={e => setEditForm(f => ({ ...f, monthlyExpenses: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs text-muted-foreground">Growth Rate (%)</label><Input type="number" value={editForm.growthRate || ""} onChange={e => setEditForm(f => ({ ...f, growthRate: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-              <div><label className="text-xs text-muted-foreground">Rating</label><Input type="number" step="0.1" min="1" max="5" value={editForm.rating || ""} onChange={e => setEditForm(f => ({ ...f, rating: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Growth Rate (%)</label><Input type="number" value={editForm.growthRate || ""} onChange={e => setEditForm(f => ({ ...f, growthRate: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
+              <div><label className="text-xs text-muted-foreground">Rating</label><Input type="number" step="0.1" min="1" max="5" value={editForm.rating || ""} onChange={e => setEditForm(f => ({ ...f, rating: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
             </div>
-            <div><label className="text-xs text-muted-foreground">Short Description</label><Input value={editForm.shortDescription || ""} onChange={e => setEditForm(f => ({ ...f, shortDescription: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
-            <div><label className="text-xs text-muted-foreground">Auction End Date</label><Input type="datetime-local" value={editForm.auctionEndsAt ? new Date(editForm.auctionEndsAt).toISOString().slice(0, 16) : ""} onChange={e => setEditForm(f => ({ ...f, auctionEndsAt: e.target.value ? new Date(e.target.value).toISOString() : "" }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 text-xs" /></div>
+            <div><label className="text-xs text-muted-foreground">Short Description</label><Input value={editForm.shortDescription || ""} onChange={e => setEditForm(f => ({ ...f, shortDescription: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
+            <div><label className="text-xs text-muted-foreground">Auction End Date</label><Input type="datetime-local" value={editForm.auctionEndsAt ? new Date(editForm.auctionEndsAt).toISOString().slice(0, 16) : ""} onChange={e => setEditForm(f => ({ ...f, auctionEndsAt: e.target.value ? new Date(e.target.value).toISOString() : "" }))} className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditListing(null)} className="border-border/40 rounded-xl">Cancel</Button>
-            <Button onClick={handleEditSave} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Save Changes</Button>
+            <Button onClick={handleEditSave} className="bg-[#d93025] hover:bg-[#c62828] rounded-xl">Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit Bid Modal */}
       <Dialog open={!!editBid} onOpenChange={() => setEditBid(null)}>
-        <DialogContent className="bg-card border-border/40 max-w-sm rounded-2xl">
-          <DialogHeader><DialogTitle className="font-display flex items-center gap-2"><Gavel className="w-4 h-4 text-amber-400" />Edit Bid</DialogTitle></DialogHeader>
+        <DialogContent className="bg-[#1a1a1a] border-border/40 max-w-sm rounded-2xl">
+          <DialogHeader><DialogTitle className="font-display flex items-center gap-2 text-foreground"><Gavel className="w-4 h-4 text-amber-400" />Edit Bid</DialogTitle></DialogHeader>
           <div className="space-y-3">
             {editBid && <p className="text-xs text-muted-foreground">Bidder: <span className="text-foreground">{editBid.bidderName}</span> · Listing: <span className="text-violet-400">{editBid.listingTitle}</span></p>}
-            <div><label className="text-xs text-muted-foreground">Bid Amount ($)</label><Input type="number" value={editBidForm.bidAmount || ""} onChange={e => setEditBidForm(f => ({ ...f, bidAmount: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            <div><label className="text-xs text-muted-foreground">Bid Amount ($)</label><Input type="number" value={editBidForm.bidAmount || ""} onChange={e => setEditBidForm(f => ({ ...f, bidAmount: e.target.value }))} className="bg-[#252525] border-border/30 rounded-xl mt-1" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditBid(null)} className="border-border/40 rounded-xl">Cancel</Button>
-            <Button onClick={handleBidEditSave} className="bg-gradient-to-r from-amber-600 to-orange-600 rounded-xl">Save Bid</Button>
+            <Button onClick={handleBidEditSave} className="bg-[#d93025] hover:bg-[#c62828] rounded-xl">Save Bid</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
