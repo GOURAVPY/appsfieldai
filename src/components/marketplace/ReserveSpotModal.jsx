@@ -19,6 +19,10 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
 
   useEffect(() => {
     if (open) {
+      setPhone("");
+      setBudget("");
+      setMessage("");
+      setErrors({});
       base44.auth.me().then((u) => {
         if (u) {
           setUserName(u.full_name || "");
@@ -124,7 +128,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">Phone Number <span className="text-red-400">*</span></label>
             <Input
-              placeholder="+1 234 567 8900"
+              placeholder="Enter your phone number"
               value={phone}
               onChange={(e) => { setPhone(e.target.value); setErrors((prev) => ({ ...prev, phone: "" })); }}
               className={`bg-secondary/50 border-border/30 rounded-xl ${errors.phone ? "border-red-500/50" : ""}`}
@@ -136,7 +140,7 @@ export default function ReserveSpotModal({ listing, open, onClose }) {
             <label className="text-xs text-muted-foreground mb-1 block">Budget ($) <span className="text-red-400">*</span></label>
             <Input
               type="number"
-              placeholder="5000"
+              placeholder="Enter your budget"
               value={budget}
               onChange={(e) => { setBudget(e.target.value); setErrors((prev) => ({ ...prev, budget: "" })); }}
               className={`bg-secondary/50 border-border/30 rounded-xl ${errors.budget ? "border-red-500/50" : ""}`}
