@@ -27,7 +27,7 @@ export default function SellMySaaS() {
     title: "", category: "CRM", description: "", sellerName: "",
     fullPrice: "", sharePrice: "", totalShares: "50",
     monthlyRevenue: "", monthlyExpenses: "", growthRate: "",
-    features: "", auctionDuration: "7",
+    features: "", auctionDuration: "",
   });
 
   const { data: currentUser } = useQuery({
@@ -288,7 +288,7 @@ export default function SellMySaaS() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Auction Duration (days) *</Label>
-                  <Input type="number" value={form.auctionDuration} onChange={(e) => updateForm("auctionDuration", e.target.value)} placeholder="7" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("auctionDuration")}`} />
+                  <Input type="number" value={form.auctionDuration} onChange={(e) => updateForm("auctionDuration", e.target.value)} placeholder="e.g., 7" className={`bg-secondary/50 border-border/30 rounded-xl ${fieldError("auctionDuration")}`} />
                   {errors.auctionDuration && <p className="text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.auctionDuration}</p>}
                 </div>
               </div>
