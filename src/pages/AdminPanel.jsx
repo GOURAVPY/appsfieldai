@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -368,7 +368,46 @@ export default function AdminPanel() {
       case "users": case "invite": case "roles": case "access_logs":
         return <UserManager />;
       case "content":
-        return contentMediaContent;
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Store className="w-4 h-4 text-violet-400" />All Listings<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allListings.length}</Badge></CardTitle>
+              </CardHeader>
+              <CardContent className="divide-y divide-border/20">
+                {allListings.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No listings yet</p> : allListings.map(l => (
+                  <div key={l.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                    <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-lg bg-secondary/50 flex items-center justify-center"><Store className="w-4 h-4 text-muted-foreground" /></div><div><p className="text-sm font-medium text-foreground">{l.softwareName || "Untitled"}</p><p className="text-[11px] text-muted-foreground">{l.category} · ${((l.sharePrice || 0) * (l.totalShares || 0)).toLocaleString()} · {new Date(l.created_date).toLocaleDateString()}</p></div></div>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`text-[10px] border ${l.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : l.status === "pending" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : l.status === "auction" ? "bg-violet-500/10 text-violet-400 border-violet-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{l.status}</Badge>
+                      {l.status !== "auction" && <Button size="sm" variant="ghost" onClick={() => handleStartAuction(l)} className="h-8 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"><Gavel className="w-3.5 h-3.5 mr-1" />Auction</Button>}
+                      <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-8 text-xs"><Pencil className="w-3.5 h-3.5" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleDelete(l)} className="text-red-400/60 hover:text-red-400 h-8 text-xs"><Trash2 className="w-3.5 h-3.5" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "templates":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Layers className="w-4 h-4 text-cyan-400" />Templates</CardTitle></CardHeader>
+              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Template management coming soon.</p></CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "media":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Image className="w-4 h-4 text-pink-400" />Media Library</CardTitle></CardHeader>
+              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Media library coming soon.</p></CardContent>
+            </Card>
+          </motion.div>
+        );
       case "pending":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
