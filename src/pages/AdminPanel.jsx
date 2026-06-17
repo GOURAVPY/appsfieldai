@@ -472,6 +472,7 @@ export default function AdminPanel() {
           </motion.div>
         );
       case "dashboard":
+      case "hero_background":
         return (
           <div className="space-y-5">
             <PlatformOverview />

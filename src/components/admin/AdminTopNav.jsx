@@ -8,7 +8,7 @@ import {
   Bot, Database, Sparkles, Workflow,
   MessageSquare, AtSign, FileStack, ContactRound,
   SlidersHorizontal, CreditCard, Link, Webhook,
-  ChevronDown, Plug, MailCheck, ShoppingBag,
+  ChevronDown, Plug, MailCheck, ShoppingBag, LayoutDashboard, Palette,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -81,6 +81,14 @@ const NAV_GROUPS = [
       { id: "int_gmail",     label: "Gmail / SMTP",   icon: MailCheck },
       { id: "int_jvzoo",     label: "JVZoo",          icon: ShoppingBag },
       { id: "int_webhooks",  label: "Webhooks",       icon: Webhook },
+    ],
+  },
+  {
+    id: "dashboard_group",
+    label: "Dashboard & UI",
+    items: [
+      { id: "dashboard",       label: "Dashboard Editor",    icon: LayoutDashboard },
+      { id: "hero_background", label: "Hero Background",     icon: Palette },
     ],
   },
   {
