@@ -8,7 +8,7 @@ import {
   Bot, Database, Sparkles, Workflow,
   MessageSquare, AtSign, FileStack, ContactRound,
   SlidersHorizontal, CreditCard, Link, Webhook,
-  ChevronDown,
+  ChevronDown, Plug, MailCheck, ShoppingBag,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -70,6 +70,17 @@ const NAV_GROUPS = [
       { id: "smtp",        label: "SMTP Settings",    icon: AtSign },
       { id: "email_logs",  label: "Email Logs",       icon: FileStack },
       { id: "contact_msgs",label: "Contact Messages", icon: ContactRound },
+    ],
+  },
+  {
+    id: "integrations_group",
+    label: "Integrations",
+    items: [
+      { id: "int_stripe",    label: "Stripe",         icon: CreditCard },
+      { id: "int_razorpay",  label: "Razorpay",       icon: Plug },
+      { id: "int_gmail",     label: "Gmail / SMTP",   icon: MailCheck },
+      { id: "int_jvzoo",     label: "JVZoo",          icon: ShoppingBag },
+      { id: "int_webhooks",  label: "Webhooks",       icon: Webhook },
     ],
   },
   {

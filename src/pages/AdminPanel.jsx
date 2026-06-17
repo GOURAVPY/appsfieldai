@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -486,6 +486,121 @@ export default function AdminPanel() {
             <Card className="border-border/40 bg-[#1a1a1a]">
               <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Zap className="w-4 h-4 text-orange-400" />Integrations</CardTitle></CardHeader>
               <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Integration settings are managed via <span className="text-foreground font-medium">Admin Settings</span> and the platform dashboard.</p></CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "int_stripe":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><CreditCard className="w-4 h-4 text-emerald-400" />Stripe Integration</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center"><CreditCard className="w-4 h-4 text-emerald-400" /></div>
+                  <div><p className="text-sm font-medium text-foreground">Stripe Payments</p><p className="text-xs text-muted-foreground">Configure Stripe API keys and webhook settings</p></div>
+                  <Badge className="ml-auto bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px]">Active</Badge>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <div><label className="text-xs text-muted-foreground">Publishable Key</label><Input placeholder="pk_live_..." className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" readOnly value="pk_••••••••••••••••" /></div>
+                  <div><label className="text-xs text-muted-foreground">Secret Key</label><Input placeholder="sk_live_..." className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" readOnly value="sk_••••••••••••••••" /></div>
+                  <div><label className="text-xs text-muted-foreground">Webhook Secret</label><Input placeholder="whsec_..." className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" readOnly value="whsec_••••••••••••" /></div>
+                </div>
+                <p className="text-xs text-muted-foreground">To update Stripe keys, go to <span className="text-foreground font-medium">Admin Settings → Payment Settings</span>.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "int_razorpay":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Zap className="w-4 h-4 text-blue-400" />Razorpay Integration</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center"><Zap className="w-4 h-4 text-blue-400" /></div>
+                  <div><p className="text-sm font-medium text-foreground">Razorpay Payments</p><p className="text-xs text-muted-foreground">Accept INR and international payments via Razorpay</p></div>
+                  <Badge className="ml-auto bg-secondary text-muted-foreground border-border/30 text-[10px]">Not Connected</Badge>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <div><label className="text-xs text-muted-foreground">Key ID</label><Input placeholder="rzp_live_..." className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
+                  <div><label className="text-xs text-muted-foreground">Key Secret</label><Input type="password" placeholder="Your Razorpay secret" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
+                </div>
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 rounded-xl text-xs">Connect Razorpay</Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "int_gmail":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Mail className="w-4 h-4 text-red-400" />Gmail / SMTP Settings</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/20">
+                  <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center"><Mail className="w-4 h-4 text-red-400" /></div>
+                  <div><p className="text-sm font-medium text-foreground">Email Delivery</p><p className="text-xs text-muted-foreground">Configure Gmail OAuth or custom SMTP server</p></div>
+                  <Badge className="ml-auto bg-red-500/20 text-red-400 border-red-500/30 text-[10px]">Connected</Badge>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <div><label className="text-xs text-muted-foreground">SMTP Host</label><Input placeholder="smtp.gmail.com" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><label className="text-xs text-muted-foreground">Port</label><Input placeholder="587" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
+                    <div><label className="text-xs text-muted-foreground">Encryption</label><Input placeholder="TLS" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
+                  </div>
+                  <div><label className="text-xs text-muted-foreground">From Email</label><Input placeholder="noreply@yourdomain.com" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
+                </div>
+                <p className="text-xs text-muted-foreground">Gmail OAuth is managed via <span className="text-foreground font-medium">Admin Settings → Email Settings</span>.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "int_jvzoo":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><ShoppingBag className="w-4 h-4 text-amber-400" />JVZoo Integration</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center"><ShoppingBag className="w-4 h-4 text-amber-400" /></div>
+                  <div><p className="text-sm font-medium text-foreground">JVZoo Marketplace</p><p className="text-xs text-muted-foreground">Sync products and affiliates from JVZoo</p></div>
+                  <Badge className="ml-auto bg-secondary text-muted-foreground border-border/30 text-[10px]">Not Connected</Badge>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <div><label className="text-xs text-muted-foreground">API Key</label><Input placeholder="Your JVZoo API key" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
+                  <div><label className="text-xs text-muted-foreground">Secret Key</label><Input type="password" placeholder="Your JVZoo secret" className="bg-[#252525] border-border/30 rounded-xl mt-1 text-xs" /></div>
+                </div>
+                <Button size="sm" className="bg-amber-600 hover:bg-amber-700 rounded-xl text-xs">Connect JVZoo</Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "int_webhooks":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Webhook className="w-4 h-4 text-violet-400" />Webhooks</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-violet-500/5 border border-violet-500/20">
+                  <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center"><Webhook className="w-4 h-4 text-violet-400" /></div>
+                  <div><p className="text-sm font-medium text-foreground">Webhook Endpoints</p><p className="text-xs text-muted-foreground">Register and manage outgoing webhook URLs</p></div>
+                </div>
+                <div className="divide-y divide-border/20">
+                  {[
+                    { event: "listing.approved", url: "/api/webhooks/listing", status: "active" },
+                    { event: "order.completed",  url: "/api/webhooks/order",   status: "active" },
+                    { event: "user.registered",  url: "/api/webhooks/user",    status: "inactive" },
+                  ].map((wh, i) => (
+                    <div key={i} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                      <div>
+                        <p className="text-xs font-medium text-foreground">{wh.event}</p>
+                        <p className="text-[11px] text-muted-foreground">{wh.url}</p>
+                      </div>
+                      <Badge className={`text-[10px] ${wh.status === "active" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-secondary text-muted-foreground border-border/30"}`}>{wh.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+                <Button size="sm" variant="outline" className="border-border/40 rounded-xl text-xs w-full">+ Add Webhook Endpoint</Button>
+              </CardContent>
             </Card>
           </motion.div>
         );
