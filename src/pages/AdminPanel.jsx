@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image } from "lucide-react";
+import { Users, Store, Gavel, Clock, CheckCircle, Ban, Trash2, Pencil, Receipt, ArrowDownRight, CalendarCheck, Building2, Phone, MessageSquare, DollarSign, TrendingUp, BadgeCheck, Mail, Copy, Check, Globe, Ticket, Layers, RefreshCw, Crown, Zap, CreditCard, ShoppingBag, Webhook, Image, Bell, Settings, Smartphone } from "lucide-react";
 import DividendPanel from "@/components/admin/DividendPanel";
 import QnAManager from "@/components/admin/QnAManager";
 import ChatMonitor from "@/components/admin/ChatMonitor";
@@ -499,8 +499,80 @@ export default function AdminPanel() {
         );
       case "hooks": case "subscriptions": case "invoices": case "coupons": case "payments":
         return hooksContent;
-      case "system": case "notif_settings":
+      case "system":
         return systemContent;
+      case "app_notif":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Bell className="w-4 h-4 text-violet-400" />App Notifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">In-app notifications are delivered in real-time to users via the notification bell. Manage and view them from the <span className="text-foreground font-medium">Notifications</span> page.</p>
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Real-time</Badge>
+                  <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[11px]">Bell System Active</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "email_notif":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Mail className="w-4 h-4 text-cyan-400" />Email Notifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Transactional emails (approvals, rejections, deal updates) are sent automatically. Configure sender details in <span className="text-foreground font-medium">Admin Settings → Email Settings</span>.</p>
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Active</Badge>
+                  <Badge className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 text-[11px]">Gmail Connected</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "push_notif":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Smartphone className="w-4 h-4 text-amber-400" />Push Notifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground py-4 text-center">Push notification support coming soon.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      case "notif_settings":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
+                  <Settings className="w-4 h-4 text-muted-foreground" />Notification Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Notification preferences and triggers are configured per-event. Email and in-app notifications fire automatically on listing submissions, approvals, bid updates, and deal status changes.</p>
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[11px]">Auto-trigger On</Badge>
+                  <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[11px]">Per-event Rules</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
       case "email_settings": case "payment_settings":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
