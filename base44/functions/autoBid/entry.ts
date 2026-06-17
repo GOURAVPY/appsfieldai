@@ -4,11 +4,23 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // ═══ SECURITY: Admin/system only ═══
+    const user = await base44.auth.me();
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden — admin access required' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { data: newBid } = body;
 
     if (!newBid || !newBid.listingId) {
-      return Response.json({ message: "No bid data" });
+      return Response.json({ error: 'Missing bid data' }, { status: 400 });
+    }
+
+    // Validate listing exists and is in auction status
+    const listings = await base44.asServiceRole.entities.SaaSListing.filter({ id: newBid.listingId });
+    if (!listings.length || listings[0].status !== 'auction') {
+      return Response.json({ error: 'Invalid or inactive listing' }, { status: 400 });
     }
 
     const listingId = newBid.listingId;

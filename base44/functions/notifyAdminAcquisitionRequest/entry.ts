@@ -23,8 +23,37 @@ async function notifyAdmins(base44, type, title, message, listingId, relatedRequ
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // ═══ SECURITY: Authenticated users only ═══
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { userName, userEmail, listingTitle, offerAmount, listingId, requestId } = body;
+
+    // Validate required fields
+    if (!requestId || !listingId) {
+      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Verify the acquisition request actually exists and belongs to current user
+    const requests = await base44.asServiceRole.entities.AcquisitionRequests.filter({ id: requestId });
+    if (!requests.length) {
+      return Response.json({ error: 'Acquisition request not found' }, { status: 404 });
+    }
+
+    const request = requests[0];
+    if (request.userId !== user.id) {
+      return Response.json({ error: 'Forbidden — you can only notify for your own requests' }, { status: 403 });
+    }
+
+    // Verify the listing exists
+    const listings = await base44.asServiceRole.entities.SaaSListing.filter({ id: listingId });
+    if (!listings.length) {
+      return Response.json({ error: 'Listing not found' }, { status: 404 });
+    }
 
     const adminEmail = Deno.env.get("ADMIN_EMAIL") || "";
 
