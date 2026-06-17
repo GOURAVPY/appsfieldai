@@ -11,7 +11,7 @@ import PlanManager from "@/components/admin/PlanManager";
 import UserManager from "@/components/admin/UserManager";
 import MarketplaceManager from "@/components/admin/MarketplaceManager";
 import DashboardEditor from "@/components/admin/DashboardEditor";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminTopNav from "@/components/admin/AdminTopNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -530,17 +530,13 @@ export default function AdminPanel() {
         ))}
       </div>
 
-      {/* Sidebar + Content Layout */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Top Dropdown Nav */}
+      <AdminTopNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* Main Content */}
-        <div className="flex-1 min-w-0">
-          <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
-            {renderContent()}
-          </motion.div>
-        </div>
-      </div>
+      {/* Main Content */}
+      <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
+        {renderContent()}
+      </motion.div>
 
       {/* Edit Listing Modal */}
       <Dialog open={!!editListing} onOpenChange={() => setEditListing(null)}>
