@@ -22,6 +22,7 @@ import SellMySaaS from '@/pages/SellMySaaS';
 import AdminPanel from '@/pages/AdminPanel';
 import AdminSettings from '@/pages/AdminSettings';
 import AdminReservations from '@/pages/AdminReservations';
+import AdminAcquisitions from '@/pages/AdminAcquisitions';
 import AdminRoute from '@/components/AdminRoute';
 import NotificationsPage from '@/pages/NotificationsPage';
 import AiChatPage from '@/pages/AiChat';
@@ -96,6 +97,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
           <Route path="/admin/marketplace/reservations" element={<AdminRoute><AdminReservations /></AdminRoute>} />
+          <Route path="/admin/marketplace/acquisition-requests" element={<AdminRoute><AdminAcquisitions /></AdminRoute>} />
         </Route>
       </Route>
       {/* Redirect old /Home routes to prevent 404 */}

@@ -80,13 +80,19 @@ function StatusTimeline({ currentStatus }) {
   );
 }
 
-function RequestCard({ item, type, onCancel }) {
+function RequestCard({ item, type, onCancel, listingMap }) {
   const isSpot = type === "reserve_spot";
   const isBid = type === "bid_request";
   const amount = isSpot ? item.budget : isBid ? item.bidAmount : item.offerAmount;
   const note = isSpot ? item.message : isBid ? item.message : item.notes;
   const cfg = statusConfig[item.status] || statusConfig.pending;
   const StatusIcon = cfg.icon;
+
+  const getListingName = () => {
+    if (item.listingTitle) return item.listingTitle;
+    const listing = listingMap[item.listingId];
+    return listing?.softwareName || listing?.name || "Untitled Listing";
+  };
 
   return (
     <motion.div
@@ -116,7 +122,7 @@ function RequestCard({ item, type, onCancel }) {
               </div>
 
               <p className="text-sm font-medium text-foreground truncate mb-1.5">
-                {item.listingTitle || "Unknown Listing"}
+                {getListingName()}
               </p>
 
               <div className="flex items-center gap-3 flex-wrap text-[11px] text-muted-foreground">
@@ -223,6 +229,16 @@ export default function MyRequests() {
     queryKey: ["myBidRequests", userId],
     queryFn: () => base44.entities.BidRequests.filter({ userId }, "-created_date", 50),
     enabled: !!userId,
+  });
+
+  const { data: allListings = [] } = useQuery({
+    queryKey: ["allListings"],
+    queryFn: () => base44.entities.SaaSListing.list(),
+  });
+
+  const listingMap = {};
+  allListings.forEach((l) => {
+    listingMap[l.id] = l;
   });
 
   const handleCancelReservation = async (r) => {
@@ -359,6 +375,7 @@ export default function MyRequests() {
                   item={item}
                   type={item._type}
                   onCancel={item._type === "reserve_spot" ? handleCancelReservation : item._type === "bid_request" ? handleCancelBidRequest : handleCancelAcquisition}
+                  listingMap={listingMap}
                 />
               ))}
             </motion.div>

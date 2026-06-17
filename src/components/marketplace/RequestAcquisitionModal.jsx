@@ -57,19 +57,19 @@ export default function RequestAcquisitionModal({ listing, open, onClose }) {
         userName: userName.trim(),
         userEmail: userEmail.trim(),
         listingId: listing.id,
-        listingTitle: listing.title,
+        listingTitle: listing.softwareName || listing.title || listing.name,
         phone: phone.trim(),
         offerAmount: offer,
         notes: notes.trim(),
         requestType: "acquisition_request",
         status: "pending",
       });
-      try { await base44.functions.invoke("notifyAdminAcquisitionRequest", { userName: userName.trim(), userEmail: userEmail.trim(), listingTitle: listing.title, listingId: listing.id, requestId: request.id, phone: phone.trim(), offerAmount: offer }); } catch (_) {}
+      try { await base44.functions.invoke("notifyAdminAcquisitionRequest", { userName: userName.trim(), userEmail: userEmail.trim(), listingTitle: listing.softwareName || listing.title || listing.name, listingId: listing.id, requestId: request.id, phone: phone.trim(), offerAmount: offer }); } catch (_) {}
       try {
         await base44.entities.Notification.create({
           userId: user.id, role: "user", type: "acquisition_submitted",
           title: "Acquisition Request Submitted",
-          message: `Your acquisition request for "${listing.title}" has been submitted. The admin will review it soon.`,
+          message: `Your acquisition request for "${listing.softwareName || listing.title || listing.name}" has been submitted. The admin will review it soon.`,
           listingId: listing.id, relatedRequestId: request.id, isRead: false,
         });
       } catch (_) {}

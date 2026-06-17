@@ -14,6 +14,7 @@ import DashboardEditor from "@/components/admin/DashboardEditor";
 import AdminTopNav from "@/components/admin/AdminTopNav";
 import HookManagement from "@/components/admin/HookManagement";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
+import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -441,6 +442,12 @@ export default function AdminPanel() {
             <ReservationsManager />
           </motion.div>
         );
+      case "acquisitions":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AcquisitionsRequestsManager />
+          </motion.div>
+        );
       case "templates":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -550,30 +557,6 @@ export default function AdminPanel() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground py-4 text-center">Contact message management coming soon.</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
-      case "acquisitions":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Building2 className="w-4 h-4 text-violet-400" />Acquisition Requests<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allAcquisitions.length}</Badge></CardTitle></CardHeader>
-              <CardContent className="divide-y divide-border/20">
-                {allAcquisitions.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No acquisition requests yet</p> : allAcquisitions.map(a => (
-                  <div key={a.id} className="flex items-start justify-between py-3 gap-3">
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap"><p className="text-sm font-medium text-foreground">{a.userName || "Unknown"}</p><span className="text-xs text-muted-foreground">{a.userEmail}</span></div>
-                      <p className="text-xs text-violet-400">{a.listingTitle || "Unknown Listing"}</p>
-                      <div className="flex items-center gap-3 flex-wrap">{a.offerAmount > 0 && <span className="text-[11px] text-amber-400 flex items-center gap-1"><DollarSign className="w-3 h-3" />${a.offerAmount?.toLocaleString()}</span>}{statusBadge(a.status)}</div>
-                      {a.notes && <div className="flex items-start gap-1 text-[11px] text-muted-foreground"><MessageSquare className="w-3 h-3 mt-0.5 shrink-0" /><span className="line-clamp-2">{a.notes}</span></div>}
-                    </div>
-                    <div className="flex gap-1 shrink-0 flex-wrap justify-end">
-                      {a.status === "pending" && <><Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "approved")} className="text-emerald-400 hover:bg-emerald-500/10 h-7 text-[11px]"><CheckCircle className="w-3 h-3 mr-1" />Approve</Button><Button size="sm" variant="ghost" onClick={() => handleAcquisitionAction(a, "rejected")} className="text-red-400 hover:bg-red-500/10 h-7 text-[11px]"><Ban className="w-3 h-3 mr-1" />Reject</Button></>}
-                      <Button size="sm" variant="ghost" onClick={() => handleAcquisitionDelete(a)} className="text-red-400/50 hover:bg-red-500/10 h-7 text-[11px]"><Trash2 className="w-3 h-3" /></Button>
-                    </div>
-                  </div>
-                ))}
               </CardContent>
             </Card>
           </motion.div>
