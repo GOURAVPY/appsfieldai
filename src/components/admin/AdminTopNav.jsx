@@ -26,10 +26,11 @@ const NAV_GROUPS = [
     id: "content",
     label: "Content & Media",
     items: [
-      { id: "content",    label: "SaaS Listings",     icon: Store },
-      { id: "pending",    label: "Pending Approvals", icon: Clock },
-      { id: "templates",  label: "Templates",         icon: Layers },
-      { id: "media",      label: "Media Library",     icon: Image },
+      { id: "content",        label: "SaaS Listings",     icon: Store },
+      { id: "pending",        label: "Pending Approvals", icon: Clock },
+      { id: "reservations",   label: "Reservations",      icon: Users },
+      { id: "templates",      label: "Templates",         icon: Layers },
+      { id: "media",          label: "Media Library",     icon: Image },
     ],
   },
   {

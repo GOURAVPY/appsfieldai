@@ -21,6 +21,7 @@ import MyRequests from '@/pages/MyRequests';
 import SellMySaaS from '@/pages/SellMySaaS';
 import AdminPanel from '@/pages/AdminPanel';
 import AdminSettings from '@/pages/AdminSettings';
+import AdminReservations from '@/pages/AdminReservations';
 import AdminRoute from '@/components/AdminRoute';
 import NotificationsPage from '@/pages/NotificationsPage';
 import AiChatPage from '@/pages/AiChat';
@@ -94,11 +95,17 @@ const AuthenticatedApp = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+          <Route path="/admin/marketplace/reservations" element={<AdminRoute><AdminReservations /></AdminRoute>} />
         </Route>
       </Route>
       {/* Redirect old /Home routes to prevent 404 */}
       <Route path="/Home" element={<Navigate to="/" replace />} />
       <Route path="/home" element={<Navigate to="/" replace />} />
+      {/* Redirect old AdminPanel/AdminHub routes to /admin */}
+      <Route path="/AdminPanel" element={<Navigate to="/admin" replace />} />
+      <Route path="/adminpanel" element={<Navigate to="/admin" replace />} />
+      <Route path="/AdminHub" element={<Navigate to="/admin" replace />} />
+      <Route path="/adminhub" element={<Navigate to="/admin" replace />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
