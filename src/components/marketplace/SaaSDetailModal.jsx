@@ -104,8 +104,8 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
   const { data: listing, isLoading } = useQuery({
     queryKey: ["saasListing", listingId],
     queryFn: async () => {
-      const items = await base44.entities.SaaSListing.filter({ id: listingId });
-      return items[0] || null;
+      const all = await base44.entities.SaaSListing.list();
+      return all.find((l) => l.id === listingId) || null;
     },
     enabled: !!listingId && open,
   });
@@ -176,7 +176,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                 <div className="flex-1 h-full overflow-y-auto flex flex-col p-5 space-y-4">
                   {/* Title & Category */}
                   <div className="pr-6">
-                    <h2 className="text-lg font-display font-bold leading-snug">{listing.title}</h2>
+                    <h2 className="text-lg font-display font-bold leading-snug">{listing.softwareName || listing.title}</h2>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <Badge variant="outline" className="text-[10px] border-border/40">{listing.category}</Badge>
                       <div className="flex items-center gap-1 text-xs">
@@ -208,7 +208,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                   {/* Description */}
                   <div>
                     <p className="text-[11px] font-semibold text-muted-foreground uppercase mb-1">About this SaaS</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{listing.description || "No description provided."}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{listing.shortDescription || listing.fullDescription || listing.description || "No description provided."}</p>
                   </div>
 
                   {/* Tags */}
