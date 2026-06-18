@@ -24,6 +24,8 @@ import AdminSettings from '@/pages/AdminSettings';
 import AdminReservations from '@/pages/AdminReservations';
 import AdminAcquisitions from '@/pages/AdminAcquisitions';
 import AdminRoute from '@/components/AdminRoute';
+import AdminAnalytics from '@/components/admin/AdminAnalytics';
+import MediaLibrary from '@/components/admin/MediaLibrary';
 import NotificationsPage from '@/pages/NotificationsPage';
 import AiChatPage from '@/pages/AiChat';
 import MyInvestments from '@/pages/MyInvestments';
@@ -116,6 +118,8 @@ const AuthenticatedApp = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+          <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
+          <Route path="/admin/media-library" element={<AdminRoute><MediaLibrary /></AdminRoute>} />
           <Route path="/admin/marketplace/reservations" element={<AdminRoute><AdminReservations /></AdminRoute>} />
           <Route path="/admin/marketplace/acquisition-requests" element={<AdminRoute><AdminAcquisitions /></AdminRoute>} />
         </Route>

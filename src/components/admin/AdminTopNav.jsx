@@ -9,7 +9,7 @@ import {
   MessageSquare, AtSign, FileStack, ContactRound,
   SlidersHorizontal, CreditCard, Link, Webhook,
   ChevronDown, Plug, MailCheck, ShoppingBag, LayoutDashboard, Palette,
-  ClipboardList,
+  ClipboardList, TrendingUp,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -93,6 +93,8 @@ const NAV_GROUPS = [
     label: "Dashboard & UI",
     items: [
       { id: "dashboard",       label: "Dashboard Editor",    icon: LayoutDashboard },
+      { id: "analytics",       label: "Analytics",           icon: TrendingUp },
+      { id: "media",           label: "Media Library",       icon: Image },
       { id: "hero_background", label: "Hero Background",     icon: Palette },
     ],
   },

@@ -18,6 +18,8 @@ import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionReq
 import DemoRequestManager from "@/components/marketplace/DemoRequestManager";
 import EmailLogsViewer from "@/components/admin/EmailLogsViewer";
 import AuditLogsViewer from "@/components/admin/AuditLogsViewer";
+import MediaLibrary from "@/components/admin/MediaLibrary";
+import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import { logAdminAction } from "@/lib/auditLog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -488,10 +490,7 @@ export default function AdminPanel() {
       case "media":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-border/40 bg-[#1a1a1a]">
-              <CardHeader className="pb-3"><CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><Image className="w-4 h-4 text-pink-400" />Media Library</CardTitle></CardHeader>
-              <CardContent><p className="text-sm text-muted-foreground py-4 text-center">Media library coming soon.</p></CardContent>
-            </Card>
+            <MediaLibrary />
           </motion.div>
         );
       case "pending":
@@ -831,8 +830,13 @@ export default function AdminPanel() {
           </motion.div>
         );
       case "chat_monitor":
-      case "analytics":
         return aiContent;
+      case "analytics":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminAnalytics />
+          </motion.div>
+        );
       case "stripe_int": case "razorpay_int": case "gmail_int": case "jvzoo_int": case "webhooks_int":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
