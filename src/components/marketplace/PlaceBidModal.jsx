@@ -159,7 +159,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
         userEmail: userEmail.trim(),
         userPhone: userPhone.trim(),
         listingId: listing.id,
-        listingTitle: listing.title,
+        listingTitle: listing.softwareName || listing.title || listing.name || "",
         bidAmount: amount,
         status: "pending",
         message: message.trim(),
@@ -174,7 +174,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
             role: "admin",
             type: "listing_submitted",
             title: "New Bid Received",
-            message: `${userName.trim()} bid $${amount.toLocaleString()} on "${listing.title}"`,
+            message: `${userName.trim()} bid $${amount.toLocaleString()} on "${listing.softwareName || listing.title || listing.name}"`,
             listingId: listing.id,
             relatedRequestId: bidReq.id,
             isRead: false,
@@ -189,7 +189,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
           role: "user",
           type: "reserve_submitted",
           title: "Bid Submitted",
-          message: `Your bid of $${amount.toLocaleString()} on "${listing.title}" has been submitted. Admin will review and contact you if shortlisted.`,
+          message: `Your bid of $${amount.toLocaleString()} on "${listing.softwareName || listing.title || listing.name}" has been submitted. Admin will review and contact you if shortlisted.`,
           listingId: listing.id,
           relatedRequestId: bidReq.id,
           isRead: false,
@@ -202,8 +202,8 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
       try {
         await base44.integrations.Core.SendEmail({
           to: userEmail.trim(),
-          subject: `Bid Confirmed: $${amount.toLocaleString()} on ${listing.title}`,
-          body: `Hi ${userName.trim()},\n\nYour bid of $${amount.toLocaleString()} on "${listing.title}" has been submitted successfully.\n\nOur team will review your bid and contact you if shortlisted.\n\nThank you,\nSaaSShare Team`,
+          subject: `Bid Confirmed: $${amount.toLocaleString()} on ${listing.softwareName || listing.title || listing.name}`,
+          body: `Hi ${userName.trim()},\n\nYour bid of $${amount.toLocaleString()} on "${listing.softwareName || listing.title || listing.name}" has been submitted successfully.\n\nOur team will review your bid and contact you if shortlisted.\n\nThank you,\nSaaSShare Team`,
         });
       } catch (_) {}
 
@@ -249,7 +249,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
               </div>
               <div className="min-w-0">
                 <h2 className="font-display font-bold text-sm">Place a Bid</h2>
-                <p className="text-xs text-muted-foreground truncate">{listing.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{listing.softwareName || listing.title || listing.name}</p>
               </div>
             </div>
 
