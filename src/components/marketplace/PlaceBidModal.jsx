@@ -187,7 +187,7 @@ export default function PlaceBidModal({ listing, open, onClose, onSuccess }) {
         await base44.entities.Notification.create({
           userId,
           role: "user",
-          type: "reserve_submitted",
+          type: "bid_submitted",
           title: "Bid Submitted",
           message: `Your bid of $${amount.toLocaleString()} on "${listing.softwareName || listing.title || listing.name}" has been submitted. Admin will review and contact you if shortlisted.`,
           listingId: listing.id,
