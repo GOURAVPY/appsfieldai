@@ -43,28 +43,38 @@ export default function DemoRequestModal({ listing, open, onClose }) {
   }, [open, listing?.id]);
 
   const handleSubmit = useCallback(async () => {
-    if (!form.name || !form.email) { toast.error("Name and email required."); return; }
+    if (!form.name.trim() || !form.email.trim()) { toast.error("Name and email are required."); return; }
+    if (!form.phone.trim()) { toast.error("Phone number is required."); return; }
     if (!listing?.id) { toast.error("Invalid listing. Please try again."); return; }
     setLoading(true);
     try {
-      await base44.entities.DemoRequest.create({
-        marketplaceId: listing.marketplaceId,
-        softwareId: listing.id,
-        softwareName: listing.softwareName || listing.title,
-        customerName: form.name,
-        customerEmail: form.email,
+      await base44.entities.DemoRequests.create({
+        userId: currentUser?.id || "",
+        userName: form.name,
+        userEmail: form.email,
         phone: form.phone,
         message: form.message,
+        listingId: listing.id,
+        listingTitle: listing.softwareName || listing.title || "Untitled",
         status: "pending",
       });
+      // Admin notification (best-effort)
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: import.meta.env.VITE_ADMIN_EMAIL || "admin@saasshare.com",
+          subject: `New Demo Request: ${listing.softwareName || listing.title}`,
+          body: `New demo request from ${form.name} (${form.email}) for ${listing.softwareName || listing.title}.\nPhone: ${form.phone}\nMessage: ${form.message}`,
+        });
+      } catch (_) {}
       setSubmitted(true);
-      toast.success("Demo request submitted!");
+      toast.success("Demo request submitted successfully.");
+      setTimeout(() => onClose(), 1800);
     } catch (err) {
       toast.error(err?.message || "Failed to submit demo request. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, [form, listing]);
+  }, [form, listing, currentUser, onClose]);
 
   if (!open) return null;
 
