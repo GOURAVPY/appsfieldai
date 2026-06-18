@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
     const totalBids = events.filter(e => e.eventType === "bid_submit").length;
     const totalDemos = events.filter(e => e.eventType === "demo_request_submit").length;
     const totalRequests = totalReservations + totalAcquisitions + totalBids + totalDemos;
+    const activeListings = listings.filter(l => l.status === "active").length;
     
     const conversionRate = totalViews > 0 ? ((totalRequests / totalViews) * 100).toFixed(2) : 0;
 
@@ -62,6 +63,7 @@ Deno.serve(async (req) => {
       totalAcquisitions,
       totalBids,
       totalDemos,
+      activeListings,
       topListings,
       recentActivity,
     });

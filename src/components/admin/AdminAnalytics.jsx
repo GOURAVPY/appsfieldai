@@ -7,42 +7,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default function AdminAnalytics() {
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ["analyticsEvents"],
-    queryFn: () => base44.entities.AnalyticsEvents.list(),
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ["analyticsData"],
+    queryFn: async () => {
+      const response = await base44.functions.invoke("getAnalytics", {});
+      return response.data;
+    },
   });
 
-  const { data: listings = [] } = useQuery({
-    queryKey: ["allListings"],
-    queryFn: () => base44.entities.SaaSListing.filter({}),
-  });
-
-  // Calculate metrics
-  const totalViews = events.filter(e => e.eventType === "listing_view").length;
-  const totalReservations = events.filter(e => e.eventType === "reserve_spot_submit").length;
-  const totalAcquisitions = events.filter(e => e.eventType === "acquisition_request_submit").length;
-  const totalBids = events.filter(e => e.eventType === "bid_submit").length;
-  const totalDemos = events.filter(e => e.eventType === "demo_request_submit").length;
-  const totalRequests = totalReservations + totalAcquisitions + totalBids + totalDemos;
-  const conversionRate = totalViews > 0 ? ((totalRequests / totalViews) * 100).toFixed(2) : 0;
-
-  // Top listings
-  const listingViews = {};
-  events.filter(e => e.eventType === "listing_view" && e.listingId).forEach(e => {
-    listingViews[e.listingId] = (listingViews[e.listingId] || 0) + 1;
-  });
-  const topListings = Object.entries(listingViews)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([listingId, views]) => {
-      const listing = listings.find(l => l.id === listingId);
-      return { listingId, title: listing?.softwareName || "Unknown", views };
-    });
-
-  // Recent events
-  const recentEvents = events
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 10);
+  const totalViews = analytics?.totalViews || 0;
+  const totalReservations = analytics?.totalReservations || 0;
+  const totalAcquisitions = analytics?.totalAcquisitions || 0;
+  const totalBids = analytics?.totalBids || 0;
+  const totalDemos = analytics?.totalDemos || 0;
+  const totalRequests = analytics?.totalRequests || 0;
+  const conversionRate = analytics?.conversionRate || 0;
+  const activeListings = analytics?.activeListings || 0;
+  const topListings = analytics?.topListings || [];
+  const recentActivity = analytics?.recentActivity || [];
 
   const getEventIcon = (type) => {
     const icons = { listing_view: "👁️", reserve_spot_submit: "🎯", acquisition_request_submit: "💰", bid_submit: "📈", demo_request_submit: "📅", admin_approve: "✅", admin_reject: "❌" };
@@ -75,7 +57,7 @@ export default function AdminAnalytics() {
           { label: "Total Views", value: totalViews, icon: Eye, color: "blue" },
           { label: "Total Requests", value: totalRequests, icon: ShoppingCart, color: "violet" },
           { label: "Conversion Rate", value: `${conversionRate}%`, icon: TrendingUp, color: "emerald" },
-          { label: "Active Listings", value: listings.filter(l => l.status === "active").length, icon: Users, color: "amber" },
+          { label: "Active Listings", value: analytics?.activeListings || 0, icon: Users, color: "amber" },
         ].map((metric, i) => (
           <motion.div key={metric.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
             <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
@@ -151,11 +133,11 @@ export default function AdminAnalytics() {
         <CardContent>
           {isLoading ? (
             <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
-          ) : recentEvents.length === 0 ? (
+          ) : recentActivity.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No recent activity</p>
           ) : (
             <div className="space-y-2">
-              {recentEvents.map((event, i) => (
+              {recentActivity.map((event, i) => (
                 <motion.div key={event.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/30">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-lg ${getEventColor(event.eventType)}`}>
                     {getEventIcon(event.eventType)}
@@ -164,7 +146,7 @@ export default function AdminAnalytics() {
                     <p className="text-sm font-medium">{event.eventType.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {new Date(event.createdAt).toLocaleString()}
-                      {event.listingId && ` • ${listings.find(l => l.id === event.listingId)?.softwareName || "Listing"}`}
+                      {event.listingId && ` • ${event.listingTitle || "Listing"}`}
                     </p>
                   </div>
                 </motion.div>

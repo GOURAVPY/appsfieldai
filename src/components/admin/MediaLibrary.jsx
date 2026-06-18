@@ -28,19 +28,19 @@ export default function MediaLibrary() {
 
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.entities.MediaLibrary.create({
-        userId: currentUser.id,
-        fileName: file.name,
-        fileUrl: file_url,
-        fileType: file.type.startsWith("image/") ? "image" : "file",
-        source: "upload",
-        createdAt: new Date().toISOString(),
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/functions/uploadMedia", {
+        method: "POST",
+        body: formData,
       });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Upload failed");
+      
       queryClient.invalidateQueries({ queryKey: ["mediaLibrary"] });
       toast.success("File uploaded successfully");
     } catch (err) {
-      toast.error("Failed to upload file");
+      toast.error(err.message || "Failed to upload file");
     }
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
