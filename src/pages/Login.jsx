@@ -33,10 +33,10 @@ export default function Login() {
       }).catch(() => {});
       toast({ title: "Welcome back!", description: "Login successful. Redirecting..." });
       
-      // Redirect to intended page or default to /dashboard
+      // Redirect to intended page or default to / (Dashboard with marketplace)
       const urlParams = new URLSearchParams(window.location.search);
       const from = urlParams.get("from");
-      const redirectUrl = from ? decodeURIComponent(from) : "/dashboard";
+      const redirectUrl = from ? decodeURIComponent(from) : "/";
       setTimeout(() => { window.location.href = redirectUrl; }, 600);
     } catch (err) {
       const msg = err.message || "";
@@ -51,10 +51,10 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    // Redirect to /dashboard after login, or preserve the 'from' param
+    // Redirect to / (Dashboard) after login, or preserve the 'from' param
     const urlParams = new URLSearchParams(window.location.search);
     const from = urlParams.get("from");
-    const redirectUrl = from ? decodeURIComponent(from) : "/dashboard";
+    const redirectUrl = from ? decodeURIComponent(from) : "/";
     base44.auth.loginWithProvider("google", redirectUrl);
   };
 
