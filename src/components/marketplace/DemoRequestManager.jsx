@@ -27,13 +27,38 @@ export default function DemoRequestManager({ marketplaceId, onStatusChange }) {
     staleTime: 0,
   });
 
+  const notifTypeMap = {
+    contacted: { type: "request_contacted", title: "Demo Request Update", msg: (t) => `Your demo request for "${t}" has been reviewed — we'll be in touch soon.` },
+    completed: { type: "request_approved",  title: "Demo Request Approved", msg: (t) => `Your demo request for "${t}" has been approved!` },
+    cancelled: { type: "request_cancelled", title: "Demo Request Cancelled", msg: (t) => `Your demo request for "${t}" has been cancelled.` },
+  };
+
   const handleStatus = async (req, status) => {
     setActionLoading(`${req.id}-${status}`);
     try {
       await base44.entities.DemoRequests.update(req.id, { status });
       queryClient.invalidateQueries({ queryKey: ["demoRequests"] });
       queryClient.invalidateQueries({ queryKey: ["myDemoRequests"] });
-      if (onStatusChange) await onStatusChange(req, status);
+
+      // Send user notification if we have a userId
+      const notifCfg = notifTypeMap[status];
+      if (notifCfg && req.userId) {
+        try {
+          await base44.functions.invoke("createAppNotification", {
+            userId: req.userId,
+            role: "user",
+            type: notifCfg.type,
+            title: notifCfg.title,
+            message: notifCfg.msg(req.listingTitle || "your listing"),
+            listingId: req.listingId || "",
+            relatedRequestId: req.id,
+          });
+        } catch (e) {
+          console.error("Notification failed:", e);
+        }
+      }
+
+      if (onStatusChange) onStatusChange(req, status);
       toast.success(`Demo request marked as ${status}.`);
     } catch (err) {
       toast.error("Failed to update status.");

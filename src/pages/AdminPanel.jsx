@@ -462,18 +462,7 @@ export default function AdminPanel() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-border/40 bg-[#1a1a1a]">
               <CardContent className="pt-5">
-                <DemoRequestManager onStatusChange={async (req, status) => {
-                  try {
-                    await base44.functions.invoke("createAppNotification", {
-                      userId: req.userId,
-                      type: status === "completed" ? "request_approved" : status === "cancelled" ? "request_cancelled" : "request_contacted",
-                      title: status === "completed" ? "Demo Request Approved" : status === "cancelled" ? "Demo Request Cancelled" : "Demo Request Update",
-                      message: `Your demo request for "${req.listingTitle}" has been marked as ${status}.`,
-                      listingId: req.listingId,
-                      relatedRequestId: req.id,
-                    });
-                  } catch (e) {}
-                }} />
+                <DemoRequestManager />
               </CardContent>
             </Card>
           </motion.div>
