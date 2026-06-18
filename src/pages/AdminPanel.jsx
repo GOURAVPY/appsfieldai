@@ -36,13 +36,13 @@ export default function AdminPanel() {
 
   const doCopy = (key, text) => { navigator.clipboard.writeText(text); setCopied(p => ({ ...p, [key]: true })); setTimeout(() => setCopied(p => ({ ...p, [key]: false })), 1500); };
 
-  const { data: allListings = [], isLoading } = useQuery({ queryKey: ["allListings"], queryFn: () => base44.entities.SaaSListing.list(undefined, 500) });
+  const { data: allListings = [], isLoading } = useQuery({ queryKey: ["allListings"], queryFn: () => base44.entities.SaaSListing.filter({}, undefined, 500), staleTime: 0 });
   const { data: allBids = [] } = useQuery({ queryKey: ["allBids"], queryFn: () => base44.entities.Bid.filter({}, ["-created_date"], 100) });
   const { data: allUsers = [] } = useQuery({ queryKey: ["allUsers"], queryFn: () => base44.entities.User.list() });
   const { data: allTransactions = [] } = useQuery({ queryKey: ["allTransactions"], queryFn: () => base44.entities.Transaction.filter({}, ["-created_date"], 100) });
   const { data: allReservations = [] } = useQuery({ queryKey: ["allReservations"], queryFn: () => base44.entities.DealReservations.list("-created_date", 100) });
   const { data: allAcquisitions = [] } = useQuery({ queryKey: ["allAcquisitions"], queryFn: () => base44.entities.AcquisitionRequests.list("-created_date", 100) });
-  const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.list("-created_date", 500) });
+  const { data: allBidRequests = [] } = useQuery({ queryKey: ["allBidRequests"], queryFn: () => base44.entities.BidRequests.filter({}, ["-created_date"], 500), staleTime: 0 });
 
   const enrichedBids = useMemo(() => {
     const lm = {}; allListings.forEach(l => lm[l.id] = l.softwareName || "Untitled");
