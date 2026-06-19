@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const links = ["Marketplace", "How It Works", "Calculator", "Dashboard"];
 
   return (
@@ -29,8 +31,8 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-muted-foreground">Sign In</Button>
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full px-5">
+            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/login")}>Sign In</Button>
+            <Button size="sm" onClick={() => navigate("/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full px-5">
               Get Started
             </Button>
           </div>
@@ -55,7 +57,7 @@ export default function Navbar() {
                   {l}
                 </a>
               ))}
-              <Button className="w-full bg-primary hover:bg-primary/90 rounded-full mt-2">Get Started</Button>
+              <Button onClick={() => { setOpen(false); navigate("/login"); }} className="w-full bg-primary hover:bg-primary/90 rounded-full mt-2">Get Started</Button>
             </div>
           </motion.div>
         )}
