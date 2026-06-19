@@ -41,6 +41,7 @@ import StorePage from '@/pages/StorePage';
 import StoreCustomPage from '@/pages/StoreCustomPage';
 import { getStoreKeyFromHost, getCustomDomainFromHost } from '@/lib/storeHost';
 import { PageLoader } from '@/components/Loader';
+import Home from '@/pages/Home';
 // Add page imports here
 
 // When the app is served from a customer store subdomain (wildcard DNS),
@@ -89,6 +90,8 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Global landing page — public, no app chrome */}
+      <Route path="/global" element={<Home />} />
       {/* Public store pages — accessible without login, no app chrome */}
       <Route path="/store/:slug" element={<StorePage />} />
       <Route path="/store/:slug/page/:pageSlug" element={<StoreCustomPage />} />
