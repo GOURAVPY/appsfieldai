@@ -95,7 +95,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
     await base44.entities.Marketplace.update(marketplace.id, { subdomain: slug });
     onUpdate?.();
     setSaving(false);
-    toast.success(`Subdomain saved: ${slug}.${PLATFORM_DOMAIN}`);
+    toast.success(`Store URL saved: ${PLATFORM_DOMAIN}/store/${slug}`);
   };
 
   const handleConnectDomain = async () => {
@@ -131,8 +131,8 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   };
 
   const subLabel = subdomain || marketplace?.slug;
-  // The subdomain is the real, live default store address (wildcard DNS is configured).
-  const subdomainUrl = `https://${subLabel}.${PLATFORM_DOMAIN}`;
+  // Path-based store URL on the main app domain — always live, no DNS needed.
+  const storeUrl = `https://${PLATFORM_DOMAIN}/store/${subLabel}`;
   const recordHost = domain ? (isRoot ? "@" : domain.split(".")[0]) : "";
   // Relative TXT host (relative to the domain's DNS zone): "@"/sub label only, no domain repeated.
   const txtHost = domain ? (isRoot ? `_${txtKey}-verify` : `_${txtKey}-verify.${domain.split(".")[0]}`) : "";
@@ -151,32 +151,32 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
         </span>
       </div>
 
-      {/* Platform Subdomain */}
+      {/* Store URL (path-based on the main domain) */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card/60 backdrop-blur-xl border border-border/40 rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-3">
           <Globe className="w-5 h-5 text-orange-400" />
-          <h3 className="font-display font-semibold text-base">Free Subdomain</h3>
-          <Badge variant="secondary" className="text-[9px]">Instant</Badge>
+          <h3 className="font-display font-semibold text-base">Your Store URL</h3>
+          <Badge variant="secondary" className="text-[9px]">Live now</Badge>
         </div>
-        <p className="text-xs text-muted-foreground mb-1">Every store gets a free subdomain — no DNS setup needed.</p>
-        <p className="text-[11px] text-muted-foreground mb-4">Example: <code className="font-mono text-orange-400/80">mystore.{PLATFORM_DOMAIN}</code></p>
+        <p className="text-xs text-muted-foreground mb-1">Your store is live on the main domain — no DNS setup needed.</p>
+        <p className="text-[11px] text-muted-foreground mb-4">Choose your store name (the last part of the URL).</p>
         <div className="flex gap-2">
           <div className="flex-1 relative">
-            <Input value={subdomain} onChange={e => setSubdomain(e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl pr-28" placeholder="mystore" />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">.{PLATFORM_DOMAIN}</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">{PLATFORM_DOMAIN}/store/</span>
+            <Input value={subdomain} onChange={e => setSubdomain(e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl" style={{ paddingLeft: `${PLATFORM_DOMAIN.length * 7 + 56}px` }} placeholder="mystore" />
           </div>
           <Button onClick={handleSaveSubdomain} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 rounded-xl gap-1.5"><Globe className="w-4 h-4" />Save</Button>
         </div>
-        {subdomain && (
+        {subLabel && (
           <div className="mt-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 space-y-2">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <a href={subdomainUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-400 hover:underline truncate">{subdomainUrl}</a>
+              <a href={storeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-400 hover:underline truncate">{storeUrl}</a>
               <span className="ml-auto text-[9px] text-emerald-400/60 shrink-0">Live now</span>
             </div>
             <p className="text-[10px] text-muted-foreground flex items-start gap-1.5">
               <Globe className="w-3 h-3 mt-0.5 shrink-0" />
-              This is your store's default address — live instantly via wildcard DNS, no setup needed.
+              This is your store's live address. Want it on your own domain? Connect a custom domain below.
             </p>
           </div>
         )}

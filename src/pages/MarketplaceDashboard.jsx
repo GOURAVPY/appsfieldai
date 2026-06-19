@@ -29,10 +29,10 @@ export default function MarketplaceDashboard() {
     queryFn: () => base44.functions.invoke("getPlatformDomain", {}).then(r => r.data?.platformDomain || ""),
   });
 
-  // The store's live URL: real subdomain when the platform domain is known, else the in-app path.
+  // The store's live URL: path-based on the main domain — always works, no DNS needed.
   const storeUrl = (m) => {
     const key = m.subdomain || m.slug;
-    return platformDomain ? `https://${key}.${platformDomain}` : `/store/${key}`;
+    return platformDomain ? `https://${platformDomain}/store/${key}` : `/store/${key}`;
   };
 
   if (view === "wizard") {
@@ -81,7 +81,7 @@ export default function MarketplaceDashboard() {
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-600 flex items-center justify-center"><Store className="w-5 h-5 text-white" /></div>
                         <div>
                           <CardTitle className="text-base font-display">{m.name}</CardTitle>
-                          <p className="text-[11px] text-muted-foreground">{m.subdomain || m.slug}{platformDomain ? `.${platformDomain}` : ""}</p>
+                          <p className="text-[11px] text-muted-foreground">{platformDomain || "app"}/store/{m.subdomain || m.slug}</p>
                         </div>
                       </div>
                       <div className="flex gap-1">
