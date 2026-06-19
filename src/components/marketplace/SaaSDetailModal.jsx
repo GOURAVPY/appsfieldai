@@ -97,7 +97,14 @@ function ImageSlider({ images }) {
   );
 }
 
-export default function SaaSDetailModal({ listingId, open, onClose }) {
+export default function SaaSDetailModal({ listingId, open, onClose, requireAuth }) {
+  // requireAuth (optional): called before buy/reserve. Return true if allowed to proceed,
+  // false to block (e.g. store visitor must log in first — caller opens its auth modal).
+  const guard = (action) => () => {
+    if (requireAuth && !requireAuth()) return;
+    action();
+  };
+
   const queryClient = useQueryClient();
   const [reserveSpotListing, setReserveSpotListing] = useState(null);
   const [requestAcqListing, setRequestAcqListing] = useState(null);
@@ -297,7 +304,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                     <div className="space-y-2 pt-1">
                       <Button
                         className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl h-9 font-semibold text-sm text-white border-0"
-                        onClick={() => setBuySpotListing(listing)}
+                        onClick={guard(() => setBuySpotListing(listing))}
                         disabled={sharesLeft <= 0}
                       >
                         {sharesLeft <= 0 ? "All Spots Filled" : `Buy Spot — $${listing.sharePrice}`}
@@ -305,7 +312,7 @@ export default function SaaSDetailModal({ listingId, open, onClose }) {
                       <Button
                         variant="outline"
                         className="w-full border-orange-500/40 text-orange-400 hover:bg-orange-500/10 rounded-xl h-9 text-sm"
-                        onClick={() => setReserveSpotListing(listing)}
+                        onClick={guard(() => setReserveSpotListing(listing))}
                       >
                         <CalendarCheck className="w-4 h-4 mr-1.5" /> Reserve Spot
                       </Button>

@@ -143,6 +143,12 @@ export default function StorePage() {
         listingId={viewDetailListing?.id}
         open={!!viewDetailListing}
         onClose={() => setViewDetailListing(null)}
+        requireAuth={() => {
+          if (customer) return true;
+          // Visitor must log in / sign up before buying or reserving a spot.
+          setAuthModal({ open: true, mode: "login" });
+          return false;
+        }}
       />
 
       <StoreAuthModal
