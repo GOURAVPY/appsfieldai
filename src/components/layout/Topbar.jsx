@@ -15,14 +15,12 @@ const mainNavLinks = [
 
 const profileMenuItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/marketplace", label: "Marketplace", icon: Store },
   { to: "/auctions", label: "Live Auctions", icon: Gavel },
-  { to: "/pricing", label: "Pricing", icon: CreditCard },
   { to: "/requests", label: "My Requests", icon: ClipboardList },
   { to: "/investments", label: "Investments", icon: TrendingUp },
   { to: "/dashboard", label: "My Marketplaces", icon: Building2 },
   { to: "/my-account", label: "My Account", icon: ShoppingCart },
-  { to: "/vendor/dashboard", label: "Vendor Dashboard", icon: Settings },
+  { to: "/vendor/dashboard", label: "Vendor Management", icon: Settings },
 ];
 
 export default function Topbar() {

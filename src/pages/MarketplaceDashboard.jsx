@@ -2,20 +2,17 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
-import { Store, Settings, Globe, Zap, Plus, Rocket, ExternalLink, Users, LayoutDashboard } from "lucide-react";
-import VendorManagement from "@/components/vendor/VendorManagement";
+import { Store, Zap, Rocket, ExternalLink, LayoutDashboard, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import SetupWizard from "@/components/marketplace/SetupWizard";
-import MarketplaceSettings from "@/components/marketplace/MarketplaceSettings";
+import MyMarketplaceHub from "@/components/marketplace/MyMarketplaceHub";
 
 export default function MarketplaceDashboard() {
   const queryClient = useQueryClient();
   const [view, setView] = useState("list");
   const [selectedMarketplace, setSelectedMarketplace] = useState(null);
-  const [vendorMgmtMarketplaceId, setVendorMgmtMarketplaceId] = useState(null);
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const { data: marketplaces = [], isLoading } = useQuery({
@@ -36,27 +33,9 @@ export default function MarketplaceDashboard() {
     );
   }
 
-  if (view === "settings" && selectedMarketplace) {
+  if (view === "hub" && selectedMarketplace) {
     return (
-      <div className="p-6">
-        <MarketplaceSettings marketplace={selectedMarketplace} onBack={() => { setView("list"); setSelectedMarketplace(null); }} />
-      </div>
-    );
-  }
-
-  if (view === "vendors" && vendorMgmtMarketplaceId) {
-    return (
-      <div className="p-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
-            <Button variant="ghost" size="icon" onClick={() => { setView("list"); setVendorMgmtMarketplaceId(null); }} className="rounded-xl">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            </Button>
-            <h2 className="text-xl font-display font-bold">Vendor Management</h2>
-          </div>
-          <VendorManagement marketplaceId={vendorMgmtMarketplaceId} />
-        </div>
-      </div>
+      <MyMarketplaceHub marketplace={selectedMarketplace} onBack={() => { setView("list"); setSelectedMarketplace(null); }} />
     );
   }
 
@@ -67,12 +46,7 @@ export default function MarketplaceDashboard() {
           <h1 className="text-2xl font-display font-bold">My Marketplaces</h1>
           <p className="text-sm text-muted-foreground mt-1">Build and manage your SaaS marketplace sites.</p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/pricing">
-            <Button variant="outline" className="border-border/40 rounded-xl gap-1.5"><Zap className="w-4 h-4" /> Plans</Button>
-          </Link>
-          <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5"><Rocket className="w-4 h-4" /> Setup Wizard</Button>
-        </div>
+        <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5"><Rocket className="w-4 h-4" /> New Marketplace</Button>
       </motion.div>
 
       {isLoading ? (
@@ -82,10 +56,7 @@ export default function MarketplaceDashboard() {
           <div className="w-20 h-20 rounded-2xl bg-violet-500/10 flex items-center justify-center mx-auto mb-4"><Store className="w-10 h-10 text-violet-400" /></div>
           <h2 className="text-xl font-display font-semibold">Launch Your First Marketplace</h2>
           <p className="text-sm text-muted-foreground mt-2 mb-6 max-w-md mx-auto">Create your own branded SaaS marketplace in minutes. Choose a plan, pick a template, and start listing.</p>
-          <div className="flex gap-3 justify-center">
-            <Link to="/pricing"><Button variant="outline" className="border-border/40 rounded-xl"><Zap className="w-4 h-4 mr-1.5" />View Plans</Button></Link>
-            <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl"><Rocket className="w-4 h-4 mr-1.5" />Launch Setup Wizard</Button>
-          </div>
+          <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl"><Rocket className="w-4 h-4 mr-1.5" />Create Your First Marketplace</Button>
         </motion.div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -121,13 +92,8 @@ export default function MarketplaceDashboard() {
                       </div>
                     )}
                     <div className="flex gap-2 flex-wrap">
-                      <Link to={`/admin-hub/${m.id}`}><Button size="sm" variant="ghost" className="h-8 text-xs bg-violet-500/10 text-violet-400 hover:bg-violet-500/20"><LayoutDashboard className="w-3 h-3 mr-1" />Admin Hub</Button></Link>
-                      <Button size="sm" variant="ghost" onClick={() => { setSelectedMarketplace(m); setView("settings"); }} className="h-8 text-xs"><Settings className="w-3 h-3 mr-1" />Settings</Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setSelectedMarketplace(m); setView("wizard"); }} className="h-8 text-xs"><Rocket className="w-3 h-3 mr-1" />Setup</Button>
-                      {m.type === "multi_vendor" && (
-                        <Button size="sm" variant="ghost" onClick={() => { setVendorMgmtMarketplaceId(m.id); setView("vendors"); }} className="h-8 text-xs"><Users className="w-3 h-3 mr-1" />Vendors</Button>
-                      )}
-                      <Button size="sm" variant="ghost" onClick={() => window.open(`https://${m.subdomain || m.slug}.yourplatform.com`, "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
+                      <Button size="sm" onClick={() => { setSelectedMarketplace(m); setView("hub"); }} className="h-8 text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 hover:from-orange-600 hover:to-amber-600"><LayoutDashboard className="w-3 h-3 mr-1" />Manage</Button>
+                      <Button size="sm" variant="ghost" onClick={() => window.open(`https://${m.subdomain || m.slug}.saasshare.app`, "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
                     </div>
                   </CardContent>
                 </Card>

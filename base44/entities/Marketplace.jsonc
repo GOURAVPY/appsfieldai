@@ -46,6 +46,11 @@
       "default": "USD",
       "description": "Currency code (e.g. USD, INR, EUR)"
     },
+    "language": {
+      "type": "string",
+      "default": "English",
+      "description": "Store language"
+    },
     "timezone": {
       "type": "string",
       "default": "UTC",
@@ -54,6 +59,10 @@
     "supportEmail": {
       "type": "string",
       "description": "Support contact email"
+    },
+    "storeLink": {
+      "type": "string",
+      "description": "Public store URL"
     },
     "subdomain": {
       "type": "string",
@@ -71,8 +80,7 @@
         "verified",
         "failed"
       ],
-      "default": "pending",
-      "description": "Domain verification status"
+      "default": "pending"
     },
     "sslStatus": {
       "type": "string",
@@ -81,17 +89,14 @@
         "active",
         "failed"
       ],
-      "default": "pending",
-      "description": "SSL certificate status"
+      "default": "pending"
     },
     "dnsInstructions": {
-      "type": "string",
-      "description": "DNS setup instructions for the user"
+      "type": "string"
     },
     "connectedAt": {
       "type": "string",
-      "format": "date-time",
-      "description": "When the custom domain was connected"
+      "format": "date-time"
     },
     "status": {
       "type": "string",
@@ -100,8 +105,7 @@
         "active",
         "suspended"
       ],
-      "default": "draft",
-      "description": "Marketplace status"
+      "default": "draft"
     },
     "planId": {
       "type": "string",
@@ -109,7 +113,6 @@
     },
     "branding": {
       "type": "object",
-      "description": "Branding settings",
       "properties": {
         "logo": {
           "type": "string"
@@ -127,9 +130,85 @@
         }
       }
     },
+    "pageSections": {
+      "type": "object",
+      "description": "Page section visibility settings",
+      "properties": {
+        "headerEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "headerTitle": {
+          "type": "string"
+        },
+        "headerSubtitle": {
+          "type": "string"
+        },
+        "headerImageUrl": {
+          "type": "string"
+        },
+        "productsEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "productsSectionTitle": {
+          "type": "string"
+        },
+        "testimonialsEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "testimonialsTitle": {
+          "type": "string"
+        },
+        "customBoxesEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "customBoxes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "footerEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "footerText": {
+          "type": "string"
+        }
+      }
+    },
+    "taxInfo": {
+      "type": "object",
+      "description": "Tax configuration",
+      "properties": {
+        "taxEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "taxName": {
+          "type": "string"
+        },
+        "taxRate": {
+          "type": "number",
+          "default": 0
+        },
+        "taxNumber": {
+          "type": "string"
+        },
+        "taxCountry": {
+          "type": "string"
+        },
+        "includeTaxInPrice": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
     "settings": {
       "type": "object",
-      "description": "Marketplace settings",
       "properties": {
         "requireListingApproval": {
           "type": "boolean",
@@ -160,31 +239,25 @@
           "default": 0
         },
         "termsPage": {
-          "type": "string",
-          "description": "Terms & Conditions page content"
+          "type": "string"
         },
         "privacyPage": {
-          "type": "string",
-          "description": "Privacy Policy page content"
+          "type": "string"
         },
         "refundPolicy": {
-          "type": "string",
-          "description": "Refund Policy page content"
+          "type": "string"
         },
         "homepageSections": {
           "type": "array",
           "items": {
             "type": "string"
-          },
-          "description": "Enabled homepage sections"
+          }
         },
         "seoTitle": {
-          "type": "string",
-          "description": "SEO meta title"
+          "type": "string"
         },
         "seoDescription": {
-          "type": "string",
-          "description": "SEO meta description"
+          "type": "string"
         }
       }
     }
