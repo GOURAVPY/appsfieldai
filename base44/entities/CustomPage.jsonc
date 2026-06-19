@@ -1,0 +1,42 @@
+{
+  "name": "CustomPage",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace this page belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Page title (e.g. Privacy Policy)"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique slug within the marketplace"
+    },
+    "content": {
+      "type": "string",
+      "description": "Page body content (markdown supported)"
+    },
+    "showInFooter": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to show a link to this page in the store footer"
+    },
+    "isPublished": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the page is publicly visible"
+    },
+    "sortOrder": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order in footer"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "title",
+    "slug"
+  ]
+}

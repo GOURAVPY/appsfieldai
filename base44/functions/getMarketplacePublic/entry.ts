@@ -25,10 +25,11 @@ Deno.serve(async (req) => {
 
     const m = marketplace[0];
 
-    const [software, categories, reviews] = await Promise.all([
+    const [software, categories, reviews, customPages] = await Promise.all([
       base44.asServiceRole.entities.SaaSListing.filter({ marketplaceId: m.id, status: 'active' }, '-created_date', 50),
       base44.asServiceRole.entities.SoftwareCategory.filter({ marketplaceId: m.id }),
       base44.asServiceRole.entities.Review.filter({ marketplaceId: m.id, status: 'approved' }, '-created_date', 20),
+      base44.asServiceRole.entities.CustomPage.filter({ marketplaceId: m.id, isPublished: true }, 'sortOrder'),
     ]);
 
     return Response.json({
@@ -47,6 +48,7 @@ Deno.serve(async (req) => {
       software,
       categories,
       reviews,
+      customPages,
       totalSoftware: software.length,
     });
   } catch (error) {

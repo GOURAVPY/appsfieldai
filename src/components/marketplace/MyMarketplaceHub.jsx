@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import CustomerManager from "@/components/marketplace/CustomerManager";
 import DomainManager from "@/components/marketplace/DomainManager";
 import PublishThemeDialog from "@/components/marketplace/PublishThemeDialog";
 import HeroSectionEditor from "@/components/marketplace/HeroSectionEditor";
+import CustomPagesManager from "@/components/marketplace/CustomPagesManager";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -27,6 +28,7 @@ const NAV_GROUPS = [
   {
     label: "Page", items: [
       { id: "page_settings", label: "Page Settings", icon: Layout },
+      { id: "custom_pages", label: "Custom Pages", icon: FileText },
     ]
   },
   {
@@ -211,6 +213,12 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 <SectionCard title="Footer" icon={PanelBottom}
                   enabled={pageForm.footerEnabled} onToggle={() => setPageForm(f => ({ ...f, footerEnabled: !f.footerEnabled }))}>
                   <div><label className="text-xs text-muted-foreground">Footer Text</label><Textarea value={pageForm.footerText} onChange={e => setPageForm(f => ({ ...f, footerText: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-20 resize-none" placeholder="© 2025 Your Store. All rights reserved." /></div>
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <p className="text-[11px] text-muted-foreground">Add custom pages (Privacy, Terms…) as footer links.</p>
+                    <Button onClick={() => setActiveTab("custom_pages")} variant="outline" size="sm" className="border-border/40 rounded-lg gap-1.5 text-xs shrink-0">
+                      <FileText className="w-3.5 h-3.5" /> Add Custom Page
+                    </Button>
+                  </div>
                 </SectionCard>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -224,6 +232,15 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
               <p className="text-[11px] text-muted-foreground">
                 Publishing saves these sections as a reusable store theme template you can apply to other stores later.
               </p>
+            </div>
+          )}
+
+          {/* CUSTOM PAGES */}
+          {activeTab === "custom_pages" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Custom Pages</h2>
+              <p className="text-sm text-muted-foreground">Create store pages like Privacy Policy, Terms of Service, and more.</p></div>
+              <CustomPagesManager marketplaceId={marketplace?.id} />
             </div>
           )}
 

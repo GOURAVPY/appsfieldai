@@ -37,6 +37,7 @@ import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
 import StorePage from '@/pages/StorePage';
+import StoreCustomPage from '@/pages/StoreCustomPage';
 import { getStoreKeyFromHost, getCustomDomainFromHost } from '@/lib/storeHost';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
@@ -46,6 +47,7 @@ import { PageLoader } from '@/components/Loader';
 const StoreSubdomainApp = () => (
   <Routes>
     <Route path="/saas/:id" element={<StorePage />} />
+    <Route path="/page/:pageSlug" element={<StoreCustomPage />} />
     <Route path="*" element={<StorePage />} />
   </Routes>
 );
@@ -88,6 +90,7 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       {/* Public store pages — accessible without login, no app chrome */}
       <Route path="/store/:slug" element={<StorePage />} />
+      <Route path="/store/:slug/page/:pageSlug" element={<StoreCustomPage />} />
       {/* Public routes — accessible without login */}
       <Route element={<DashboardLayout />}>
         <Route path="/marketplace" element={<Marketplace />} />

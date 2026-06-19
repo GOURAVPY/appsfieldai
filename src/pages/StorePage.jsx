@@ -57,7 +57,9 @@ export default function StorePage() {
     );
   }
 
-  const { marketplace, software = [], reviews = [] } = data;
+  const { marketplace, software = [], reviews = [], customPages = [] } = data;
+  // On a path-based store (/store/:slug) keep the prefix; on a subdomain/custom domain it's root.
+  const storeBasePath = slugParam ? `/store/${slugParam}` : "";
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
   const sections = marketplace.pageSections || {};
   const headerEnabled = sections.headerEnabled ?? true;
@@ -98,7 +100,7 @@ export default function StorePage() {
       {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} />}
 
       {/* Footer */}
-      {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} />}
+      {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} customPages={customPages} storeBasePath={storeBasePath} />}
 
       <SaaSDetailModal
         listingId={viewDetailListing?.id}
