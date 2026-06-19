@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
         currency: m.currency,
         supportEmail: m.supportEmail,
         settings: m.settings,
+        pageSections: m.pageSections,
       },
       software,
       categories,
