@@ -44,13 +44,18 @@ function CopyField({ label, value }) {
   );
 }
 
-export default function DomainManager({ marketplace, onUpdate }) {
-  const [subdomain, setSubdomain] = useState(marketplace?.subdomain || marketplace?.slug || "");
-  const [customDomain, setCustomDomain] = useState(marketplace?.customDomain || "");
+export default function DomainManager({ marketplace: marketplaceProp, onUpdate }) {
+  // Local mirror of the marketplace so Connect/Verify reflect instantly (the prop is a stale snapshot).
+  const [mp, setMp] = useState(marketplaceProp);
+  const marketplace = mp || marketplaceProp;
+  const [subdomain, setSubdomain] = useState(marketplaceProp?.subdomain || marketplaceProp?.slug || "");
+  const [customDomain, setCustomDomain] = useState(marketplaceProp?.customDomain || "");
   const [saving, setSaving] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [platformDomain, setPlatformDomain] = useState("");
   const [domainSource, setDomainSource] = useState("");
+
+  useEffect(() => { setMp(marketplaceProp); }, [marketplaceProp]);
 
   useEffect(() => {
     base44.functions.invoke("getPlatformDomain", {})
@@ -60,6 +65,13 @@ export default function DomainManager({ marketplace, onUpdate }) {
       })
       .catch(() => {});
   }, []);
+
+  const refreshMp = async () => {
+    try {
+      const fresh = await base44.entities.Marketplace.get(marketplace.id);
+      if (fresh) setMp(fresh);
+    } catch { /* ignore */ }
+  };
 
   const PLATFORM_DOMAIN = platformDomain || "your-platform.com";
   const CNAME_TARGET = `cname.${PLATFORM_DOMAIN}`;
@@ -90,9 +102,10 @@ export default function DomainManager({ marketplace, onUpdate }) {
       sslStatus: "pending",
     });
     setCustomDomain(clean);
+    await refreshMp();
     onUpdate?.();
     setSaving(false);
-    toast.success("Domain saved — add the DNS records below, then verify.");
+    toast.success("Domain connected — add the DNS records below, then verify.");
   };
 
   const handleVerify = async () => {
@@ -100,8 +113,9 @@ export default function DomainManager({ marketplace, onUpdate }) {
     try {
       const res = await base44.functions.invoke("verifyCustomDomain", { marketplaceId: marketplace.id });
       const data = res.data || {};
-      if (data.verified) toast.success(data.message || "Domain verified!");
+      if (data.verified) toast.success(data.message || "Domain verified — your store is connected!");
       else toast.error(data.message || "Verification failed. Check your DNS records.");
+      await refreshMp();
       onUpdate?.();
     } catch (err) {
       toast.error("Could not verify domain. Try again shortly.");
