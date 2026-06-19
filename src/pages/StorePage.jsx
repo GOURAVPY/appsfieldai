@@ -57,7 +57,7 @@ export default function StorePage() {
     );
   }
 
-  const { marketplace, software = [], reviews = [], customPages = [] } = data;
+  const { marketplace, software = [], reviews = [], customPages = [], testimonials = [] } = data;
   // On a path-based store (/store/:slug) keep the prefix; on a subdomain/custom domain it's root.
   const storeBasePath = slugParam ? `/store/${slugParam}` : "";
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
@@ -94,7 +94,7 @@ export default function StorePage() {
       )}
 
       {/* Testimonials */}
-      {testimonialsEnabled && <StoreTestimonials reviews={reviews} brandColor={brandColor} />}
+      {testimonialsEnabled && <StoreTestimonials testimonials={testimonials} reviews={reviews} brandColor={brandColor} title={sections.testimonialsTitle} />}
 
       {/* Custom Section */}
       {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} />}

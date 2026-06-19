@@ -1,0 +1,48 @@
+{
+  "name": "Testimonial",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace this testimonial belongs to"
+    },
+    "authorName": {
+      "type": "string",
+      "description": "Name of the person giving the testimonial"
+    },
+    "authorRole": {
+      "type": "string",
+      "description": "Role / company of the author (e.g. Founder at Acme)"
+    },
+    "authorAvatar": {
+      "type": "string",
+      "description": "Avatar image URL"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 5,
+      "description": "Star rating 1-5"
+    },
+    "content": {
+      "type": "string",
+      "description": "The testimonial text"
+    },
+    "isPublished": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the testimonial is publicly visible"
+    },
+    "sortOrder": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "authorName",
+    "content"
+  ]
+}

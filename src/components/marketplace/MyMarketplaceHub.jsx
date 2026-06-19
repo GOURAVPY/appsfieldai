@@ -17,6 +17,7 @@ import DomainManager from "@/components/marketplace/DomainManager";
 import PublishThemeDialog from "@/components/marketplace/PublishThemeDialog";
 import HeroSectionEditor from "@/components/marketplace/HeroSectionEditor";
 import CustomPagesManager from "@/components/marketplace/CustomPagesManager";
+import TestimonialsManager from "@/components/marketplace/TestimonialsManager";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -28,6 +29,7 @@ const NAV_GROUPS = [
   {
     label: "Page", items: [
       { id: "page_settings", label: "Page Settings", icon: Layout },
+      { id: "testimonials", label: "Testimonials", icon: MessageSquare },
       { id: "custom_pages", label: "Custom Pages", icon: FileText },
     ]
   },
@@ -205,6 +207,12 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                 <SectionCard title="Testimonials" icon={MessageSquare}
                   enabled={pageForm.testimonialsEnabled} onToggle={() => setPageForm(f => ({ ...f, testimonialsEnabled: !f.testimonialsEnabled }))}>
                   <div><label className="text-xs text-muted-foreground">Section Title</label><Input value={pageForm.testimonialsTitle} onChange={e => setPageForm(f => ({ ...f, testimonialsTitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="What our customers say" /></div>
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <p className="text-[11px] text-muted-foreground">Manage the customer quotes shown in this section.</p>
+                    <Button onClick={() => setActiveTab("testimonials")} variant="outline" size="sm" className="border-border/40 rounded-lg gap-1.5 text-xs shrink-0">
+                      <MessageSquare className="w-3.5 h-3.5" /> Manage Testimonials
+                    </Button>
+                  </div>
                 </SectionCard>
                 <SectionCard title="Custom Section Boxes" icon={Layers}
                   enabled={pageForm.customBoxesEnabled} onToggle={() => setPageForm(f => ({ ...f, customBoxesEnabled: !f.customBoxesEnabled }))}>
@@ -232,6 +240,15 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
               <p className="text-[11px] text-muted-foreground">
                 Publishing saves these sections as a reusable store theme template you can apply to other stores later.
               </p>
+            </div>
+          )}
+
+          {/* TESTIMONIALS */}
+          {activeTab === "testimonials" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Testimonials</h2>
+              <p className="text-sm text-muted-foreground">Add and manage customer quotes shown in your store's testimonials section.</p></div>
+              <TestimonialsManager marketplaceId={marketplace?.id} />
             </div>
           )}
 
