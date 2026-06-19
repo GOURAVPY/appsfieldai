@@ -14,6 +14,7 @@ import MarketplaceManager from "@/components/admin/MarketplaceManager";
 import DashboardEditor from "@/components/admin/DashboardEditor";
 import AdminTopNav from "@/components/admin/AdminTopNav";
 import HookManagement from "@/components/admin/HookManagement";
+import DFYProductManager from "@/components/admin/DFYProductManager";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -597,6 +598,8 @@ export default function AdminPanel() {
         );
       case "hooks":
         return <HookManagement />;
+      case "dfy_products":
+        return <DFYProductManager />;
       case "mktpl_templates":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

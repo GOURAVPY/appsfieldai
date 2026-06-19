@@ -1,0 +1,104 @@
+{
+  "name": "DFYProduct",
+  "type": "object",
+  "properties": {
+    "softwareName": {
+      "type": "string",
+      "description": "Software name / title"
+    },
+    "logo": {
+      "type": "string",
+      "description": "Logo image URL"
+    },
+    "shortDescription": {
+      "type": "string",
+      "description": "Short description / tagline"
+    },
+    "fullDescription": {
+      "type": "string",
+      "description": "Full detailed description"
+    },
+    "category": {
+      "type": "string",
+      "description": "Category name (e.g. CRM, AI & ML)"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of key features"
+    },
+    "pricingType": {
+      "type": "string",
+      "enum": [
+        "free",
+        "paid",
+        "subscription",
+        "lifetime_deal",
+        "custom_quote"
+      ],
+      "default": "lifetime_deal",
+      "description": "Pricing model"
+    },
+    "price": {
+      "type": "number",
+      "description": "Full price"
+    },
+    "discountPrice": {
+      "type": "number",
+      "description": "Discounted deal price"
+    },
+    "dealType": {
+      "type": "string",
+      "enum": [
+        "group_deal",
+        "single_purchase",
+        "both"
+      ],
+      "default": "single_purchase",
+      "description": "Deal offering type"
+    },
+    "sharePrice": {
+      "type": "number",
+      "description": "Price per individual spot/share"
+    },
+    "totalShares": {
+      "type": "number",
+      "description": "Total number of spots/shares"
+    },
+    "monthlyRevenue": {
+      "type": "number",
+      "description": "Monthly revenue in dollars"
+    },
+    "growthRate": {
+      "type": "number",
+      "default": 0,
+      "description": "Growth rate percentage"
+    },
+    "rating": {
+      "type": "number",
+      "default": 5,
+      "description": "Rating out of 5"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of tags"
+    },
+    "imageGradient": {
+      "type": "string",
+      "description": "CSS gradient for card header"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this DFY preset is available for import"
+    }
+  },
+  "required": [
+    "softwareName"
+  ]
+}

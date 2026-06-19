@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users } from "lucide-react";
+import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -38,6 +38,7 @@ export default function SoftwareManager({ marketplaceId }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const [importing, setImporting] = useState(false);
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["softwareListings", marketplaceId],
@@ -63,6 +64,47 @@ export default function SoftwareManager({ marketplaceId }) {
     await base44.entities.SaaSListing.update(listing.id, { featured: !listing.featured });
     queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
     toast.success(`${listing.softwareName} ${listing.featured ? "unfeatured" : "featured"}.`);
+  };
+
+  const handleImportDFY = async () => {
+    if (!marketplaceId) return;
+    setImporting(true);
+    try {
+      const presets = await base44.entities.DFYProduct.filter({ isActive: true });
+      if (!presets.length) {
+        toast.error("No DFY products available to import yet.");
+        setImporting(false);
+        return;
+      }
+      await base44.entities.SaaSListing.bulkCreate(presets.map(p => ({
+        marketplaceId,
+        softwareName: p.softwareName,
+        logo: p.logo,
+        shortDescription: p.shortDescription,
+        fullDescription: p.fullDescription,
+        category: p.category,
+        features: p.features || [],
+        pricingType: p.pricingType || "lifetime_deal",
+        price: p.price || 0,
+        discountPrice: p.discountPrice || 0,
+        dealType: p.dealType || "single_purchase",
+        sharePrice: p.sharePrice || 0,
+        totalShares: p.totalShares || 0,
+        soldShares: 0,
+        monthlyRevenue: p.monthlyRevenue || 0,
+        growthRate: p.growthRate || 0,
+        rating: p.rating || 5,
+        tags: p.tags || [],
+        imageGradient: p.imageGradient,
+        status: "active",
+        dealStatus: "live",
+      })));
+      queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
+      toast.success(`${presets.length} DFY product${presets.length === 1 ? "" : "s"} imported into your store.`);
+    } catch (e) {
+      toast.error("Could not import DFY products.");
+    }
+    setImporting(false);
   };
 
   const handleDelete = async (listing) => {
@@ -91,9 +133,14 @@ export default function SoftwareManager({ marketplaceId }) {
         <h3 className="text-lg font-display font-semibold flex items-center gap-2">
           <Package className="w-5 h-5 text-orange-400" /> Software Listings
         </h3>
-        <Button size="sm" onClick={() => { setEditing(null); setShowForm(true); }} className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl text-xs h-8 text-white border-0">
-          <Plus className="w-3 h-3 mr-1" /> Add Product
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={handleImportDFY} disabled={importing} className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-xl text-xs h-8">
+            {importing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Download className="w-3 h-3 mr-1" />} Import DFY Products
+          </Button>
+          <Button size="sm" onClick={() => { setEditing(null); setShowForm(true); }} className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl text-xs h-8 text-white border-0">
+            <Plus className="w-3 h-3 mr-1" /> Add Product
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
