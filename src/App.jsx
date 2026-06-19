@@ -36,6 +36,7 @@ import VendorRegister from '@/pages/VendorRegister';
 import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
+import StorePage from '@/pages/StorePage';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
@@ -69,6 +70,8 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Public store pages — accessible without login, no app chrome */}
+      <Route path="/store/:slug" element={<StorePage />} />
       {/* Public routes — accessible without login */}
       <Route element={<DashboardLayout />}>
         <Route path="/marketplace" element={<Marketplace />} />

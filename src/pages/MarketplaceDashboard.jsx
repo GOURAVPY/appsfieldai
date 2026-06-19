@@ -93,7 +93,7 @@ export default function MarketplaceDashboard() {
                     )}
                     <div className="flex gap-2 flex-wrap">
                       <Button size="sm" onClick={() => { setSelectedMarketplace(m); setView("hub"); }} className="h-8 text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 hover:from-orange-600 hover:to-amber-600"><LayoutDashboard className="w-3 h-3 mr-1" />Manage</Button>
-                      <Button size="sm" variant="ghost" onClick={() => window.open(`https://${m.subdomain || m.slug}.saasshare.app`, "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
+                      <Button size="sm" variant="ghost" onClick={() => window.open(`/store/${m.subdomain || m.slug}`, "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
                     </div>
                   </CardContent>
                 </Card>
