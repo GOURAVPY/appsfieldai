@@ -11,6 +11,8 @@ import StoreCustomSection from "@/components/store/StoreCustomSection";
 import StoreFooter from "@/components/store/StoreFooter";
 import StoreHero from "@/components/store/StoreHero";
 import StoreNavbar from "@/components/store/StoreNavbar";
+import StoreCategories from "@/components/store/StoreCategories";
+import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 
 export default function StorePage() {
   const { slug: slugParam } = useParams();
@@ -22,6 +24,12 @@ export default function StorePage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [viewDetailListing, setViewDetailListing] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState(null);
+
+  const handleSelectCategory = (cat) => {
+    setCategoryFilter(prev => (prev === cat ? null : cat));
+    document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     let active = true;
@@ -89,11 +97,24 @@ export default function StorePage() {
         </div>
       ) : (
         <>
-          {/* 🔥 Deals Ending Soon */}
-          <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} />
+          {/* Best Sellers / 🔥 Deals Ending Soon */}
+          <div id="store-best-sellers">
+            <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} />
+          </div>
 
-          {/* One In A Lifetime Deals (searchable grid of all store products) */}
-          <OneInALifetimeDeals listings={software} onViewDetails={setViewDetailListing} />
+          {/* Categories */}
+          <StoreCategories listings={software} brandColor={brandColor} onSelect={handleSelectCategory} />
+
+          {/* Lifetime Deals (searchable grid of all store products) */}
+          <div id="store-lifetime-deals">
+            <OneInALifetimeDeals
+              listings={categoryFilter ? software.filter(l => l.category === categoryFilter) : software}
+              onViewDetails={setViewDetailListing}
+            />
+          </div>
+
+          {/* Become A Vendor? */}
+          <StoreVendorCTA marketplace={marketplace} brandColor={brandColor} />
         </>
       )}
 
