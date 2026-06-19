@@ -76,7 +76,15 @@ export default function SoftwareManager({ marketplaceId }) {
         setImporting(false);
         return;
       }
-      await base44.entities.SaaSListing.bulkCreate(presets.map(p => ({
+      // Skip presets already imported into this store (match by name).
+      const existingNames = new Set(listings.map(l => (l.softwareName || "").trim().toLowerCase()));
+      const toImport = presets.filter(p => !existingNames.has((p.softwareName || "").trim().toLowerCase()));
+      if (!toImport.length) {
+        toast.info("All DFY products are already in your store.");
+        setImporting(false);
+        return;
+      }
+      await base44.entities.SaaSListing.bulkCreate(toImport.map(p => ({
         marketplaceId,
         softwareName: p.softwareName,
         logo: p.logo,
@@ -100,7 +108,7 @@ export default function SoftwareManager({ marketplaceId }) {
         dealStatus: "live",
       })));
       queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
-      toast.success(`${presets.length} DFY product${presets.length === 1 ? "" : "s"} imported into your store.`);
+      toast.success(`${toImport.length} DFY product${toImport.length === 1 ? "" : "s"} imported into your store.`);
     } catch (e) {
       toast.error("Could not import DFY products.");
     }
