@@ -13,16 +13,25 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
     sections.headerSubtitle ||
     "Join group deals on premium software. Lock a slot, split the cost, and save big.";
 
-  const background = sections.headerImageUrl
-    ? `linear-gradient(to bottom, rgba(10,6,3,0.7), rgba(10,6,3,0.95)), url(${sections.headerImageUrl}) center/cover`
-    : `radial-gradient(ellipse at top, ${brandColor}33 0%, transparent 55%), #0a0603`;
+  const bgType = sections.heroBgType || (sections.headerImageUrl ? "image" : "gradient");
+  const opacity = (sections.heroBgOpacity ?? 100) / 100;
+  let background;
+  if (bgType === "image" && sections.headerImageUrl) {
+    background = `linear-gradient(to bottom, rgba(10,6,3,0.7), rgba(10,6,3,0.95)), url(${sections.headerImageUrl}) center/cover`;
+  } else if (bgType === "solid") {
+    background = sections.heroSolidColor || "#0a0603";
+  } else {
+    const gStart = sections.heroGradientStart || `${brandColor}33`;
+    const gEnd = sections.heroGradientEnd || "#0a0603";
+    background = `radial-gradient(ellipse at top, ${gStart} 0%, ${gEnd} 60%)`;
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       className="relative py-20 px-4 text-center overflow-hidden"
-      style={{ background }}
+      style={{ background, opacity }}
     >
       {/* Badge / logo */}
       <motion.div
@@ -46,6 +55,19 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
           </div>
         )}
       </motion.div>
+
+      {/* Badge */}
+      {sections.heroBadgeText && (
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.13 }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-foreground/70 text-xs mb-5"
+        >
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: brandColor }} />
+          {sections.heroBadgeText}
+        </motion.span>
+      )}
 
       {/* Headline */}
       <motion.h1
@@ -82,7 +104,7 @@ export default function StoreHero({ marketplace, sections = {}, listingsCount = 
           onClick={() => document.getElementById("store-listings")?.scrollIntoView({ behavior: "smooth" })}
           className="px-6 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
         >
-          {listingsCount} {listingsCount === 1 ? "deal" : "deals"} live now
+          {sections.heroCtaText || `${listingsCount} ${listingsCount === 1 ? "deal" : "deals"} live now`}
         </button>
       </motion.div>
     </motion.div>

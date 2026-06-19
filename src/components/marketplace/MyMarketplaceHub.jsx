@@ -15,6 +15,7 @@ import CouponManager from "@/components/marketplace/CouponManager";
 import CustomerManager from "@/components/marketplace/CustomerManager";
 import DomainManager from "@/components/marketplace/DomainManager";
 import PublishThemeDialog from "@/components/marketplace/PublishThemeDialog";
+import HeroSectionEditor from "@/components/marketplace/HeroSectionEditor";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -57,6 +58,13 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     headerTitle: marketplace?.pageSections?.headerTitle || "",
     headerSubtitle: marketplace?.pageSections?.headerSubtitle || "",
     headerImageUrl: marketplace?.pageSections?.headerImageUrl || "",
+    heroBadgeText: marketplace?.pageSections?.heroBadgeText || "",
+    heroCtaText: marketplace?.pageSections?.heroCtaText || "",
+    heroBgType: marketplace?.pageSections?.heroBgType || "gradient",
+    heroGradientStart: marketplace?.pageSections?.heroGradientStart || "",
+    heroGradientEnd: marketplace?.pageSections?.heroGradientEnd || "",
+    heroSolidColor: marketplace?.pageSections?.heroSolidColor || "",
+    heroBgOpacity: marketplace?.pageSections?.heroBgOpacity ?? 100,
     productsEnabled: marketplace?.pageSections?.productsEnabled ?? true,
     productsSectionTitle: marketplace?.pageSections?.productsSectionTitle || "",
     testimonialsEnabled: marketplace?.pageSections?.testimonialsEnabled ?? false,
@@ -184,11 +192,9 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
               <div><h2 className="text-lg font-display font-bold">Page Settings</h2>
               <p className="text-sm text-muted-foreground">Control which sections appear on your marketplace page.</p></div>
               <div className="space-y-3">
-                <SectionCard title="Header / Cover" icon={Image}
+                <SectionCard title="Hero Section" icon={Image}
                   enabled={pageForm.headerEnabled} onToggle={() => setPageForm(f => ({ ...f, headerEnabled: !f.headerEnabled }))}>
-                  <div><label className="text-xs text-muted-foreground">Headline</label><Input value={pageForm.headerTitle} onChange={e => setPageForm(f => ({ ...f, headerTitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Welcome to our marketplace" /></div>
-                  <div><label className="text-xs text-muted-foreground">Subheadline</label><Input value={pageForm.headerSubtitle} onChange={e => setPageForm(f => ({ ...f, headerSubtitle: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Discover amazing software deals" /></div>
-                  <div><label className="text-xs text-muted-foreground">Cover Image URL</label><Input value={pageForm.headerImageUrl} onChange={e => setPageForm(f => ({ ...f, headerImageUrl: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://..." /></div>
+                  <HeroSectionEditor form={pageForm} setForm={setPageForm} />
                 </SectionCard>
                 <SectionCard title="Product Sections" icon={Package}
                   enabled={pageForm.productsEnabled} onToggle={() => setPageForm(f => ({ ...f, productsEnabled: !f.productsEnabled }))}>

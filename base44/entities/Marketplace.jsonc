@@ -151,6 +151,41 @@
         "headerImageUrl": {
           "type": "string"
         },
+        "heroBadgeText": {
+          "type": "string",
+          "description": "Small badge/pill text above the hero headline"
+        },
+        "heroCtaText": {
+          "type": "string",
+          "description": "Hero call-to-action button label"
+        },
+        "heroBgType": {
+          "type": "string",
+          "enum": [
+            "gradient",
+            "solid",
+            "image"
+          ],
+          "default": "gradient",
+          "description": "Hero background style"
+        },
+        "heroGradientStart": {
+          "type": "string",
+          "description": "Hero gradient start color"
+        },
+        "heroGradientEnd": {
+          "type": "string",
+          "description": "Hero gradient end color"
+        },
+        "heroSolidColor": {
+          "type": "string",
+          "description": "Hero solid background color"
+        },
+        "heroBgOpacity": {
+          "type": "number",
+          "default": 100,
+          "description": "Hero background opacity percentage"
+        },
         "productsEnabled": {
           "type": "boolean",
           "default": true
