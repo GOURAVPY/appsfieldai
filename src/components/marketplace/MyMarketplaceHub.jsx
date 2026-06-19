@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import SoftwareManager from "@/components/marketplace/SoftwareManager";
 import CouponManager from "@/components/marketplace/CouponManager";
 import CustomerManager from "@/components/marketplace/CustomerManager";
 import DomainManager from "@/components/marketplace/DomainManager";
+import PublishThemeDialog from "@/components/marketplace/PublishThemeDialog";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -49,6 +50,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("page_settings");
   const [saving, setSaving] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
 
   const [pageForm, setPageForm] = useState({
     headerEnabled: marketplace?.pageSections?.headerEnabled ?? true,
@@ -205,9 +207,17 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                   <div><label className="text-xs text-muted-foreground">Footer Text</label><Textarea value={pageForm.footerText} onChange={e => setPageForm(f => ({ ...f, footerText: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-20 resize-none" placeholder="© 2025 Your Store. All rights reserved." /></div>
                 </SectionCard>
               </div>
-              <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
-                <Save className="w-4 h-4" /> Save Page Settings
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
+                  <Save className="w-4 h-4" /> Save Page Settings
+                </Button>
+                <Button onClick={() => setPublishOpen(true)} variant="outline" className="border-violet-500/40 text-violet-400 hover:bg-violet-500/10 rounded-xl gap-1.5">
+                  <Palette className="w-4 h-4" /> Publish to Theme
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Publishing saves these sections as a reusable store theme template you can apply to other stores later.
+              </p>
             </div>
           )}
 
@@ -352,6 +362,13 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
 
         </motion.div>
       </div>
+
+      <PublishThemeDialog
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        marketplace={marketplace}
+        pageSections={pageForm}
+      />
     </div>
   );
 }

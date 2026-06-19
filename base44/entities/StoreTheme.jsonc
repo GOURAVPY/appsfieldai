@@ -1,0 +1,77 @@
+{
+  "name": "StoreTheme",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the theme"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique theme key"
+    },
+    "sourceMarketplaceId": {
+      "type": "string",
+      "description": "Marketplace this theme was published from"
+    },
+    "pageSections": {
+      "type": "object",
+      "description": "Saved store page section configuration for this theme",
+      "properties": {
+        "headerEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "headerTitle": {
+          "type": "string"
+        },
+        "headerSubtitle": {
+          "type": "string"
+        },
+        "headerImageUrl": {
+          "type": "string"
+        },
+        "productsEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "productsSectionTitle": {
+          "type": "string"
+        },
+        "testimonialsEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "testimonialsTitle": {
+          "type": "string"
+        },
+        "customBoxesEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "customBoxes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "footerEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "footerText": {
+          "type": "string"
+        }
+      }
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this theme is available to apply"
+    }
+  },
+  "required": [
+    "name",
+    "slug"
+  ]
+}
