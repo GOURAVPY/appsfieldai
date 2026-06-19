@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Rocket } from "lucide-react";
+import StoreVendorApplyModal from "@/components/store/StoreVendorApplyModal";
 
 // "Become A Vendor?" call-to-action section for a store page.
-// Links to the marketplace's support email so interested sellers can reach out.
+// Opens a vendor application form scoped to THIS store.
 export default function StoreVendorCTA({ marketplace, brandColor = "#f97316" }) {
-  const email = marketplace?.supportEmail;
-  const href = email ? `mailto:${email}?subject=Become a vendor on ${marketplace?.name || "your store"}` : null;
+  const [open, setOpen] = useState(false);
 
   return (
     <section id="store-become-vendor" className="max-w-7xl mx-auto px-6 py-12">
@@ -17,20 +17,16 @@ export default function StoreVendorCTA({ marketplace, brandColor = "#f97316" }) 
         <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
           Want to list your own software on {marketplace?.name || "this store"}? Get in touch and start selling to our community.
         </p>
-        {href ? (
-          <a
-            href={href}
-            className="inline-flex px-6 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ background: brandColor }}
-          >
-            Apply to Sell
-          </a>
-        ) : (
-          <span className="inline-flex px-6 py-2.5 rounded-full text-sm font-semibold text-muted-foreground bg-secondary/60">
-            Contact the store owner to apply
-          </span>
-        )}
+        <button
+          onClick={() => setOpen(true)}
+          className="inline-flex px-6 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          style={{ background: brandColor }}
+        >
+          Apply to Sell
+        </button>
       </div>
+
+      <StoreVendorApplyModal open={open} onClose={() => setOpen(false)} marketplace={marketplace} brandColor={brandColor} />
     </section>
   );
 }
