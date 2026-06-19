@@ -127,9 +127,8 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   };
 
   const subLabel = subdomain || marketplace?.slug;
-  // Vanity address shown to users; the actual working link is the in-app public store page.
+  // The subdomain is the real, live default store address (wildcard DNS is configured).
   const subdomainUrl = `https://${subLabel}.${PLATFORM_DOMAIN}`;
-  const liveStoreUrl = `${window.location.origin}/store/${subLabel}`;
   const recordHost = domain ? (isRoot ? "@" : domain.split(".")[0]) : "";
   // Relative TXT host (relative to the domain's DNS zone): "@"/sub label only, no domain repeated.
   const txtHost = domain ? (isRoot ? `_${txtKey}-verify` : `_${txtKey}-verify.${domain.split(".")[0]}`) : "";
@@ -168,12 +167,12 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
           <div className="mt-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 space-y-2">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <a href={liveStoreUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-400 hover:underline truncate">{liveStoreUrl}</a>
+              <a href={subdomainUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-400 hover:underline truncate">{subdomainUrl}</a>
               <span className="ml-auto text-[9px] text-emerald-400/60 shrink-0">Live now</span>
             </div>
             <p className="text-[10px] text-muted-foreground flex items-start gap-1.5">
               <Globe className="w-3 h-3 mt-0.5 shrink-0" />
-              Your store is live at the link above. Once <code className="font-mono text-emerald-400/80">{subdomainUrl.replace("https://", "")}</code> is set up with DNS, it will point here too.
+              This is your store's default address — live instantly via wildcard DNS, no setup needed.
             </p>
           </div>
         )}

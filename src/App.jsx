@@ -37,11 +37,26 @@ import VendorDashboard from '@/pages/VendorDashboard';
 import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
 import StorePage from '@/pages/StorePage';
+import { getStoreKeyFromHost } from '@/lib/storeHost';
 import { PageLoader } from '@/components/Loader';
 // Add page imports here
 
+// When the app is served from a customer store subdomain (wildcard DNS),
+// the whole app becomes that public store — no login, no app chrome.
+const StoreSubdomainApp = () => (
+  <Routes>
+    <Route path="/saas/:id" element={<StorePage />} />
+    <Route path="*" element={<StorePage />} />
+  </Routes>
+);
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+
+  // Store subdomain → render the public store directly, skip auth gating entirely.
+  if (getStoreKeyFromHost()) {
+    return <StoreSubdomainApp />;
+  }
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {

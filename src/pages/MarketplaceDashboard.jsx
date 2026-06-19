@@ -24,6 +24,16 @@ export default function MarketplaceDashboard() {
     queryKey: ["platformPlans"],
     queryFn: () => base44.entities.SubscriptionPlan.filter({ isActive: true }),
   });
+  const { data: platformDomain = "" } = useQuery({
+    queryKey: ["platformDomain"],
+    queryFn: () => base44.functions.invoke("getPlatformDomain", {}).then(r => r.data?.platformDomain || ""),
+  });
+
+  // The store's live URL: real subdomain when the platform domain is known, else the in-app path.
+  const storeUrl = (m) => {
+    const key = m.subdomain || m.slug;
+    return platformDomain ? `https://${key}.${platformDomain}` : `/store/${key}`;
+  };
 
   if (view === "wizard") {
     return (
@@ -71,7 +81,7 @@ export default function MarketplaceDashboard() {
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-600 flex items-center justify-center"><Store className="w-5 h-5 text-white" /></div>
                         <div>
                           <CardTitle className="text-base font-display">{m.name}</CardTitle>
-                          <p className="text-[11px] text-muted-foreground">{m.slug}.yourdomain.com</p>
+                          <p className="text-[11px] text-muted-foreground">{m.subdomain || m.slug}{platformDomain ? `.${platformDomain}` : ""}</p>
                         </div>
                       </div>
                       <div className="flex gap-1">
@@ -93,7 +103,7 @@ export default function MarketplaceDashboard() {
                     )}
                     <div className="flex gap-2 flex-wrap">
                       <Button size="sm" onClick={() => { setSelectedMarketplace(m); setView("hub"); }} className="h-8 text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 hover:from-orange-600 hover:to-amber-600"><LayoutDashboard className="w-3 h-3 mr-1" />Manage</Button>
-                      <Button size="sm" variant="ghost" onClick={() => window.open(`/store/${m.subdomain || m.slug}`, "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
+                      <Button size="sm" variant="ghost" onClick={() => window.open(storeUrl(m), "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
                     </div>
                   </CardContent>
                 </Card>

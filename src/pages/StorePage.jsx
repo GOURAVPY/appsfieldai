@@ -5,9 +5,12 @@ import { base44 } from "@/api/base44Client";
 import { Store, Globe } from "lucide-react";
 import SaaSCard from "@/components/marketplace/SaaSCard";
 import SaaSDetailModal from "@/components/marketplace/SaaSDetailModal";
+import { getStoreKeyFromHost } from "@/lib/storeHost";
 
 export default function StorePage() {
-  const { slug } = useParams();
+  const { slug: slugParam } = useParams();
+  // On a wildcard store subdomain the key comes from the hostname, not the path.
+  const slug = slugParam || getStoreKeyFromHost();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

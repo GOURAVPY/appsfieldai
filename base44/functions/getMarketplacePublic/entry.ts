@@ -6,7 +6,11 @@ Deno.serve(async (req) => {
 
     const { slug } = await req.json();
 
-    const marketplace = await base44.asServiceRole.entities.Marketplace.filter({ slug });
+    // Resolve by subdomain first (the live store address), then fall back to slug.
+    let marketplace = await base44.asServiceRole.entities.Marketplace.filter({ subdomain: slug });
+    if (!marketplace.length) {
+      marketplace = await base44.asServiceRole.entities.Marketplace.filter({ slug });
+    }
     if (!marketplace.length) return Response.json({ error: 'Marketplace not found' }, { status: 404 });
 
     const m = marketplace[0];
