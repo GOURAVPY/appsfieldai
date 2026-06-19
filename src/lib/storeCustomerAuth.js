@@ -48,3 +48,21 @@ export async function fetchStoreCustomer(marketplaceId) {
 export function logoutStoreCustomer(marketplaceId) {
   setStoredToken(marketplaceId, null);
 }
+
+// Reserve spots on a listing as the logged-in store customer.
+export async function reserveStoreSpot({ marketplaceId, listingId, spots, phone, message }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in to reserve a spot");
+  const res = await base44.functions.invoke("storeCustomerReserve", { marketplaceId, token, listingId, spots, phone, message });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data.reservation;
+}
+
+// Fetch the store customer's reserved products with live status.
+export async function fetchStoreCustomerProducts(marketplaceId) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) return [];
+  const res = await base44.functions.invoke("storeCustomerProducts", { marketplaceId, token });
+  if (res.data?.error) return [];
+  return res.data.products || [];
+}

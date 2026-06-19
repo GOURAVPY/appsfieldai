@@ -1,9 +1,9 @@
 import React from "react";
-import { Store, Menu, X, User, LogOut, ChevronDown } from "lucide-react";
+import { Store, Menu, X, User, LogOut, ChevronDown, Package } from "lucide-react";
 
 // Top navigation bar for a customer's public store page — mirrors the main app's
 // top bar (logo + nav links), styled with the store's own branding.
-export default function StoreNavbar({ marketplace, sections = {}, customer, onOpenAuth, onLogout }) {
+export default function StoreNavbar({ marketplace, sections = {}, customer, onOpenAuth, onLogout, onOpenAccount }) {
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
   const logo = sections.headerLogoUrl || marketplace.branding?.logo;
   const name = marketplace.name || "Store";
@@ -51,6 +51,18 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
                 <p className="text-sm font-medium truncate">{customer.fullName || "Customer"}</p>
                 <p className="text-[11px] text-muted-foreground truncate">{customer.email}</p>
               </div>
+              <button
+                onClick={() => { setAccountOpen(false); onOpenAccount?.("account"); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-secondary/60 transition-colors"
+              >
+                <User className="w-4 h-4 text-muted-foreground" /> My Account
+              </button>
+              <button
+                onClick={() => { setAccountOpen(false); onOpenAccount?.("products"); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-secondary/60 transition-colors border-b border-border/30 mb-1"
+              >
+                <Package className="w-4 h-4 text-muted-foreground" /> My Products
+              </button>
               <button
                 onClick={() => { setAccountOpen(false); onLogout?.(); }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
@@ -143,6 +155,18 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
                 <p className="font-medium truncate">{customer.fullName || customer.email}</p>
                 <p className="text-[11px] text-muted-foreground truncate">{customer.email}</p>
               </div>
+              <button
+                onClick={() => { setMenuOpen(false); onOpenAccount?.("account"); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium"
+              >
+                <User className="w-4 h-4" /> My Account
+              </button>
+              <button
+                onClick={() => { setMenuOpen(false); onOpenAccount?.("products"); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium"
+              >
+                <Package className="w-4 h-4" /> My Products
+              </button>
               <button
                 onClick={() => { setMenuOpen(false); onLogout?.(); }}
                 className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium text-red-400"

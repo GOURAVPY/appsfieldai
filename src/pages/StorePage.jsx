@@ -14,6 +14,8 @@ import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
+import StoreAccountPanel from "@/components/store/StoreAccountPanel";
+import StoreReserveModal from "@/components/store/StoreReserveModal";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 
 export default function StorePage() {
@@ -28,9 +30,17 @@ export default function StorePage() {
   const [viewDetailListing, setViewDetailListing] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState(null);
   const [authModal, setAuthModal] = useState({ open: false, mode: "login" });
+  const [accountPanel, setAccountPanel] = useState({ open: false, tab: "account" });
+  const [reserveListing, setReserveListing] = useState(null);
 
   const marketplaceId = data?.marketplace?.id;
   const { customer, setCustomer, logout } = useStoreCustomer(marketplaceId);
+
+  // Reserve a spot: must be signed in. Opens the store reserve modal.
+  const handleReserve = (listing) => {
+    if (!customer) { setAuthModal({ open: true, mode: "login" }); return; }
+    setReserveListing(listing);
+  };
 
   const handleSelectCategory = (cat) => {
     setCategoryFilter(prev => (prev === cat ? null : cat));
@@ -90,6 +100,7 @@ export default function StorePage() {
         sections={sections}
         customer={customer}
         onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
+        onOpenAccount={(tab) => setAccountPanel({ open: true, tab })}
         onLogout={logout}
       />
 
@@ -111,7 +122,7 @@ export default function StorePage() {
         <>
           {/* Best Sellers / 🔥 Deals Ending Soon */}
           <div id="store-best-sellers">
-            <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} />
+            <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} />
           </div>
 
           {/* Categories */}
@@ -122,6 +133,7 @@ export default function StorePage() {
             <OneInALifetimeDeals
               listings={categoryFilter ? software.filter(l => l.category === categoryFilter) : software}
               onViewDetails={setViewDetailListing}
+              onReserveSpot={handleReserve}
             />
           </div>
 
@@ -158,6 +170,26 @@ export default function StorePage() {
         brandColor={brandColor}
         onClose={() => setAuthModal((a) => ({ ...a, open: false }))}
         onAuthed={(c) => setCustomer(c)}
+      />
+
+      <StoreReserveModal
+        open={!!reserveListing}
+        listing={reserveListing}
+        marketplaceId={marketplaceId}
+        customer={customer}
+        brandColor={brandColor}
+        onClose={() => setReserveListing(null)}
+        onReserved={() => setAccountPanel({ open: true, tab: "products" })}
+      />
+
+      <StoreAccountPanel
+        open={accountPanel.open}
+        initialTab={accountPanel.tab}
+        marketplaceId={marketplaceId}
+        customer={customer}
+        brandColor={brandColor}
+        onClose={() => setAccountPanel((a) => ({ ...a, open: false }))}
+        onLogout={logout}
       />
     </div>
   );

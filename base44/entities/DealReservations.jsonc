@@ -4,7 +4,7 @@
   "properties": {
     "userId": {
       "type": "string",
-      "description": "ID of the user who reserved"
+      "description": "ID of the user who reserved (app user, optional for store customers)"
     },
     "userName": {
       "type": "string",
@@ -14,6 +14,14 @@
       "type": "string",
       "description": "Email of the user"
     },
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace/store this reservation belongs to"
+    },
+    "storeCustomerId": {
+      "type": "string",
+      "description": "ID of the StoreCustomer who reserved (store-scoped account)"
+    },
     "listingId": {
       "type": "string",
       "description": "ID of the SaaS listing"
@@ -21,6 +29,21 @@
     "listingTitle": {
       "type": "string",
       "description": "Title of the SaaS listing"
+    },
+    "spots": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of spots/slots reserved"
+    },
+    "amountDue": {
+      "type": "number",
+      "default": 0,
+      "description": "Amount due for the reserved spots until the deal is fulfilled and payment approved"
+    },
+    "paymentApproved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the store owner/admin has approved that payment was received"
     },
     "phone": {
       "type": "string",
@@ -46,6 +69,7 @@
         "approved",
         "rejected",
         "contacted",
+        "fulfilled",
         "cancelled"
       ],
       "default": "pending",
@@ -53,7 +77,6 @@
     }
   },
   "required": [
-    "userId",
     "listingId"
   ]
 }
