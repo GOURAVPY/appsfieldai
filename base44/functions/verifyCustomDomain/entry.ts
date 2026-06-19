@@ -57,11 +57,13 @@ Deno.serve(async (req) => {
     } catch (err) {
       console.error("platform domain resolve failed", err);
     }
-    const PLATFORM_CNAME_TARGET = `cname.${platformDomain}`;
+    // The store's live platform address is the real CNAME target.
+    const storeSubdomain = marketplace.subdomain || marketplace.slug || "store";
+    const PLATFORM_CNAME_TARGET = `${storeSubdomain}.${platformDomain}`;
     const txtKey = platformDomain.split(".")[0];
 
-    // 1) Check TXT verification record on _<platform>.<domain>
-    const txtName = `_${txtKey}.${domain}`;
+    // 1) Check TXT verification record on _<platform>-verify.<domain>
+    const txtName = `_${txtKey}-verify.${domain}`;
     const txtRecords = await dnsQuery(txtName, "TXT");
     const txtValues = txtRecords.map(r => (r.data || "").replace(/^"|"$/g, ""));
     const txtMatch = txtValues.some(v => v.includes(`${txtKey}-verify=${expectedToken}`));

@@ -74,8 +74,11 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   };
 
   const PLATFORM_DOMAIN = platformDomain || "your-platform.com";
-  const CNAME_TARGET = `cname.${PLATFORM_DOMAIN}`;
   const txtKey = PLATFORM_DOMAIN.split(".")[0];
+
+  // The store's live address on the platform — this is what the custom domain points to.
+  const storeSubdomain = marketplace?.subdomain || marketplace?.slug || "store";
+  const CNAME_TARGET = `${storeSubdomain}.${PLATFORM_DOMAIN}`;
 
   const token = marketplace?.verificationToken;
   const domain = marketplace?.customDomain;
@@ -125,6 +128,8 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
 
   const subdomainUrl = `https://${subdomain || marketplace?.slug}.${PLATFORM_DOMAIN}`;
   const recordHost = domain ? (isRoot ? "@" : domain.split(".")[0]) : "";
+  // Relative TXT host (relative to the domain's DNS zone): "@"/sub label only, no domain repeated.
+  const txtHost = domain ? (isRoot ? `_${txtKey}-verify` : `_${txtKey}-verify.${domain.split(".")[0]}`) : "";
 
   return (
     <div className="space-y-6">
@@ -212,7 +217,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
 
                   <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
                     <CopyField label="Type" value="TXT" />
-                    <CopyField label="Host / Name" value={`_${txtKey}.${domain}`} />
+                    <CopyField label="Host / Name" value={txtHost} />
                     <CopyField label="Value" value={`${txtKey}-verify=${token || "—"}`} />
                   </div>
 
