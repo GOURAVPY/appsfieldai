@@ -72,6 +72,10 @@
       "type": "string",
       "description": "Custom domain URL (e.g. deals.clientbrand.com)"
     },
+    "verificationToken": {
+      "type": "string",
+      "description": "Unique token for DNS TXT verification"
+    },
     "verificationStatus": {
       "type": "string",
       "enum": [

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import SoftwareManager from "@/components/marketplace/SoftwareManager";
 import CouponManager from "@/components/marketplace/CouponManager";
 import CustomerManager from "@/components/marketplace/CustomerManager";
+import DomainManager from "@/components/marketplace/DomainManager";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -38,6 +39,7 @@ const NAV_GROUPS = [
   },
   {
     label: "Store", items: [
+      { id: "domain", label: "Custom Domain", icon: Globe },
       { id: "store_settings", label: "Marketplace Settings", icon: Settings },
     ]
   }
@@ -293,6 +295,15 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
           {activeTab === "customers" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Customers</h2>
             <CustomerManager marketplaceId={marketplace?.id} /></div>
+          )}
+
+          {/* CUSTOM DOMAIN */}
+          {activeTab === "domain" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Custom Domain</h2>
+              <p className="text-sm text-muted-foreground">Connect your own domain or use a free subdomain.</p></div>
+              <DomainManager marketplace={marketplace} onUpdate={() => queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] })} />
+            </div>
           )}
 
           {/* STORE SETTINGS */}
