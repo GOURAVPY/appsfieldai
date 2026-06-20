@@ -10,6 +10,22 @@
       "type": "string",
       "description": "Base platform domain for customer stores (e.g. saasshare.app). Used for subdomains and custom-domain DNS targets."
     },
+    "siteName": {
+      "type": "string",
+      "description": "Platform site name"
+    },
+    "supportEmail": {
+      "type": "string",
+      "description": "Platform support email"
+    },
+    "appLogoUrl": {
+      "type": "string",
+      "description": "Custom app logo image URL"
+    },
+    "appFaviconUrl": {
+      "type": "string",
+      "description": "Custom app favicon image URL"
+    },
     "hero_badge_text": {
       "type": "string"
     },
