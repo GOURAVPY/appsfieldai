@@ -93,13 +93,15 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
         {/* Brand */}
         <button onClick={() => scrollTo("store-listings")} className="flex items-center gap-2.5">
           {logo ? (
-            <img src={logo} alt={name} className="w-9 h-9 object-contain rounded-lg" />
+            <img src={logo} alt={name} className="h-11 max-w-[200px] object-contain" />
           ) : (
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: brandColor }}>
-              <Store className="w-5 h-5 text-white" />
-            </div>
+            <>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: brandColor }}>
+                <Store className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-display font-bold truncate max-w-[200px]">{name}</span>
+            </>
           )}
-          <span className="text-lg font-display font-bold truncate max-w-[200px]">{name}</span>
         </button>
 
         {/* Desktop nav */}
