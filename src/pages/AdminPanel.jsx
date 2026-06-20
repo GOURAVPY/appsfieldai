@@ -16,6 +16,7 @@ import AdminTopNav from "@/components/admin/AdminTopNav";
 import HookManagement from "@/components/admin/HookManagement";
 import DFYProductManager from "@/components/admin/DFYProductManager";
 import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
+import GeneralSettings from "@/components/admin/settings/GeneralSettings";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -268,6 +269,13 @@ export default function AdminPanel() {
   // ── System & Config ──
   const systemContent = (
     <>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card className="border-border/40 bg-[#1a1a1a]">
+          <CardContent className="pt-6">
+            <GeneralSettings />
+          </CardContent>
+        </Card>
+      </motion.div>
       <PlatformDomainConfig />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border-border/40 bg-[#1a1a1a]">
