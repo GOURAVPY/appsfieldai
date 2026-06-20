@@ -38,8 +38,14 @@ Deno.serve(async (req) => {
       const configs = await base44.asServiceRole.entities.AppConfig.filter({ key: "main" });
       const configured = configs?.[0]?.platformDomain;
       if (configured) {
-        const root = rootDomain(configured);
-        return Response.json({ platformDomain: root, cnameTarget: CNAME_TARGET, source: "configured" });
+        // Respect the admin-configured value exactly (incl. an "app." prefix) — just clean it.
+        const clean = configured
+          .toLowerCase()
+          .replace(/^https?:\/\//, "")
+          .replace(/\/.*$/, "")
+          .replace(/:\d+$/, "")
+          .trim();
+        return Response.json({ platformDomain: clean, cnameTarget: CNAME_TARGET, source: "configured" });
       }
     } catch (err) {
       console.error("AppConfig lookup failed", err);
