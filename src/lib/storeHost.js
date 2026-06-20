@@ -6,7 +6,7 @@ const INFRA_LABELS = ["www", "app", "admin", "api", "staging", "preview"];
 
 // The platform's own main domain. Hosts ending in this are the main app, NOT a customer store.
 // Change this if your primary app domain changes.
-const PLATFORM_DOMAIN = "nanomagicai.com";
+const PLATFORM_DOMAIN = "app.appsfieldai.com";
 
 function isInfraHost(host) {
   return (
