@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Lock, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
+import BeamBackground from "@/components/auth/BeamBackground";
 import { toast } from "@/components/ui/use-toast";
 
 const DEFAULT_LOGO = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png";
@@ -72,55 +73,41 @@ export default function Login() {
   };
 
   return (
-    <div className="no-global-input-style min-h-screen w-full relative overflow-hidden flex flex-col lg:flex-row bg-gradient-to-br from-[#eaf1ff] via-[#e6ecff] to-[#dfe4ff]">
-      {/* Soft ambient gradient blobs */}
-      <div className="pointer-events-none absolute -bottom-40 -left-20 w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-indigo-300/40 via-purple-300/30 to-transparent blur-[120px]" />
-      <div className="pointer-events-none absolute -top-32 right-1/4 w-[500px] h-[500px] rounded-full bg-blue-200/40 blur-[120px]" />
-      {/* Flowing wave accent */}
-      <svg className="pointer-events-none absolute bottom-0 left-0 w-full h-2/3 opacity-50" viewBox="0 0 1440 600" fill="none" preserveAspectRatio="none">
-        <path d="M0 420 C 320 300 540 520 760 400 C 980 280 1180 460 1440 340 L 1440 600 L 0 600 Z" fill="url(#waveGrad)" />
-        <defs>
-          <linearGradient id="waveGrad" x1="0" y1="0" x2="1440" y2="600" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#a5b4fc" stopOpacity="0.5" />
-            <stop offset="1" stopColor="#c4b5fd" stopOpacity="0.3" />
-          </linearGradient>
-        </defs>
-      </svg>
+    <div className="no-global-input-style min-h-screen w-full relative overflow-hidden flex flex-col lg:flex-row text-white">
+      <BeamBackground />
 
       {/* Brand logo top-left */}
       <Link to="/" className="absolute top-8 left-8 z-20 inline-flex items-center gap-2.5">
         <img src={branding.logo || DEFAULT_LOGO} alt={brandName} className="h-9 max-w-[160px] object-contain" />
         {!branding.logo && (
-          <span className="font-display font-bold text-2xl text-slate-800 tracking-tight">{brandName}</span>
+          <span className="font-display font-bold text-2xl text-white tracking-tight">{brandName}</span>
         )}
       </Link>
 
       {/* Left showcase area */}
       <div className="relative z-10 flex-1 hidden lg:flex flex-col items-center justify-center px-12">
-        {/* Big faded brand wordmark */}
         <div className="text-center select-none">
-          <span className="block text-[10px] tracking-[0.5em] text-slate-400/70 font-medium uppercase mb-1">The</span>
-          <h2 className="font-display font-extrabold text-7xl xl:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-500/70 to-purple-500/60 tracking-tight">
-            {brandName.toLowerCase()}
+          <span className="block text-[10px] tracking-[0.5em] text-cyan-300/60 font-medium uppercase mb-2">Powering the future of</span>
+          <h2 className="font-display font-extrabold text-6xl xl:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-cyan-200 via-cyan-400 to-orange-400 tracking-tight">
+            {brandName}
           </h2>
-          <span className="block text-[10px] tracking-[0.5em] text-slate-400/70 font-medium uppercase mt-1">Future</span>
         </div>
       </div>
 
       {/* Right login card */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-10 lg:py-0 lg:pr-16">
-        <div className="w-full max-w-[420px] bg-white/80 backdrop-blur-xl rounded-3xl border border-white/70 p-8 sm:p-10 shadow-[0_20px_60px_-15px_rgba(99,102,241,0.35)]">
+        <div className="w-full max-w-[420px] bg-white/[0.06] backdrop-blur-2xl rounded-3xl border border-white/10 p-8 sm:p-10 shadow-[0_20px_80px_-15px_rgba(34,211,238,0.25)]">
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-6">
             <img src={branding.logo || DEFAULT_LOGO} alt={brandName} className="h-8 max-w-[140px] object-contain" />
           </div>
 
-          <h1 className="text-xl font-bold text-slate-800 mb-6">Sign in to {brandName}</h1>
+          <h1 className="text-xl font-bold text-white mb-6">Sign in to {brandName}</h1>
 
           <Button
             type="button"
             variant="outline"
-            className="w-full h-12 text-sm font-medium mb-5 bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+            className="w-full h-12 text-sm font-medium mb-5 bg-white/5 border-white/15 text-white hover:bg-white/10 hover:text-white"
             onClick={handleGoogle}
           >
             <GoogleIcon className="w-5 h-5 mr-2" />
@@ -129,15 +116,15 @@ export default function Login() {
 
           <div className="relative mb-5">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
+              <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-slate-400">or</span>
+              <span className="bg-transparent px-3 text-white/40">or</span>
             </div>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm flex items-start gap-2">
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm flex items-start gap-2">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
@@ -145,7 +132,7 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-300/60" aria-hidden="true" />
               <input
                 id="email"
                 type="email"
@@ -154,13 +141,13 @@ export default function Login() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-12 pl-11 pr-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/60 text-slate-800 text-sm placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400"
+                className="w-full h-12 pl-11 pr-3 rounded-xl bg-white/[0.04] backdrop-blur-sm border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-400/50"
                 required
               />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-300/60" aria-hidden="true" />
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -168,13 +155,13 @@ export default function Login() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-12 pl-11 pr-11 rounded-xl bg-white/40 backdrop-blur-sm border border-white/60 text-slate-800 text-sm placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400"
+                className="w-full h-12 pl-11 pr-11 rounded-xl bg-white/[0.04] backdrop-blur-sm border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-400/50"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -182,23 +169,23 @@ export default function Login() {
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-slate-500 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-white/50 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
+                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-400"
                 />
                 Remember me
               </label>
-              <Link to="/forgot-password" className="text-indigo-600 hover:underline font-medium">
+              <Link to="/forgot-password" className="text-cyan-300 hover:underline font-medium">
                 Forgot password?
               </Link>
             </div>
 
             <Button
               type="submit"
-              className="w-full h-12 font-semibold text-white rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 shadow-lg shadow-indigo-500/30"
+              className="w-full h-12 font-semibold text-white rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 shadow-lg shadow-cyan-500/30"
               disabled={loading}
             >
               {loading ? (
@@ -212,9 +199,9 @@ export default function Login() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-slate-500 mt-6">
+          <p className="text-center text-sm text-white/50 mt-6">
             Don't have an account?{" "}
-            <Link to="/register" className="text-indigo-600 font-medium hover:underline">
+            <Link to="/register" className="text-cyan-300 font-medium hover:underline">
               Create one
             </Link>
           </p>
