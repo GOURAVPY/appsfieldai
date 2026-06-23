@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, Store, Gavel, CreditCard, ClipboardList, TrendingUp, Building2, ShoppingCart, Shield, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,18 +33,18 @@ export default function Topbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
-  const [branding, setBranding] = useState({ logo: "", siteName: "" });
-  const [brandLoaded, setBrandLoaded] = useState(false);
 
-  useEffect(() => {
-    base44.entities.AppConfig.filter({ key: "main" })
-      .then((cfgs) => {
-        const cfg = cfgs?.[0];
-        if (cfg) setBranding({ logo: cfg.appLogoUrl || "", siteName: cfg.siteName || "" });
-      })
-      .catch(() => {})
-      .finally(() => setBrandLoaded(true));
-  }, []);
+  // Cached app-wide so the logo is fetched once and persists across page navigations
+  // (no re-fetch / flash on every route change).
+  const { data: cfgs, isFetched } = useQuery({
+    queryKey: ["appBranding"],
+    queryFn: () => base44.entities.AppConfig.filter({ key: "main" }),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+  const cfg = cfgs?.[0];
+  const branding = { logo: cfg?.appLogoUrl || "", siteName: cfg?.siteName || "" };
+  const brandLoaded = isFetched;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
