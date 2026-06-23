@@ -59,7 +59,7 @@ export default function Dashboard() {
     queryFn: () => base44.entities.SaaSListing.list(),
   });
 
-  const { data: heroConfigs = [] } = useQuery({
+  const { data: heroConfigs = [], isLoading: heroLoading } = useQuery({
     queryKey: ["dashboardConfig"],
     queryFn: () => base44.entities.AppConfig.filter({ key: "dashboard_hero" }),
   });
@@ -104,7 +104,10 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-0">
-      {/* Hero Section */}
+      {/* Hero Section — hold off rendering until config resolves to avoid old-default flash */}
+      {heroLoading ? (
+        <div className="relative py-20 px-4 rounded-2xl mb-2 bg-secondary/20 min-h-[420px]" />
+      ) : (
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -157,6 +160,7 @@ export default function Dashboard() {
           </button>
         </motion.div>
       </motion.div>
+      )}
 
       {/* Deals Ending Soon */}
       <DealsEndingSoon listings={publicListings} onViewDetails={setViewDetailListing} />
