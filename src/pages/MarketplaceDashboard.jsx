@@ -2,10 +2,11 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Store, Zap, Rocket, ExternalLink, LayoutDashboard, Globe, Trash2, User as UserIcon, Mail } from "lucide-react";
+import { Store, Zap, Rocket, ExternalLink, LayoutDashboard, Globe, Trash2, User as UserIcon, Mail, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/components/ui/use-toast";
 import SetupWizard from "@/components/marketplace/SetupWizard";
@@ -19,6 +20,7 @@ export default function MarketplaceDashboard() {
   const [selectedMarketplace, setSelectedMarketplace] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [search, setSearch] = useState("");
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const isAdmin = currentUser?.role === "admin";
@@ -41,6 +43,20 @@ export default function MarketplaceDashboard() {
     allUsers.forEach((u) => { map[u.id] = u; });
     return map;
   }, [allUsers]);
+
+  // Admin search filter: match by marketplace name, owner name, or owner email.
+  const filteredMarketplaces = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return marketplaces;
+    return marketplaces.filter((m) => {
+      const owner = ownerMap[m.ownerId];
+      return (
+        (m.name || "").toLowerCase().includes(q) ||
+        (owner?.full_name || "").toLowerCase().includes(q) ||
+        (owner?.email || "").toLowerCase().includes(q)
+      );
+    });
+  }, [marketplaces, ownerMap, search]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -92,7 +108,20 @@ export default function MarketplaceDashboard() {
           <h1 className="text-2xl font-display font-bold">{isAdmin ? "Admin Marketplace" : "My Marketplaces"}</h1>
           <p className="text-sm text-muted-foreground mt-1">{isAdmin ? "Manage every user's marketplace across the platform." : "Build and manage your SaaS marketplace sites."}</p>
         </div>
-        <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5"><Rocket className="w-4 h-4" /> New Marketplace</Button>
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by store, owner, or email..."
+                className="pl-9 h-10 rounded-xl bg-secondary/60 border-border/40 text-sm"
+              />
+            </div>
+          )}
+          <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 shrink-0"><Rocket className="w-4 h-4" /> New Marketplace</Button>
+        </div>
       </motion.div>
 
       {/* Owner product/sales overview — only for regular owners with marketplaces */}
@@ -115,7 +144,9 @@ export default function MarketplaceDashboard() {
         </motion.div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {marketplaces.map((m, i) => {
+          {filteredMarketplaces.length === 0 ? (
+            <p className="col-span-full text-center py-12 text-sm text-muted-foreground">No marketplaces match "{search}".</p>
+          ) : filteredMarketplaces.map((m, i) => {
             const plan = plans.find(p => p.id === m.planId);
             const owner = ownerMap[m.ownerId];
             return (
