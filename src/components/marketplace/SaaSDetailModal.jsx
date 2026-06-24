@@ -178,14 +178,14 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth 
               <>
                 {/* LEFT — Image Slider (60%) */}
                 <div className="w-[58%] flex-shrink-0 h-full">
-                  <ImageSlider images={listing.images} />
+                  <ImageSlider images={listing.screenshots} />
                 </div>
 
                 {/* RIGHT — Details (40%) */}
                 <div className="flex-1 h-full overflow-y-auto flex flex-col p-5 space-y-4">
                   {/* Title & Category */}
                   <div className="pr-6">
-                    <h2 className="text-lg font-display font-bold leading-snug">{listing.title}</h2>
+                    <h2 className="text-lg font-display font-bold leading-snug">{listing.softwareName}</h2>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <Badge variant="outline" className="text-[10px] border-border/40">{listing.category}</Badge>
                       <div className="flex items-center gap-1 text-xs">
@@ -217,7 +217,10 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth 
                   {/* Description */}
                   <div>
                     <p className="text-[11px] font-semibold text-muted-foreground uppercase mb-1">About this SaaS</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{listing.description || "No description provided."}</p>
+                    {listing.shortDescription && (
+                      <p className="text-sm font-medium text-foreground mb-1.5">{listing.shortDescription}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground leading-relaxed">{listing.fullDescription || "No description provided."}</p>
                   </div>
 
                   {/* Tags */}
