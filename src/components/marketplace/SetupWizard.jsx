@@ -11,10 +11,10 @@ import { toast } from "sonner";
 import BuildingStoreOverlay from "@/components/marketplace/BuildingStoreOverlay";
 
 const TEMPLATES = [
-  { id: "default", name: "Standard", desc: "Clean, professional layout for SaaS marketplaces", gradient: "from-violet-600 to-cyan-600" },
-  { id: "minimal", name: "Minimal", desc: "Lightweight, fast-loading design", gradient: "from-slate-600 to-slate-800" },
-  { id: "bold", name: "Bold", desc: "Vibrant colors and striking typography", gradient: "from-orange-500 to-rose-500" },
-  { id: "enterprise", name: "Enterprise", desc: "Corporate-grade with advanced layouts", gradient: "from-blue-600 to-indigo-600" },
+  { id: "default", name: "Standard", desc: "Clean, professional layout for SaaS marketplaces", gradient: "from-violet-600 to-cyan-600", primaryColor: "#7c3aed", accentColor: "#06b6d4" },
+  { id: "minimal", name: "Minimal", desc: "Lightweight, fast-loading design", gradient: "from-slate-600 to-slate-800", primaryColor: "#475569", accentColor: "#1e293b" },
+  { id: "bold", name: "Bold", desc: "Vibrant colors and striking typography", gradient: "from-orange-500 to-rose-500", primaryColor: "#f97316", accentColor: "#f43f5e" },
+  { id: "enterprise", name: "Enterprise", desc: "Corporate-grade with advanced layouts", gradient: "from-blue-600 to-indigo-600", primaryColor: "#2563eb", accentColor: "#4f46e5" },
 ];
 
 const PRESET_CATEGORIES = ["CRM", "Analytics", "Marketing", "AI & ML", "Dev Tools", "Design", "Finance", "HR", "Security", "E-commerce", "Productivity", "Communication"];
@@ -52,6 +52,8 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     branding: {
       primaryColor: marketplace?.branding?.primaryColor || "#7c3aed",
       accentColor: marketplace?.branding?.accentColor || "#06b6d4",
+      logo: marketplace?.branding?.logo || "",
+      favicon: marketplace?.branding?.favicon || "",
     },
     categories: marketplace?.categories || [],
     customCategory: "",
@@ -65,9 +67,29 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     timezone: marketplace?.timezone || "UTC",
   });
 
+  const [uploading, setUploading] = useState(null);
+
   const update = (field, value) => setData(d => ({ ...d, [field]: value }));
   const updateBranding = (field, value) => setData(d => ({ ...d, branding: { ...d.branding, [field]: value } }));
   const updateSettings = (field, value) => setData(d => ({ ...d, settings: { ...d.settings, [field]: value } }));
+
+  // Picking a template applies its color theme to the branding.
+  const selectTemplate = (t) => {
+    update("template", t.id);
+    setData(d => ({ ...d, branding: { ...d.branding, primaryColor: t.primaryColor, accentColor: t.accentColor } }));
+  };
+
+  const handleUpload = async (field, file) => {
+    if (!file) return;
+    setUploading(field);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      updateBranding(field, file_url);
+    } catch {
+      toast.error("Upload failed. Please try again.");
+    }
+    setUploading(null);
+  };
 
   const addCategory = () => {
     const cat = data.customCategory.trim();
@@ -199,12 +221,27 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
               <h3 className="text-lg font-display font-semibold flex items-center gap-2"><Palette className="w-5 h-5 text-violet-400" />Choose Template</h3>
               <div className="grid grid-cols-2 gap-4">
                 {TEMPLATES.map(t => (
-                  <button key={t.id} onClick={() => update("template", t.id)} className={`p-4 rounded-xl border-2 text-left transition-all ${data.template === t.id ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"}`}>
+                  <button key={t.id} onClick={() => selectTemplate(t)} className={`p-4 rounded-xl border-2 text-left transition-all ${data.template === t.id ? "border-violet-500 bg-violet-500/10" : "border-border/40 hover:border-border"}`}>
                     <div className={`w-full h-16 rounded-lg bg-gradient-to-br ${t.gradient} mb-2 flex items-center justify-center`}><span className="text-white font-display font-bold text-sm">{t.name}</span></div>
                     <p className="text-[11px] text-muted-foreground">{t.desc}</p>
                   </button>
                 ))}
               </div>
+              {/* Heading preview for the chosen template */}
+              {(() => {
+                const tpl = TEMPLATES.find(t => t.id === data.template);
+                if (!tpl) return null;
+                return (
+                  <div className="rounded-xl border border-border/30 overflow-hidden">
+                    <p className="text-xs text-muted-foreground px-4 pt-3">Heading Preview</p>
+                    <div className="p-6 text-center" style={{ background: `linear-gradient(135deg, ${data.branding.primaryColor}26, ${data.branding.accentColor}26)` }}>
+                      <span className="inline-block text-[10px] font-medium px-2.5 py-1 rounded-full mb-2" style={{ background: `${data.branding.primaryColor}33`, color: data.branding.primaryColor }}>{tpl.name} Theme</span>
+                      <h2 className="text-2xl font-display font-bold" style={{ color: data.branding.primaryColor }}>{data.name || "Your Marketplace"}</h2>
+                      <p className="text-xs text-muted-foreground mt-1">Discover the best SaaS lifetime deals</p>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -226,6 +263,32 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
                     <Input type="color" value={data.branding.accentColor} onChange={e => updateBranding("accentColor", e.target.value)} className="w-12 h-10 p-0.5 bg-secondary/50 border-border/30 rounded-xl" />
                     <Input value={data.branding.accentColor} onChange={e => updateBranding("accentColor", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl" />
                   </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-muted-foreground">Logo</label>
+                  <label className="mt-1 flex items-center gap-3 p-3 rounded-xl border border-dashed border-border/40 cursor-pointer hover:border-violet-500/50 transition-colors">
+                    {data.branding.logo ? (
+                      <img src={data.branding.logo} alt="logo" className="w-10 h-10 rounded-lg object-contain bg-secondary/50" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center"><Upload className="w-4 h-4 text-muted-foreground" /></div>
+                    )}
+                    <span className="text-xs text-muted-foreground">{uploading === "logo" ? "Uploading…" : data.branding.logo ? "Change logo" : "Upload logo"}</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={e => handleUpload("logo", e.target.files?.[0])} />
+                  </label>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Favicon</label>
+                  <label className="mt-1 flex items-center gap-3 p-3 rounded-xl border border-dashed border-border/40 cursor-pointer hover:border-violet-500/50 transition-colors">
+                    {data.branding.favicon ? (
+                      <img src={data.branding.favicon} alt="favicon" className="w-10 h-10 rounded-lg object-contain bg-secondary/50" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center"><Upload className="w-4 h-4 text-muted-foreground" /></div>
+                    )}
+                    <span className="text-xs text-muted-foreground">{uploading === "favicon" ? "Uploading…" : data.branding.favicon ? "Change favicon" : "Upload favicon"}</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={e => handleUpload("favicon", e.target.files?.[0])} />
+                  </label>
                 </div>
               </div>
               <div className="p-4 rounded-xl border border-border/30" style={{ background: `linear-gradient(135deg, ${data.branding.primaryColor}15, ${data.branding.accentColor}15)` }}>
