@@ -31,6 +31,7 @@ Generate compelling, professional, conversion-focused content for this store's l
 - A subheadline describing the value (1-2 sentences)
 - A call-to-action button label (2-3 words)
 - A short footer tagline describing the store (max 12 words)
+- Exactly 4 realistic dummy SaaS products for this store. Each must have: a software name (title), a short one-line description, a fuller 2-3 sentence description, a category (use one of the store's categories when possible), a full price (number between 79 and 499), and a discounted deal price (lower than the full price)
 - Exactly 5 highly relevant FAQs (question + helpful answer of 1-2 sentences)
 - Exactly 5 realistic, niche-specific testimonials (author name, author role/company, rating 4-5, content of 1-2 sentences)`;
 
@@ -45,6 +46,20 @@ Generate compelling, professional, conversion-focused content for this store's l
           subheadline: { type: 'string' },
           ctaText: { type: 'string' },
           footerTagline: { type: 'string' },
+          products: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                softwareName: { type: 'string' },
+                shortDescription: { type: 'string' },
+                fullDescription: { type: 'string' },
+                category: { type: 'string' },
+                price: { type: 'number' },
+                discountPrice: { type: 'number' },
+              },
+            },
+          },
           faqs: {
             type: 'array',
             items: {
@@ -111,7 +126,60 @@ Generate compelling, professional, conversion-focused content for this store's l
       }
     }
 
-    // 4. Import DFY products matching the store's categories. Skip categories with no matches.
+    // 4a. Create 4 AI-generated dummy products with cover images and a 7-day expiring deal.
+    let dummyCount = 0;
+    const GRADIENTS = [
+      'linear-gradient(135deg,#f97316,#fbbf24)',
+      'linear-gradient(135deg,#8b5cf6,#ec4899)',
+      'linear-gradient(135deg,#06b6d4,#3b82f6)',
+      'linear-gradient(135deg,#10b981,#84cc16)',
+    ];
+    if (Array.isArray(g.products) && g.products.length) {
+      const dealEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const validProducts = g.products.filter(p => p.softwareName).slice(0, 4);
+      const dummyRows = [];
+      for (let i = 0; i < validProducts.length; i++) {
+        const p = validProducts[i];
+        let coverUrl = '';
+        try {
+          const img = await base44.integrations.Core.GenerateImage({
+            prompt: `Clean modern SaaS product cover image for "${p.softwareName}" — ${p.shortDescription || p.category || 'software tool'}. Sleek app dashboard UI, vibrant gradient background, professional, no text.`,
+          });
+          coverUrl = img?.url || '';
+        } catch (e) {
+          console.error('GenerateImage failed for', p.softwareName, e.message);
+        }
+        dummyRows.push({
+          marketplaceId,
+          ownerId: marketplace.ownerId,
+          softwareName: p.softwareName,
+          logo: coverUrl,
+          screenshots: coverUrl ? [coverUrl] : [],
+          shortDescription: p.shortDescription || '',
+          fullDescription: p.fullDescription || p.shortDescription || '',
+          category: p.category || (categories[0] || 'SaaS'),
+          pricingType: 'lifetime_deal',
+          price: p.price || 199,
+          discountPrice: p.discountPrice || Math.round((p.price || 199) * 0.6),
+          dealType: 'single_purchase',
+          isLifetimeDeal: true,
+          noDayLimit: false,
+          dealDurationDays: 7,
+          dealStartDate: new Date().toISOString(),
+          dealEndDate: dealEnd,
+          dealStatus: 'live',
+          rating: 5,
+          imageGradient: GRADIENTS[i % GRADIENTS.length],
+          status: 'active',
+        });
+      }
+      if (dummyRows.length) {
+        await base44.entities.SaaSListing.bulkCreate(dummyRows);
+        dummyCount = dummyRows.length;
+      }
+    }
+
+    // 4b. Import DFY products matching the store's categories. Skip categories with no matches.
     let importedCount = 0;
     if (categories.length) {
       const dfyProducts = await base44.asServiceRole.entities.DFYProduct.filter({ isActive: true });
@@ -150,6 +218,7 @@ Generate compelling, professional, conversion-focused content for this store's l
       success: true,
       faqCount: updatedPageSections.faqs.length,
       testimonialCount,
+      dummyCount,
       importedCount,
     });
   } catch (error) {
