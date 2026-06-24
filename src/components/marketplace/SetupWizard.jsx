@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { Store, Palette, Tag, Settings, Rocket, Check, Type, Globe, ChevronLeft, ChevronRight, Upload, Plus, X, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 const TEMPLATES = [
@@ -35,6 +36,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     template: marketplace?.template || "default",
     name: marketplace?.name || "",
     slug: marketplace?.slug || "",
+    description: marketplace?.description || "",
     branding: {
       primaryColor: marketplace?.branding?.primaryColor || "#7c3aed",
       accentColor: marketplace?.branding?.accentColor || "#06b6d4",
@@ -73,6 +75,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     const payload = {
       type: data.type,
       template: data.template,
+      description: data.description,
       branding: data.branding,
       categories: data.categories,
       settings: data.settings,
@@ -98,13 +101,21 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
         heroGradientStart: `${data.branding.primaryColor}33`,
         heroGradientEnd: "#0a0603",
       };
-      await base44.entities.Marketplace.create({
+      const created = await base44.entities.Marketplace.create({
         ...payload,
         pageSections: seededPageSections,
         name: data.name,
         slug: data.slug,
         ownerId: (await base44.auth.me()).id,
       });
+      // Auto-build store content (hero copy, FAQs, testimonials, product import) from the description.
+      if (data.description.trim()) {
+        try {
+          await base44.functions.invoke("autoBuildStore", { marketplaceId: created.id });
+        } catch (err) {
+          console.error("autoBuildStore failed:", err);
+        }
+      }
     }
     queryClient.invalidateQueries({ queryKey: ["ownerMarketplaces"] });
     setSaving(false);
@@ -152,10 +163,17 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
                 ))}
               </div>
               {!marketplace?.id && (
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  <div><label className="text-xs text-muted-foreground">Name</label><Input value={data.name} onChange={e => { update("name", e.target.value); update("slug", e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")); }} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="My SaaS Store" /></div>
-                  <div><label className="text-xs text-muted-foreground">Slug</label><Input value={data.slug} onChange={e => update("slug", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="my-saas-store" /></div>
-                </div>
+                <>
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                    <div><label className="text-xs text-muted-foreground">Name</label><Input value={data.name} onChange={e => { update("name", e.target.value); update("slug", e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")); }} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="My SaaS Store" /></div>
+                    <div><label className="text-xs text-muted-foreground">Slug</label><Input value={data.slug} onChange={e => update("slug", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="my-saas-store" /></div>
+                  </div>
+                  <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-3">
+                    <label className="text-xs font-medium text-violet-400 flex items-center gap-1.5"><Rocket className="w-3.5 h-3.5" />Describe about your marketplace</label>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 mb-2">We'll use this to auto-build your store — headline, FAQs, testimonials & matching products.</p>
+                    <Textarea value={data.description} onChange={e => update("description", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl h-20 resize-none" placeholder="e.g. A marketplace for AI & marketing SaaS lifetime deals aimed at indie founders and small agencies..." />
+                  </div>
+                </>
               )}
             </div>
           )}

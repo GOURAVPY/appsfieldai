@@ -9,6 +9,7 @@ import OneInALifetimeDeals from "@/components/store/OneInALifetimeDeals";
 import StoreTestimonials from "@/components/store/StoreTestimonials";
 import StoreCustomSection from "@/components/store/StoreCustomSection";
 import StoreFooter from "@/components/store/StoreFooter";
+import StoreFAQ from "@/components/store/StoreFAQ";
 import StoreHero from "@/components/store/StoreHero";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreCategories from "@/components/store/StoreCategories";
@@ -91,6 +92,7 @@ export default function StorePage() {
   const customBoxesEnabled = sections.customBoxesEnabled ?? false;
   const testimonialsEnabled = sections.testimonialsEnabled ?? false;
   const footerEnabled = sections.footerEnabled ?? true;
+  const faqEnabled = sections.faqEnabled ?? false;
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,6 +152,9 @@ export default function StorePage() {
 
       {/* Footer */}
       {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} customPages={customPages} storeBasePath={storeBasePath} />}
+
+      {/* FAQ — below the footer */}
+      {faqEnabled && <StoreFAQ faqs={sections.faqs} title={sections.faqTitle} brandColor={brandColor} />}
 
       <SaaSDetailModal
         listingId={viewDetailListing?.id}

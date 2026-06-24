@@ -23,6 +23,10 @@
       "default": "single_vendor",
       "description": "Marketplace type"
     },
+    "description": {
+      "type": "string",
+      "description": "Owner's description of what the marketplace is about (used to AI-generate store content)"
+    },
     "template": {
       "type": "string",
       "enum": [
@@ -203,6 +207,30 @@
         },
         "testimonialsTitle": {
           "type": "string"
+        },
+        "faqEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the FAQ section is shown (below the footer)"
+        },
+        "faqTitle": {
+          "type": "string",
+          "description": "FAQ section heading"
+        },
+        "faqs": {
+          "type": "array",
+          "description": "List of frequently asked questions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "answer": {
+                "type": "string"
+              }
+            }
+          }
         },
         "customBoxesEnabled": {
           "type": "boolean",

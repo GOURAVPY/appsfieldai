@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import CustomerManager from "@/components/marketplace/CustomerManager";
 import DomainManager from "@/components/marketplace/DomainManager";
 import PublishThemeDialog from "@/components/marketplace/PublishThemeDialog";
 import HeroSectionEditor from "@/components/marketplace/HeroSectionEditor";
+import FaqSectionEditor from "@/components/marketplace/FaqSectionEditor";
 import CustomPagesManager from "@/components/marketplace/CustomPagesManager";
 import TestimonialsManager from "@/components/marketplace/TestimonialsManager";
 import FooterPagesList from "@/components/marketplace/FooterPagesList";
@@ -97,6 +98,9 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     productsSectionTitle: marketplace?.pageSections?.productsSectionTitle || "",
     testimonialsEnabled: marketplace?.pageSections?.testimonialsEnabled ?? false,
     testimonialsTitle: marketplace?.pageSections?.testimonialsTitle || "",
+    faqEnabled: marketplace?.pageSections?.faqEnabled ?? false,
+    faqTitle: marketplace?.pageSections?.faqTitle || "",
+    faqs: marketplace?.pageSections?.faqs || [],
     customBoxesEnabled: marketplace?.pageSections?.customBoxesEnabled ?? false,
     footerEnabled: marketplace?.pageSections?.footerEnabled ?? true,
     footerText: marketplace?.pageSections?.footerText || "",
@@ -215,6 +219,10 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                       <MessageSquare className="w-3.5 h-3.5" /> Manage Testimonials
                     </Button>
                   </div>
+                </SectionCard>
+                <SectionCard title="FAQ Section" icon={HelpCircle}
+                  enabled={pageForm.faqEnabled} onToggle={() => setPageForm(f => ({ ...f, faqEnabled: !f.faqEnabled }))}>
+                  <FaqSectionEditor form={pageForm} setForm={setPageForm} />
                 </SectionCard>
                 <SectionCard title="Custom Section Boxes" icon={Layers}
                   enabled={pageForm.customBoxesEnabled} onToggle={() => setPageForm(f => ({ ...f, customBoxesEnabled: !f.customBoxesEnabled }))}>
