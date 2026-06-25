@@ -147,9 +147,127 @@
           "default": false,
           "description": "Whether PayPal payments are enabled for this store"
         },
+        "paypalMode": {
+          "type": "string",
+          "enum": [
+            "sandbox",
+            "live"
+          ],
+          "default": "sandbox",
+          "description": "PayPal environment"
+        },
+        "paypalClientId": {
+          "type": "string",
+          "description": "PayPal REST API Client ID"
+        },
+        "paypalSecret": {
+          "type": "string",
+          "description": "PayPal REST API Secret Key"
+        },
         "paypalEmail": {
           "type": "string",
           "description": "PayPal account email to receive payments"
+        },
+        "codEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether Cash on Delivery / pay-your-own-way is enabled"
+        },
+        "codInstructions": {
+          "type": "string",
+          "description": "Instructions shown to customers choosing the manual / COD payment option"
+        }
+      }
+    },
+    "emailSettings": {
+      "type": "object",
+      "description": "Store SMTP and transactional email configuration",
+      "properties": {
+        "smtpEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether custom SMTP is enabled for store emails"
+        },
+        "smtpHost": {
+          "type": "string",
+          "description": "SMTP server host"
+        },
+        "smtpPort": {
+          "type": "number",
+          "default": 587,
+          "description": "SMTP server port"
+        },
+        "smtpUsername": {
+          "type": "string",
+          "description": "SMTP username"
+        },
+        "smtpPassword": {
+          "type": "string",
+          "description": "SMTP password"
+        },
+        "smtpSecure": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use TLS/SSL"
+        },
+        "fromName": {
+          "type": "string",
+          "description": "Sender display name"
+        },
+        "fromEmail": {
+          "type": "string",
+          "description": "Sender email address"
+        },
+        "templates": {
+          "type": "object",
+          "description": "Transactional email templates keyed by action",
+          "properties": {
+            "welcome": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "subject": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                }
+              }
+            },
+            "orderConfirmation": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "subject": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                }
+              }
+            },
+            "reservation": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "subject": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                }
+              }
+            }
+          }
         }
       }
     },
