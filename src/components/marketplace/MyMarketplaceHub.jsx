@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, CreditCard, Mail
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, CreditCard, Mail, ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import TestimonialsManager from "@/components/marketplace/TestimonialsManager";
 import FooterPagesList from "@/components/marketplace/FooterPagesList";
 import PaymentSettingsManager from "@/components/marketplace/PaymentSettingsManager";
 import EmailSettingsManager from "@/components/marketplace/EmailSettingsManager";
+import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
 
 const LANGUAGES = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French",
@@ -63,6 +64,7 @@ const NAV_GROUPS = [
   {
     label: "Products", items: [
       { id: "products", label: "Products", icon: Package },
+      { id: "orders", label: "Orders", icon: ShoppingBag },
       { id: "categories", label: "Categories", icon: Tags },
       { id: "coupons", label: "Coupons", icon: Tag },
       { id: "deals", label: "Deals", icon: Zap },
@@ -282,6 +284,15 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
           {activeTab === "products" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Products</h2>
             <SoftwareManager marketplaceId={marketplace?.id} /></div>
+          )}
+
+          {/* ORDERS */}
+          {activeTab === "orders" && (
+            <div className="space-y-4">
+              <div><h2 className="text-lg font-display font-bold">Orders</h2>
+              <p className="text-sm text-muted-foreground">Store orders placed through the cart and checkout.</p></div>
+              <StoreOrderManager marketplaceId={marketplace?.id} />
+            </div>
           )}
 
           {/* CATEGORIES */}
