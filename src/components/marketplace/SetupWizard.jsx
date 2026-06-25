@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Store, Palette, Tag, Settings, Rocket, Check, Type, Globe, ChevronLeft, ChevronRight, Upload, Plus, X, Building2, Users } from "lucide-react";
+import { Store, Palette, Tag, Settings, Rocket, Check, Type, Globe, ChevronLeft, ChevronRight, Upload, Plus, X, Building2, Users, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,6 +65,10 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     supportEmail: marketplace?.supportEmail || "",
     currency: marketplace?.currency || "USD",
     timezone: marketplace?.timezone || "UTC",
+    payment: {
+      paypalEnabled: marketplace?.payment?.paypalEnabled ?? false,
+      paypalEmail: marketplace?.payment?.paypalEmail || "",
+    },
   });
 
   const [uploading, setUploading] = useState(null);
@@ -72,6 +76,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
   const update = (field, value) => setData(d => ({ ...d, [field]: value }));
   const updateBranding = (field, value) => setData(d => ({ ...d, branding: { ...d.branding, [field]: value } }));
   const updateSettings = (field, value) => setData(d => ({ ...d, settings: { ...d.settings, [field]: value } }));
+  const updatePayment = (field, value) => setData(d => ({ ...d, payment: { ...d.payment, [field]: value } }));
 
   // Picking a template applies its color theme to the branding.
   const selectTemplate = (t) => {
@@ -116,6 +121,7 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
       supportEmail: data.supportEmail,
       currency: data.currency,
       timezone: data.timezone,
+      payment: data.payment,
       status: "active",
     };
     if (marketplace?.id) {
@@ -330,7 +336,6 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
               <div className="space-y-3">
                 {[
                   { key: "requireListingApproval", label: "Require listing approval", desc: "Review SaaS listings before they go live" },
-                  { key: "requireVendorApproval", label: "Require vendor approval", desc: "Approve vendors before they can list products" },
                   { key: "requireSoftwareApproval", label: "Require software approval", desc: "Verify software before it can be listed" },
                 ].map(opt => (
                   <label key={opt.key} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
@@ -338,6 +343,49 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
                     <div><p className="text-sm font-medium">{opt.label}</p><p className="text-[11px] text-muted-foreground">{opt.desc}</p></div>
                   </label>
                 ))}
+              </div>
+
+              {/* Vendor settings — only relevant for multi-vendor marketplaces */}
+              <AnimatePresence initial={false}>
+                {data.type === "multi_vendor" && (
+                  <motion.div
+                    key="vendor-settings"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-violet-400" />
+                        <p className="text-sm font-semibold">Vendor Settings</p>
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300">Vendor</span>
+                      </div>
+                      <label className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
+                        <input type="checkbox" checked={!!data.settings.requireVendorApproval} onChange={e => updateSettings("requireVendorApproval", e.target.checked)} className="mt-0.5 accent-violet-500" />
+                        <div><p className="text-sm font-medium">Require vendor approval</p><p className="text-[11px] text-muted-foreground">Approve vendors before they can list products</p></div>
+                      </label>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Store Payment Settings */}
+              <div className="rounded-xl border border-border/30 bg-secondary/20 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-violet-400" />
+                  <p className="text-sm font-semibold">Store Payment Settings</p>
+                </div>
+                <label className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 cursor-pointer hover:bg-secondary/50 transition-colors">
+                  <input type="checkbox" checked={!!data.payment.paypalEnabled} onChange={e => updatePayment("paypalEnabled", e.target.checked)} className="mt-0.5 accent-violet-500" />
+                  <div><p className="text-sm font-medium">Enable PayPal</p><p className="text-[11px] text-muted-foreground">Accept payments from customers via PayPal</p></div>
+                </label>
+                {data.payment.paypalEnabled && (
+                  <div>
+                    <label className="text-xs text-muted-foreground">PayPal Email</label>
+                    <Input value={data.payment.paypalEmail} onChange={e => updatePayment("paypalEmail", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="payments@yourstore.com" />
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="text-xs text-muted-foreground">Support Email</label><Input value={data.supportEmail} onChange={e => update("supportEmail", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="support@example.com" /></div>

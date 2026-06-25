@@ -138,6 +138,21 @@
         }
       }
     },
+    "payment": {
+      "type": "object",
+      "description": "Store payment gateway configuration",
+      "properties": {
+        "paypalEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether PayPal payments are enabled for this store"
+        },
+        "paypalEmail": {
+          "type": "string",
+          "description": "PayPal account email to receive payments"
+        }
+      }
+    },
     "pageSections": {
       "type": "object",
       "description": "Page section visibility settings",
