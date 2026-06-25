@@ -33,6 +33,29 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Testimonial.filter({ marketplaceId: m.id, isPublished: true }, 'sortOrder'),
     ]);
 
+    // Resolve seller display name for each listing:
+    // - vendor-listed products show the vendor's business name
+    // - everything else shows the store owner's name
+    let storeOwnerName = '';
+    try {
+      if (m.ownerId) {
+        const owner = await base44.asServiceRole.entities.User.filter({ id: m.ownerId });
+        storeOwnerName = owner?.[0]?.full_name || '';
+      }
+    } catch { /* owner lookup failed — fall back below */ }
+
+    const vendorIds = [...new Set(software.map((s) => s.vendorId).filter(Boolean))];
+    const vendorNameById = {};
+    if (vendorIds.length) {
+      const vendors = await base44.asServiceRole.entities.Vendor.filter({ marketplaceId: m.id });
+      vendors.forEach((v) => { vendorNameById[v.id] = v.vendorName; });
+    }
+
+    software.forEach((s) => {
+      s.resolvedSellerName =
+        (s.vendorId && vendorNameById[s.vendorId]) || storeOwnerName || s.sellerName || 'Store Owner';
+    });
+
     return Response.json({
       marketplace: {
         id: m.id,

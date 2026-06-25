@@ -97,7 +97,7 @@ function ImageSlider({ images }) {
   );
 }
 
-export default function SaaSDetailModal({ listingId, open, onClose, requireAuth }) {
+export default function SaaSDetailModal({ listingId, open, onClose, requireAuth, sellerName }) {
   // requireAuth (optional): called before buy/reserve. Return true if allowed to proceed,
   // false to block (e.g. store visitor must log in first — caller opens its auth modal).
   const guard = (action) => () => {
@@ -201,19 +201,6 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth 
                     </div>
                   </div>
 
-                  {/* Scores */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge className={`text-[10px] border ${listing.riskScore <= 3 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : listing.riskScore <= 6 ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"} flex items-center gap-1`}>
-                      <Shield className="w-3 h-3" /> Risk {listing.riskScore}/10
-                    </Badge>
-                    <Badge className="text-[10px] border bg-violet-500/10 text-violet-400 border-violet-500/20 flex items-center gap-1">
-                      <Bot className="w-3 h-3" /> AI {listing.aiScore}%
-                    </Badge>
-                    <span className="text-[10px] text-emerald-400 flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3" /> +{listing.growthRate}%
-                    </span>
-                  </div>
-
                   {/* Description */}
                   <div>
                     <p className="text-[11px] font-semibold text-muted-foreground uppercase mb-1">About this SaaS</p>
@@ -263,7 +250,7 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth 
                   {/* Seller */}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Seller</span>
-                    <span className="font-medium">{listing.sellerName || "Anonymous"}</span>
+                    <span className="font-medium">{sellerName || listing.resolvedSellerName || listing.sellerName || "Store Owner"}</span>
                   </div>
 
                   {/* Auction countdown */}

@@ -159,6 +159,7 @@ export default function StorePage() {
       <SaaSDetailModal
         listingId={viewDetailListing?.id}
         open={!!viewDetailListing}
+        sellerName={viewDetailListing?.resolvedSellerName}
         onClose={() => setViewDetailListing(null)}
         requireAuth={() => {
           if (customer) return true;

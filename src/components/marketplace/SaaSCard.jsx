@@ -58,7 +58,9 @@ function AIScoreBadge({ score }) {
 export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
-  const { softwareName, category, sellerName, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType } = listing || {};
+  const { softwareName, category, sellerName, resolvedSellerName, logo, screenshots, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType } = listing || {};
+  const thumbnail = logo || screenshots?.[0];
+  const displaySeller = resolvedSellerName || sellerName;
   const title = softwareName || "Untitled";
   const fullPrice = (sharePrice || 0) * (totalShares || 0);
   const isSold = status === "sold";
@@ -84,9 +86,14 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
         className={`h-36 bg-gradient-to-br ${imageGradient} relative flex items-center justify-center overflow-hidden cursor-pointer`}
         onClick={() => onViewDetails ? onViewDetails(listing) : navigate(`/saas/${listing.id}`)}
       >
+        {thumbnail ? (
+          <img src={thumbnail} alt={title} className="absolute inset-0 w-full h-full object-cover" />
+        ) : null}
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
-        <span className="relative text-white font-display font-bold text-xl text-center px-4 leading-tight drop-shadow-lg">{title}</span>
+        {!thumbnail && (
+          <span className="relative text-white font-display font-bold text-xl text-center px-4 leading-tight drop-shadow-lg">{title}</span>
+        )}
 
         {/* Hover overlay with "View Details" */}
         <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-250">
@@ -130,8 +137,8 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
           {marketplaceName && (
             <Badge variant="secondary" className="text-[10px] bg-violet-500/10 text-violet-400 border-violet-500/20">{marketplaceName}</Badge>
           )}
-          {sellerName && (
-            <Badge variant="secondary" className="text-[10px] bg-sky-500/10 text-sky-400 border-sky-500/20">@{sellerName}</Badge>
+          {displaySeller && (
+            <Badge variant="secondary" className="text-[10px] bg-sky-500/10 text-sky-400 border-sky-500/20">{displaySeller}</Badge>
           )}
         </div>
 
