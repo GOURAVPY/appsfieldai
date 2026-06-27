@@ -82,6 +82,25 @@
       "default": "placed",
       "description": "Order fulfillment status"
     },
+    "delivery": {
+      "type": "object",
+      "description": "Software access / delivery details sent to the customer once the order is delivered",
+      "properties": {
+        "accessUrl": {
+          "type": "string",
+          "description": "Product access URL given to the customer"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Login details, license key, or access instructions"
+        },
+        "deliveredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When delivery info was provided"
+        }
+      }
+    },
     "notes": {
       "type": "string",
       "description": "Customer notes for the order"

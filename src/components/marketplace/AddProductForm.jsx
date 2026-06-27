@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Package, DollarSign, Image, Rocket, Save, Plus, X,
-  Clock, Users, ShoppingCart, Layers, Info
+  Clock, Users, ShoppingCart, Layers, Info, KeyRound, Link2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
     status: "pending",
     isBestSeller: false,
     isLifetimeDeal: false,
+    delivery: { accessUrl: "", instructions: "" },
   });
 
   useEffect(() => {
@@ -96,6 +97,10 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
         status: listing.status || "pending",
         isBestSeller: listing.isBestSeller || false,
         isLifetimeDeal: listing.isLifetimeDeal || false,
+        delivery: {
+          accessUrl: listing.delivery?.accessUrl || "",
+          instructions: listing.delivery?.instructions || "",
+        },
       });
     }
   }, [listing]);
@@ -223,6 +228,27 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
               <div>
                 <label className="text-xs text-muted-foreground">Seller Name</label>
                 <Input value={form.sellerName} onChange={e => update("sellerName", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="Your name or company" />
+              </div>
+            </div>
+
+            {/* Product Delivery */}
+            <div className="pt-2 border-t border-border/30">
+              <div className="flex items-center gap-2 mb-1">
+                <KeyRound className="w-4 h-4 text-orange-400" />
+                <p className="text-sm font-semibold">Product Delivery</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-3">
+                Access info sent to the customer once you mark their order as delivered.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground flex items-center gap-1.5"><Link2 className="w-3 h-3" /> Product Access URL</label>
+                  <Input value={form.delivery.accessUrl} onChange={e => update("delivery", { ...form.delivery, accessUrl: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://app.yoursoftware.com/access" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Access Instructions</label>
+                  <Textarea value={form.delivery.instructions} onChange={e => update("delivery", { ...form.delivery, instructions: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-20" placeholder="Login details, license key, redemption steps..." />
+                </div>
               </div>
             </div>
           </>

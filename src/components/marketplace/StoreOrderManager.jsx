@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ShoppingBag, Loader2 } from "lucide-react";
+import { ShoppingBag, Loader2, KeyRound, Save, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -22,6 +26,39 @@ const StatusBadge = ({ status }) => (
   <Badge className={`text-[10px] border capitalize ${badgeColors[status] || ""}`}>{status}</Badge>
 );
 
+// Inline editor for the software access info delivered to the customer.
+function DeliveryEditor({ order, onSave }) {
+  const [accessUrl, setAccessUrl] = useState(order.delivery?.accessUrl || "");
+  const [instructions, setInstructions] = useState(order.delivery?.instructions || "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async (markDelivered) => {
+    setSaving(true);
+    await onSave({ accessUrl, instructions }, markDelivered);
+    setSaving(false);
+  };
+
+  return (
+    <div className="mt-3 rounded-xl border border-border/40 bg-secondary/20 p-3 space-y-2">
+      <p className="text-[11px] font-semibold text-orange-400 flex items-center gap-1.5">
+        <KeyRound className="w-3.5 h-3.5" /> Product Delivery (sent to customer once delivered)
+      </p>
+      <Input value={accessUrl} onChange={(e) => setAccessUrl(e.target.value)} className="bg-secondary/50 border-border/30 rounded-lg text-xs h-8" placeholder="Product access URL" />
+      <Textarea value={instructions} onChange={(e) => setInstructions(e.target.value)} className="bg-secondary/50 border-border/30 rounded-lg text-xs h-16" placeholder="Login details, license key, access instructions..." />
+      <div className="flex gap-2">
+        <Button onClick={() => save(false)} disabled={saving} variant="outline" size="sm" className="border-border/40 rounded-lg text-xs gap-1.5 h-7">
+          <Save className="w-3.5 h-3.5" /> Save
+        </Button>
+        {order.status !== "completed" && (
+          <Button onClick={() => save(true)} disabled={saving} size="sm" className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 rounded-lg text-xs gap-1.5 h-7">
+            <Truck className="w-3.5 h-3.5" /> Save & Mark Delivered
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function StoreOrderManager({ marketplaceId }) {
   const queryClient = useQueryClient();
   const { data: orders = [], isLoading } = useQuery({
@@ -37,6 +74,16 @@ export default function StoreOrderManager({ marketplaceId }) {
   const updateStatus = async (id, field, value) => {
     await base44.entities.StoreOrder.update(id, { [field]: value });
     queryClient.invalidateQueries({ queryKey: ["storeOrders", marketplaceId] });
+  };
+
+  const saveDelivery = async (order, delivery, markDelivered) => {
+    const payload = {
+      delivery: { ...delivery, deliveredAt: new Date().toISOString() },
+    };
+    if (markDelivered) payload.status = "completed";
+    await base44.entities.StoreOrder.update(order.id, payload);
+    queryClient.invalidateQueries({ queryKey: ["storeOrders", marketplaceId] });
+    toast.success(markDelivered ? "Order delivered to customer" : "Delivery info saved");
   };
 
   return (
@@ -113,6 +160,8 @@ export default function StoreOrderManager({ marketplaceId }) {
                   </Select>
                 </div>
               </div>
+
+              <DeliveryEditor order={o} onSave={(delivery, markDelivered) => saveDelivery(o, delivery, markDelivered)} />
             </div>
           ))}
         </div>

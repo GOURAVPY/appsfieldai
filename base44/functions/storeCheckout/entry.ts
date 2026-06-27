@@ -37,6 +37,8 @@ Deno.serve(async (req) => {
     // Recompute every line item from the authoritative listing record.
     const lineItems = [];
     let total = 0;
+    // Default delivery info from the products being purchased (single product = use its delivery).
+    let defaultDelivery = null;
     for (const it of items) {
       const ls = await base44.asServiceRole.entities.SaaSListing.filter({ id: it.listingId });
       const listing = ls[0];
@@ -45,6 +47,9 @@ Deno.serve(async (req) => {
       const quantity = Math.max(1, parseInt(it.quantity) || 1);
       lineItems.push({ listingId: listing.id, listingTitle: listing.softwareName || '', unitPrice, quantity });
       total += unitPrice * quantity;
+      if (!defaultDelivery && listing.delivery && (listing.delivery.accessUrl || listing.delivery.instructions)) {
+        defaultDelivery = { accessUrl: listing.delivery.accessUrl || '', instructions: listing.delivery.instructions || '' };
+      }
     }
 
     if (lineItems.length === 0) {
@@ -63,6 +68,7 @@ Deno.serve(async (req) => {
       paymentMethod: method,
       paymentStatus: 'pending',
       status: 'placed',
+      delivery: defaultDelivery || undefined,
       notes: notes || '',
     });
 

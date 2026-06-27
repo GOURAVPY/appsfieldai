@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { X, User, Package, Mail, Phone, LogOut, Loader2, CheckCircle2, Clock, CircleDollarSign } from "lucide-react";
-import { fetchStoreCustomerProducts } from "@/lib/storeCustomerAuth";
+import { X, User, Package, Mail, Phone, LogOut, Loader2, CheckCircle2, Clock, CircleDollarSign, ShoppingBag, CalendarCheck } from "lucide-react";
+import { fetchStoreCustomerProducts, fetchStoreCustomerOrders } from "@/lib/storeCustomerAuth";
+import StoreOrderCard from "@/components/store/StoreOrderCard";
 
 const STATUS_STYLES = {
   pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -75,6 +76,7 @@ function ProductRow({ p, brandColor }) {
 export default function StoreAccountPanel({ open, onClose, marketplaceId, customer, brandColor = "#f97316", onLogout, initialTab = "account" }) {
   const [tab, setTab] = useState(initialTab);
   const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (open) setTab(initialTab); }, [open, initialTab]);
@@ -82,8 +84,11 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
   useEffect(() => {
     if (!open || tab !== "products" || !marketplaceId) return;
     setLoading(true);
-    fetchStoreCustomerProducts(marketplaceId)
-      .then(setProducts)
+    Promise.all([
+      fetchStoreCustomerOrders(marketplaceId),
+      fetchStoreCustomerProducts(marketplaceId),
+    ])
+      .then(([o, p]) => { setOrders(o); setProducts(p); })
       .finally(() => setLoading(false));
   }, [open, tab, marketplaceId]);
 
@@ -159,17 +164,34 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-5">
               {loading ? (
                 <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
-              ) : products.length === 0 ? (
+              ) : orders.length === 0 && products.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
                   <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">You haven't reserved any products yet.</p>
-                  <p className="text-xs mt-1">Reserve a spot on a deal and it will appear here.</p>
+                  <p className="text-sm">You haven't purchased any products yet.</p>
+                  <p className="text-xs mt-1">Your orders and reservations will appear here.</p>
                 </div>
               ) : (
-                products.map((p) => <ProductRow key={p.id} p={p} brandColor={brandColor} />)
+                <>
+                  {orders.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <ShoppingBag className="w-3.5 h-3.5" /> Purchases
+                      </p>
+                      {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} />)}
+                    </div>
+                  )}
+                  {products.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <CalendarCheck className="w-3.5 h-3.5" /> Reserved Deals
+                      </p>
+                      {products.map((p) => <ProductRow key={p.id} p={p} brandColor={brandColor} />)}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}

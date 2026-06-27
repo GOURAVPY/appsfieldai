@@ -215,6 +215,20 @@
       "type": "string",
       "description": "CSS gradient for card header"
     },
+    "delivery": {
+      "type": "object",
+      "description": "Default product delivery / access info given to buyers after purchase",
+      "properties": {
+        "accessUrl": {
+          "type": "string",
+          "description": "Product access URL"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Default access instructions, license details, or login info"
+        }
+      }
+    },
     "revenueProofFiles": {
       "type": "array",
       "items": {

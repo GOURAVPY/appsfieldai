@@ -75,3 +75,12 @@ export async function fetchStoreCustomerProducts(marketplaceId) {
   if (res.data?.error) return [];
   return res.data.products || [];
 }
+
+// Fetch the store customer's purchased orders (cart checkout) with delivery info.
+export async function fetchStoreCustomerOrders(marketplaceId) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) return [];
+  const res = await base44.functions.invoke("storeCustomerOrders", { marketplaceId, token });
+  if (res.data?.error) return [];
+  return res.data.orders || [];
+}
