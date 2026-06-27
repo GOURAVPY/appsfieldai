@@ -39,6 +39,7 @@ import AdminHub from '@/pages/AdminHub';
 import CustomerDashboard from '@/pages/CustomerDashboard';
 import StorePage from '@/pages/StorePage';
 import StoreCustomPage from '@/pages/StoreCustomPage';
+import StoreDashboard from '@/pages/StoreDashboard';
 import { getStoreKeyFromHost, getCustomDomainFromHost } from '@/lib/storeHost';
 import { PageLoader } from '@/components/Loader';
 import Home from '@/pages/Home';
@@ -50,6 +51,7 @@ const StoreSubdomainApp = () => (
   <Routes>
     <Route path="/saas/:id" element={<StorePage />} />
     <Route path="/page/:pageSlug" element={<StoreCustomPage />} />
+    <Route path="/dashboard" element={<StoreDashboard />} />
     <Route path="*" element={<StorePage />} />
   </Routes>
 );
@@ -94,6 +96,7 @@ const AuthenticatedApp = () => {
       <Route path="/global" element={<Home />} />
       {/* Public store pages — accessible without login, no app chrome */}
       <Route path="/store/:slug" element={<StorePage />} />
+      <Route path="/store/:slug/dashboard" element={<StoreDashboard />} />
       <Route path="/store/:slug/page/:pageSlug" element={<StoreCustomPage />} />
       {/* Public routes — accessible without login */}
       <Route element={<DashboardLayout />}>

@@ -136,7 +136,7 @@ export default function StorePage() {
         cartCount={cart.count}
         onOpenCart={() => setCartOpen(true)}
         onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
-        onOpenAccount={(tab) => setAccountPanel({ open: true, tab })}
+        dashboardPath={`${storeBasePath}/dashboard`}
         onLogout={logout}
       />
 
