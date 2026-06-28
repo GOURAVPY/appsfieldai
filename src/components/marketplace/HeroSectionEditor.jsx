@@ -1,5 +1,6 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 // Hero Section editor for a store's Page Settings — mirrors the admin dashboard
 // hero controls (badge, headline, subtitle, CTA, cover image, background style).
@@ -25,10 +26,10 @@ export default function HeroSectionEditor({ form, setForm, marketplace }) {
       {/* Store Logo */}
       <div>
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Store Logo</p>
-        <Input
-          value={form.headerLogoUrl || ""}
-          onChange={e => set("headerLogoUrl", e.target.value)}
-          className="bg-secondary/50 border-border/30 rounded-xl"
+        <R2ImageUpload
+          value={form.headerLogoUrl}
+          onChange={val => set("headerLogoUrl", val)}
+          campaignId={`${marketplace?.id || "store"}_logo`}
           placeholder="https://example.com/logo.png"
         />
         <p className="text-[10px] text-muted-foreground mt-1">Shown in your store's top navigation bar. Leave empty to use your brand logo.</p>
@@ -143,11 +144,11 @@ export default function HeroSectionEditor({ form, setForm, marketplace }) {
         )}
 
         {bgType === "image" && (
-          <Input
-            value={form.headerImageUrl || ""}
-            onChange={e => set("headerImageUrl", e.target.value)}
+          <R2ImageUpload
+            value={form.headerImageUrl}
+            onChange={val => set("headerImageUrl", val)}
+            campaignId={`${marketplace?.id || "store"}_hero`}
             placeholder="https://example.com/image.jpg"
-            className="bg-secondary/50 border-border/30 rounded-xl text-xs"
           />
         )}
 
