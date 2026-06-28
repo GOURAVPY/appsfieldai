@@ -15,10 +15,18 @@ export default function R2ImageUpload({ value, onChange, campaignId = "store-ass
     if (!file) return;
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("campaignId", campaignId);
-      const res = await base44.functions.invoke("uploadToR2", formData);
+      const fileData = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await base44.functions.invoke("uploadToR2", {
+        fileData,
+        fileName: file.name,
+        contentType: file.type,
+        campaignId,
+      });
       const url = res.data?.fileUrl;
       if (!url) throw new Error(res.data?.error || "Upload failed");
       onChange(url);

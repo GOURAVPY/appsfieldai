@@ -8,12 +8,17 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const formData = await req.formData();
-    const file = formData.get('file');
-    if (!file || typeof file === 'string') {
+    const body = await req.json();
+    const { fileData, fileName, contentType } = body || {};
+    if (!fileData) {
       return Response.json({ error: 'No file provided' }, { status: 400 });
     }
-    const campaignId = (formData.get('campaignId') || 'file').toString().replace(/[^a-zA-Z0-9._-]/g, '-');
+    const campaignId = (body.campaignId || 'file').toString().replace(/[^a-zA-Z0-9._-]/g, '-');
+
+    // fileData is a base64 string (without the data: prefix).
+    const base64 = fileData.includes(',') ? fileData.split(',')[1] : fileData;
+    const binary = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    const file = { name: fileName || '', type: contentType || 'application/octet-stream' };
 
     const endpoint = Deno.env.get('R2_ENDPOINT');
     const bucket = Deno.env.get('R2_BUCKET_NAME');
@@ -33,11 +38,10 @@ Deno.serve(async (req) => {
     const ext = nameExt || ((file.type || '').split('/')[1] || 'bin');
     const key = `uploads/${user.id}/${campaignId}_${Date.now()}.${ext}`;
 
-    const arrayBuffer = await file.arrayBuffer();
     await s3.send(new PutObjectCommand({
       Bucket: bucket,
       Key: key,
-      Body: new Uint8Array(arrayBuffer),
+      Body: binary,
       ContentType: file.type || 'application/octet-stream',
     }));
 
