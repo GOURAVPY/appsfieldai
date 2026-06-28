@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
+import MediaPickerModal from "@/components/marketplace/MediaPickerModal";
 
 const TABS = [
   { id: "details", label: "Details", icon: Package },
@@ -37,6 +39,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
   const [featureInput, setFeatureInput] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [screenshotInput, setScreenshotInput] = useState("");
+  const [screenshotPicker, setScreenshotPicker] = useState(false);
 
   const isEditing = !!listing?.id;
 
@@ -376,8 +379,10 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
 
             {/* Logo */}
             <div>
-              <label className="text-xs text-muted-foreground">Logo URL</label>
-              <Input value={form.logo} onChange={e => update("logo", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://..." />
+              <label className="text-xs text-muted-foreground">Logo</label>
+              <div className="mt-1">
+                <R2ImageUpload value={form.logo} onChange={v => update("logo", v)} campaignId="product-logo" />
+              </div>
             </div>
 
             {/* Screenshots */}
@@ -385,6 +390,7 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
               <label className="text-xs text-muted-foreground">Screenshots</label>
               <div className="flex gap-2 mt-1">
                 <Input value={screenshotInput} onChange={e => setScreenshotInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addScreenshot()} className="bg-secondary/50 border-border/30 rounded-xl" placeholder="Paste image URL" />
+                <Button onClick={() => setScreenshotPicker(true)} variant="outline" className="rounded-xl border-border/40 shrink-0 gap-1.5 text-xs"><Image className="w-4 h-4" /> Browse</Button>
                 <Button onClick={addScreenshot} variant="outline" size="icon" className="rounded-xl border-border/40"><Plus className="w-4 h-4" /></Button>
               </div>
               {form.screenshots.length > 0 && (
@@ -403,8 +409,10 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
 
             {/* Demo Video */}
             <div>
-              <label className="text-xs text-muted-foreground">Demo Video URL</label>
-              <Input value={form.demoVideoUrl} onChange={e => update("demoVideoUrl", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="https://youtube.com/..." />
+              <label className="text-xs text-muted-foreground">Demo Video</label>
+              <div className="mt-1">
+                <R2ImageUpload value={form.demoVideoUrl} onChange={v => update("demoVideoUrl", v)} campaignId="product-video" accept="video/*" placeholder="https://youtube.com/... or pick a video" />
+              </div>
             </div>
 
             {/* Features */}
@@ -516,6 +524,14 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
           </div>
         )}
       </motion.div>
+
+      <MediaPickerModal
+        open={screenshotPicker}
+        onClose={() => setScreenshotPicker(false)}
+        onSelect={(url) => update("screenshots", [...form.screenshots, url])}
+        campaignId="product-screenshot"
+        defaultTab="image"
+      />
     </div>
   );
 }
