@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Settings, Save, Upload, Loader2, ImageIcon } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Settings, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const Field = ({ label, children }) => (
   <div className="space-y-2">
@@ -25,10 +26,6 @@ export default function GeneralSettings() {
   const [siteName, setSiteName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [faviconUrl, setFaviconUrl] = useState("");
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingFavicon, setUploadingFavicon] = useState(false);
-  const logoInputRef = useRef(null);
-  const faviconInputRef = useRef(null);
   const [supportEmail, setSupportEmail] = useState("");
   const [platformDomain, setPlatformDomain] = useState("");
   const [detectedDomain, setDetectedDomain] = useState("");
@@ -64,20 +61,6 @@ export default function GeneralSettings() {
       setLoading(false);
     })();
   }, []);
-
-  const handleUpload = async (file, setUrl, setUploading) => {
-    if (!file) return;
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setUrl(file_url);
-      toast.success("Image uploaded.");
-    } catch {
-      toast.error("Upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -159,55 +142,13 @@ export default function GeneralSettings() {
         <div className="grid sm:grid-cols-2 gap-6">
           {/* App Logo */}
           <Field label="App Logo">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-secondary/40 border border-border/50 flex items-center justify-center overflow-hidden shrink-0">
-                {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
-                ) : (
-                  <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <Input
-                  placeholder="https://example.com/logo.png"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  className="h-10 bg-secondary/40 border-border/50"
-                />
-                <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleUpload(e.target.files?.[0], setLogoUrl, setUploadingLogo)} />
-                <Button type="button" variant="outline" size="sm" disabled={uploadingLogo} onClick={() => logoInputRef.current?.click()} className="h-8">
-                  {uploadingLogo ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
-                  {uploadingLogo ? "Uploading..." : "Upload Logo"}
-                </Button>
-              </div>
-            </div>
+            <R2ImageUpload value={logoUrl} onChange={setLogoUrl} campaignId="app-logo" placeholder="https://example.com/logo.png" />
             <p className="text-xs text-muted-foreground">PNG or SVG recommended.</p>
           </Field>
 
           {/* App Favicon */}
           <Field label="Favicon">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-secondary/40 border border-border/50 flex items-center justify-center overflow-hidden shrink-0">
-                {faviconUrl ? (
-                  <img src={faviconUrl} alt="Favicon" className="w-8 h-8 object-contain" />
-                ) : (
-                  <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <Input
-                  placeholder="https://example.com/favicon.png"
-                  value={faviconUrl}
-                  onChange={(e) => setFaviconUrl(e.target.value)}
-                  className="h-10 bg-secondary/40 border-border/50"
-                />
-                <input ref={faviconInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleUpload(e.target.files?.[0], setFaviconUrl, setUploadingFavicon)} />
-                <Button type="button" variant="outline" size="sm" disabled={uploadingFavicon} onClick={() => faviconInputRef.current?.click()} className="h-8">
-                  {uploadingFavicon ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 mr-1.5" />}
-                  {uploadingFavicon ? "Uploading..." : "Upload Favicon"}
-                </Button>
-              </div>
-            </div>
+            <R2ImageUpload value={faviconUrl} onChange={setFaviconUrl} campaignId="app-favicon" placeholder="https://example.com/favicon.png" />
             <p className="text-xs text-muted-foreground">Square image, 32×32 or 64×64px (PNG/ICO).</p>
           </Field>
         </div>

@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Store, Palette, Tag, Settings, Rocket, Check, Type, Globe, ChevronLeft, ChevronRight, Upload, Plus, X, Building2, Users, CreditCard } from "lucide-react";
+import { Store, Palette, Tag, Settings, Rocket, Check, Type, ChevronLeft, ChevronRight, Plus, X, Building2, Users, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import BuildingStoreOverlay from "@/components/marketplace/BuildingStoreOverlay";
+import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const TEMPLATES = [
   { id: "default", name: "Standard", desc: "Clean, professional layout for SaaS marketplaces", gradient: "from-violet-600 to-cyan-600", primaryColor: "#7c3aed", accentColor: "#06b6d4" },
@@ -71,8 +72,6 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
     },
   });
 
-  const [uploading, setUploading] = useState(null);
-
   const update = (field, value) => setData(d => ({ ...d, [field]: value }));
   const updateBranding = (field, value) => setData(d => ({ ...d, branding: { ...d.branding, [field]: value } }));
   const updateSettings = (field, value) => setData(d => ({ ...d, settings: { ...d.settings, [field]: value } }));
@@ -82,18 +81,6 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
   const selectTemplate = (t) => {
     update("template", t.id);
     setData(d => ({ ...d, branding: { ...d.branding, primaryColor: t.primaryColor, accentColor: t.accentColor } }));
-  };
-
-  const handleUpload = async (field, file) => {
-    if (!file) return;
-    setUploading(field);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      updateBranding(field, file_url);
-    } catch {
-      toast.error("Upload failed. Please try again.");
-    }
-    setUploading(null);
   };
 
   const addCategory = () => {
@@ -274,27 +261,15 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-muted-foreground">Logo</label>
-                  <label className="mt-1 flex items-center gap-3 p-3 rounded-xl border border-dashed border-border/40 cursor-pointer hover:border-violet-500/50 transition-colors">
-                    {data.branding.logo ? (
-                      <img src={data.branding.logo} alt="logo" className="w-10 h-10 rounded-lg object-contain bg-secondary/50" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center"><Upload className="w-4 h-4 text-muted-foreground" /></div>
-                    )}
-                    <span className="text-xs text-muted-foreground">{uploading === "logo" ? "Uploading…" : data.branding.logo ? "Change logo" : "Upload logo"}</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={e => handleUpload("logo", e.target.files?.[0])} />
-                  </label>
+                  <div className="mt-1">
+                    <R2ImageUpload value={data.branding.logo} onChange={(url) => updateBranding("logo", url)} campaignId="store-logo" placeholder="https://example.com/logo.png" />
+                  </div>
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Favicon</label>
-                  <label className="mt-1 flex items-center gap-3 p-3 rounded-xl border border-dashed border-border/40 cursor-pointer hover:border-violet-500/50 transition-colors">
-                    {data.branding.favicon ? (
-                      <img src={data.branding.favicon} alt="favicon" className="w-10 h-10 rounded-lg object-contain bg-secondary/50" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center"><Upload className="w-4 h-4 text-muted-foreground" /></div>
-                    )}
-                    <span className="text-xs text-muted-foreground">{uploading === "favicon" ? "Uploading…" : data.branding.favicon ? "Change favicon" : "Upload favicon"}</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={e => handleUpload("favicon", e.target.files?.[0])} />
-                  </label>
+                  <div className="mt-1">
+                    <R2ImageUpload value={data.branding.favicon} onChange={(url) => updateBranding("favicon", url)} campaignId="store-favicon" placeholder="https://example.com/favicon.png" />
+                  </div>
                 </div>
               </div>
               <div className="p-4 rounded-xl border border-border/30" style={{ background: `linear-gradient(135deg, ${data.branding.primaryColor}15, ${data.branding.accentColor}15)` }}>
