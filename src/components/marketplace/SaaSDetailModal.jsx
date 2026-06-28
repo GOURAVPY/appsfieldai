@@ -43,12 +43,29 @@ const DEMO_SLIDES = [
 const VIDEO_RE = /\.(mp4|webm|mov|ogg|m4v)(\?|$)/i;
 const isVideoUrl = (url) => typeof url === "string" && VIDEO_RE.test(url);
 
+// Returns an embeddable URL for YouTube/Vimeo links, or null if not an embed.
+function getEmbedUrl(url) {
+  if (typeof url !== "string") return null;
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return null;
+}
+
+function classifyMedia(url) {
+  const embed = getEmbedUrl(url);
+  if (embed) return { type: "embed", url: embed };
+  if (isVideoUrl(url)) return { type: "video", url };
+  return { type: "image", url };
+}
+
 function ImageSlider({ images, videoUrl }) {
   const [current, setCurrent] = useState(0);
   // Demo video (if any) leads the slideshow, followed by screenshots.
   const media = [
-    ...(videoUrl ? [{ type: "video", url: videoUrl }] : []),
-    ...((images && images.length > 0 ? images : DEMO_SLIDES).map((url) => ({ type: isVideoUrl(url) ? "video" : "image", url }))),
+    ...(videoUrl ? [classifyMedia(videoUrl)] : []),
+    ...((images && images.length > 0 ? images : DEMO_SLIDES).map(classifyMedia)),
   ];
   const slides = media.length > 0 ? media : DEMO_SLIDES.map((url) => ({ type: "image", url }));
   const active = slides[current] || slides[0];
@@ -57,9 +74,26 @@ function ImageSlider({ images, videoUrl }) {
   const next = () => setCurrent((c) => (c + 1) % slides.length);
 
   return (
-    <div className="relative w-full h-full bg-black/20 group">
+    <div className="relative w-full h-full bg-black flex items-center justify-center group">
       <AnimatePresence mode="wait">
-        {active.type === "video" ? (
+        {active.type === "embed" ? (
+          <motion.div
+            key={current}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full aspect-video"
+          >
+            <iframe
+              src={active.url}
+              title="Demo video"
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </motion.div>
+        ) : active.type === "video" ? (
           <motion.video
             key={current}
             src={active.url}
@@ -72,7 +106,7 @@ function ImageSlider({ images, videoUrl }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full h-full object-cover bg-black"
+            className="w-full max-h-full object-contain bg-black"
           />
         ) : (
           <motion.img
