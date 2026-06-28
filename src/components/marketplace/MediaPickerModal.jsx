@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Upload, Loader2, X, ImageIcon, Video, Check } from "lucide-react";
+import { Upload, Loader2, X, ImageIcon, Video, Check, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Popup that shows the user's recent R2 uploads in Image/Video tabs, plus an
@@ -11,6 +11,7 @@ export default function MediaPickerModal({ open, onClose, onSelect, campaignId =
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deletingKey, setDeletingKey] = useState(null);
 
   const loadFiles = async () => {
     setLoading(true);
@@ -58,6 +59,22 @@ export default function MediaPickerModal({ open, onClose, onSelect, campaignId =
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  const handleDelete = async (e, f) => {
+    e.stopPropagation();
+    if (!confirm("Delete this file permanently?")) return;
+    setDeletingKey(f.key);
+    try {
+      const res = await base44.functions.invoke("deleteR2Upload", { key: f.key });
+      if (res.data?.error) throw new Error(res.data.error);
+      setFiles((prev) => prev.filter((x) => x.key !== f.key));
+      toast.success("Deleted");
+    } catch (err) {
+      toast.error(err.message || "Delete failed");
+    } finally {
+      setDeletingKey(null);
     }
   };
 
@@ -117,24 +134,33 @@ export default function MediaPickerModal({ open, onClose, onSelect, campaignId =
               <p className="text-xs mt-1">Upload a new file to get started.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
               {shown.map((f) => (
-                <button
+                <div
                   key={f.key}
                   onClick={() => { onSelect(f.url); onClose(); }}
-                  className="group relative aspect-square rounded-xl overflow-hidden border border-border/30 bg-secondary/30 hover:border-orange-500/60 transition-colors"
+                  className="group relative aspect-square rounded-xl overflow-hidden border border-border/30 bg-secondary/30 hover:border-orange-500/60 transition-colors cursor-pointer"
                 >
                   {f.type === "video" ? (
-                    <video src={f.url} className="w-full h-full object-cover" muted />
+                    <video src={f.url} className="w-full h-full object-contain" muted />
                   ) : (
-                    <img src={f.url} alt="" className="w-full h-full object-cover" />
+                    <img src={f.url} alt="" className="w-full h-full object-contain p-1.5" />
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" />
+                    <div className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center">
+                      <Check className="w-3.5 h-3.5 text-white" />
                     </div>
                   </div>
-                </button>
+                  {/* Delete button */}
+                  <button
+                    onClick={(e) => handleDelete(e, f)}
+                    disabled={deletingKey === f.key}
+                    title="Delete"
+                    className="absolute top-1 right-1 w-6 h-6 rounded-lg bg-black/60 backdrop-blur text-white/80 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all disabled:opacity-100"
+                  >
+                    {deletingKey === f.key ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                  </button>
+                </div>
               ))}
             </div>
           )}
