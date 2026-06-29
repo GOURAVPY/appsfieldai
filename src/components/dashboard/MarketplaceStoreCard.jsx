@@ -58,6 +58,11 @@ export default function MarketplaceStoreCard({ m, i, plan, owner, isAdmin, platf
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+          {(m.pageSections?.headerTitle || m.name) && (
+            <p className="absolute bottom-2 left-3 right-3 text-sm font-display font-semibold text-white drop-shadow-lg truncate">
+              {m.pageSections?.headerTitle || m.name}
+            </p>
+          )}
           <div className="absolute top-2 right-2 flex gap-1.5">
             {computed?.recentCount > 0 && (
               <Badge className="text-[10px] border bg-orange-500/90 text-white border-orange-400 flex items-center gap-1 shadow-lg">
