@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Save, Image as ImageIcon, Type, AlignLeft, Palette, RotateCcw } from "lucide-react";
+import { Save, Palette, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 import { toast } from "sonner";
-import { buildHeroBackground } from "@/lib/heroBackground";
 
 const CONFIG_KEY = "marketplace_dashboard_banner";
 
@@ -74,33 +73,8 @@ export default function MarketplaceBannerEditor() {
     setSaving(false);
   };
 
-  const previewBg = (form.hero_bg_type === "image" && form.hero_bg_image_url)
-    ? { backgroundImage: `url(${form.hero_bg_image_url})`, backgroundSize: "cover", backgroundPosition: "center" }
-    : buildHeroBackground(form);
-
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-      <Card className="border-border/40 bg-[#1a1a1a]">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
-            <ImageIcon className="w-4 h-4 text-orange-400" />Marketplace Dashboard Banner
-          </CardTitle>
-          <Button onClick={handleSave} disabled={saving || isLoading} size="sm" className="bg-orange-500 hover:bg-orange-600 rounded-xl h-8 text-xs">
-            <Save className="w-3.5 h-3.5 mr-1.5" />{saving ? "Saving..." : "Save Changes"}
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-xs text-muted-foreground flex items-center gap-1 mb-1"><Type className="w-3 h-3 text-orange-400" />Headline</label>
-            <Input value={form.hero_title_line1 || ""} onChange={e => set("hero_title_line1", e.target.value)} className="bg-[#252525] border-border/30 rounded-xl text-sm" />
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground flex items-center gap-1 mb-1"><AlignLeft className="w-3 h-3 text-muted-foreground" />Subheadline</label>
-            <Input value={form.hero_subtitle || ""} onChange={e => set("hero_subtitle", e.target.value)} className="bg-[#252525] border-border/30 rounded-xl text-sm" />
-          </div>
-        </CardContent>
-      </Card>
-
       <Card className="border-border/40 bg-[#1a1a1a]">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground">
@@ -201,25 +175,9 @@ export default function MarketplaceBannerEditor() {
             </div>
           )}
 
-          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-violet-600 hover:bg-violet-700 rounded-xl h-8 text-xs">
+          <Button onClick={handleSave} disabled={saving || isLoading} size="sm" className="bg-violet-600 hover:bg-violet-700 rounded-xl h-8 text-xs">
             <Save className="w-3.5 h-3.5 mr-1.5" />{saving ? "Saving..." : "Save Background"}
           </Button>
-        </CardContent>
-      </Card>
-
-      {/* Live Preview */}
-      <Card className="border-border/40 bg-[#1a1a1a]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-display flex items-center gap-2 text-foreground"><ImageIcon className="w-4 h-4 text-cyan-400" />Live Preview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="relative rounded-xl overflow-hidden border border-border/20 p-6" style={previewBg}>
-            <div className="absolute inset-0 bg-black/30" />
-            <div className="relative">
-              <h2 className="text-2xl font-display font-extrabold text-white drop-shadow">{form.hero_title_line1 || "Headline"}</h2>
-              <p className="text-white/80 text-sm mt-1 drop-shadow">{form.hero_subtitle || "Subheadline text..."}</p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </motion.div>
