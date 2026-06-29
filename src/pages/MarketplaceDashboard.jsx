@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Store, Zap, Rocket, ExternalLink, LayoutDashboard, Globe, Trash2, User as UserIcon, Mail, Search } from "lucide-react";
+import { Store, Zap, Rocket, ExternalLink, LayoutDashboard, Globe, Trash2, User as UserIcon, Mail, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ export default function MarketplaceDashboard() {
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 6;
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
   const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
@@ -69,6 +71,16 @@ export default function MarketplaceDashboard() {
       );
     });
   }, [marketplaces, ownerMap, search]);
+
+  // Paginate the filtered list — 6 marketplaces per page.
+  const totalPages = Math.max(1, Math.ceil(filteredMarketplaces.length / PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedMarketplaces = useMemo(
+    () => filteredMarketplaces.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE),
+    [filteredMarketplaces, currentPage]
+  );
+  // Reset to first page whenever the search filter changes.
+  React.useEffect(() => { setPage(1); }, [search]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -159,24 +171,52 @@ export default function MarketplaceDashboard() {
           <Button onClick={startCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl"><Rocket className="w-4 h-4 mr-1.5" />Create Your First Marketplace</Button>
         </motion.div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-6">
           {filteredMarketplaces.length === 0 ? (
-            <p className="col-span-full text-center py-12 text-sm text-muted-foreground">No marketplaces match "{search}".</p>
-          ) : filteredMarketplaces.map((m, i) => (
-            <MarketplaceStoreCard
-              key={m.id}
-              m={m}
-              i={i}
-              plan={plans.find(p => p.id === m.planId)}
-              owner={ownerMap[m.ownerId]}
-              isAdmin={isAdmin}
-              platformDomain={platformDomain}
-              storeUrl={storeUrl}
-              onManage={(mp) => { setSelectedMarketplace(mp); setView("hub"); }}
-              onVisit={(mp) => window.open(storeUrl(mp), "_blank")}
-              onDelete={(mp) => setDeleteTarget(mp)}
-            />
-          ))}
+            <p className="text-center py-12 text-sm text-muted-foreground">No marketplaces match "{search}".</p>
+          ) : (
+            <>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {pagedMarketplaces.map((m, i) => (
+                  <MarketplaceStoreCard
+                    key={m.id}
+                    m={m}
+                    i={i}
+                    plan={plans.find(p => p.id === m.planId)}
+                    owner={ownerMap[m.ownerId]}
+                    isAdmin={isAdmin}
+                    platformDomain={platformDomain}
+                    storeUrl={storeUrl}
+                    onManage={(mp) => { setSelectedMarketplace(mp); setView("hub"); }}
+                    onVisit={(mp) => window.open(storeUrl(mp), "_blank")}
+                    onDelete={(mp) => setDeleteTarget(mp)}
+                  />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <Button variant="outline" size="sm" className="rounded-lg gap-1" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>
+                    <ChevronLeft className="w-4 h-4" /> Prev
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((p) => (
+                    <Button
+                      key={p}
+                      variant={p === currentPage ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-lg w-9"
+                      onClick={() => setPage(p)}
+                    >
+                      {p}
+                    </Button>
+                  ))}
+                  <Button variant="outline" size="sm" className="rounded-lg gap-1" disabled={currentPage === totalPages} onClick={() => setPage(currentPage + 1)}>
+                    Next <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 
