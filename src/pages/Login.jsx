@@ -28,7 +28,7 @@ export default function Login() {
       .catch(() => {});
   }, []);
 
-  const brandName = branding.siteName || "SaaSShare";
+  const brandName = branding.siteName || "AppsFieldAI";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
