@@ -193,11 +193,11 @@ export default function MarketplaceBannerEditor() {
 
           <div>
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1"><Eye className="w-3 h-3" />Live Preview</p>
-            <div className="relative h-32 rounded-xl overflow-hidden border border-border/20" style={previewBg}>
+            <div className="relative rounded-2xl overflow-hidden border border-border/40" style={previewBg}>
               <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20" />
-              <div className="relative h-full flex flex-col justify-center p-5">
-                <h3 className="text-lg font-display font-bold text-white drop-shadow">{form.hero_title_line1 || "Admin Marketplace"}</h3>
-                {form.hero_subtitle && <p className="text-xs text-white/80 mt-1 drop-shadow max-w-md">{form.hero_subtitle}</p>}
+              <div className="relative p-7 md:p-[2.3rem]">
+                <h3 className="text-2xl md:text-3xl font-display font-bold text-white drop-shadow">{form.hero_title_line1 || "Admin Marketplace"}</h3>
+                {form.hero_subtitle && <p className="text-sm text-white/80 mt-1 drop-shadow max-w-xl">{form.hero_subtitle}</p>}
               </div>
             </div>
           </div>

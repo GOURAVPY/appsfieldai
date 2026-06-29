@@ -32,7 +32,7 @@ export default function MarketplaceDashboardBanner({ title, subtitle, children }
     >
       <div className="absolute inset-0" style={bgStyle} />
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20" />
-      <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="relative p-7 md:p-[2.3rem] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-display font-bold text-white drop-shadow">{heading}</h1>
           {sub && <p className="text-sm text-white/80 mt-1 drop-shadow max-w-xl">{sub}</p>}
