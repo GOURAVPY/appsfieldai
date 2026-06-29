@@ -225,25 +225,6 @@ export default function UserManager() {
         </CardContent>
       </Card>
 
-      {/* Plans Overview */}
-      {allPlans.length > 0 && (
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-          <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Package className="w-4 h-4 text-amber-400" />Active Plans<Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] ml-2">{allPlans.length}</Badge></CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {allPlans.map(plan => {
-              const subsOnPlan = allPlatformSubs.filter(s => s.planId === plan.id).length;
-              return (
-                <div key={plan.id} className="bg-secondary/30 rounded-xl p-3 border border-border/20">
-                  <p className="text-sm font-medium text-foreground">{plan.name}</p>
-                  <p className="text-lg font-display font-bold text-amber-400 mt-1">${plan.price || 0}<span className="text-[10px] text-muted-foreground font-normal">/mo</span></p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{subsOnPlan} subscribers</p>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
-
       {/* Edit User Dialog */}
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
         <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
