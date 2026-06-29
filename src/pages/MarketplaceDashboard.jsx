@@ -13,6 +13,7 @@ import SetupWizard from "@/components/marketplace/SetupWizard";
 import MyMarketplaceHub from "@/components/marketplace/MyMarketplaceHub";
 import OwnerStatsOverview from "@/components/dashboard/OwnerStatsOverview";
 import MarketplaceStoreCard from "@/components/dashboard/MarketplaceStoreCard";
+import MarketplaceDashboardBanner from "@/components/dashboard/MarketplaceDashboardBanner";
 import RecentReservations from "@/components/dashboard/RecentReservations";
 import UpgradePlanDialog from "@/components/marketplace/UpgradePlanDialog";
 
@@ -121,26 +122,23 @@ export default function MarketplaceDashboard() {
 
   return (
     <div className="space-y-6 p-6">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold">{isAdmin ? "Admin Marketplace" : "My Marketplaces"}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{isAdmin ? "Manage every user's marketplace across the platform." : "Build and manage your SaaS marketplace sites."}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {isAdmin && (
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by store, owner, or email..."
-                className="pl-9 h-10 rounded-xl bg-secondary/60 border-border/40 text-sm"
-              />
-            </div>
-          )}
-          <Button onClick={startCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 shrink-0"><Rocket className="w-4 h-4" /> New Marketplace</Button>
-        </div>
-      </motion.div>
+      <MarketplaceDashboardBanner
+        title={isAdmin ? "Admin Marketplace" : "My Marketplaces"}
+        subtitle={isAdmin ? "Manage every user's marketplace across the platform." : "Build and manage your SaaS marketplace sites."}
+      >
+        {isAdmin && (
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by store, owner, or email..."
+              className="pl-9 h-10 rounded-xl bg-black/30 border-white/20 text-sm text-white placeholder:text-white/50"
+            />
+          </div>
+        )}
+        <Button onClick={startCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 shrink-0"><Rocket className="w-4 h-4" /> New Marketplace</Button>
+      </MarketplaceDashboardBanner>
 
       {/* Owner product/sales overview — only for regular owners with marketplaces */}
       {!isAdmin && !isLoading && marketplaces.length > 0 && (

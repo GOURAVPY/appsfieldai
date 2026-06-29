@@ -12,6 +12,7 @@ import PlanManager from "@/components/admin/PlanManager";
 import UserManager from "@/components/admin/UserManager";
 import MarketplaceManager from "@/components/admin/MarketplaceManager";
 import DashboardEditor from "@/components/admin/DashboardEditor";
+import MarketplaceBannerEditor from "@/components/admin/MarketplaceBannerEditor";
 import AdminTopNav from "@/components/admin/AdminTopNav";
 import HookManagement from "@/components/admin/HookManagement";
 import DFYProductManager from "@/components/admin/DFYProductManager";
@@ -753,6 +754,7 @@ export default function AdminPanel() {
         return (
           <div className="space-y-5">
             <PlatformOverview />
+            <MarketplaceBannerEditor />
             <DashboardEditor />
           </div>
         );
