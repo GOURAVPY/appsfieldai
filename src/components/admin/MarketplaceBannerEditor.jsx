@@ -90,6 +90,17 @@ export default function MarketplaceBannerEditor() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-5">
+          <div className="grid gap-3">
+            <div>
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Headline</p>
+              <Input value={form.hero_title_line1 || ""} onChange={e => set("hero_title_line1", e.target.value)} placeholder="Admin Marketplace" className="bg-[#252525] border-border/30 rounded-lg text-sm h-9" />
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Subheadline</p>
+              <Input value={form.hero_subtitle || ""} onChange={e => set("hero_subtitle", e.target.value)} placeholder="Manage every user's marketplace across the platform." className="bg-[#252525] border-border/30 rounded-lg text-sm h-9" />
+            </div>
+          </div>
+
           <div>
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Background Type</p>
             <div className="flex gap-2">
@@ -183,7 +194,11 @@ export default function MarketplaceBannerEditor() {
           <div>
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1"><Eye className="w-3 h-3" />Live Preview</p>
             <div className="relative h-32 rounded-xl overflow-hidden border border-border/20" style={previewBg}>
-              <div className="absolute inset-0 bg-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20" />
+              <div className="relative h-full flex flex-col justify-center p-5">
+                <h3 className="text-lg font-display font-bold text-white drop-shadow">{form.hero_title_line1 || "Admin Marketplace"}</h3>
+                {form.hero_subtitle && <p className="text-xs text-white/80 mt-1 drop-shadow max-w-md">{form.hero_subtitle}</p>}
+              </div>
             </div>
           </div>
 
