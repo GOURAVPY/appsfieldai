@@ -49,7 +49,7 @@ export default function MarketplaceBannerEditor() {
   });
 
   useEffect(() => {
-    if (configs.length > 0) {
+    if (configs && configs.length > 0) {
       setExistingId(configs[0].id);
       setForm({ ...DEFAULT_CONFIG, ...configs[0] });
     }
