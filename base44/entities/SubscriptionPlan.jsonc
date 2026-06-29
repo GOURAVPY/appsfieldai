@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Plan description"
     },
+    "conditionBoxDescription": {
+      "type": "string",
+      "description": "Optional conditions or special notes shown on the plan"
+    },
     "monthlyPrice": {
       "type": "number",
       "description": "Monthly price in dollars"
@@ -18,20 +22,41 @@
       "type": "number",
       "description": "Yearly price in dollars"
     },
+    "durationType": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "yearly",
+        "lifetime",
+        "one_time"
+      ],
+      "default": "monthly",
+      "description": "How the plan duration is displayed"
+    },
+    "sortOrder": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order (lower numbers appear first)"
+    },
+    "storeLimit": {
+      "type": "number",
+      "default": 1,
+      "description": "Max stores/marketplaces the user can create"
+    },
+    "productLimit": {
+      "type": "number",
+      "default": 10,
+      "description": "Max products the user can add per store"
+    },
     "marketplaceLimit": {
       "type": "number",
       "default": 1,
-      "description": "Max marketplaces allowed"
+      "description": "Legacy: max marketplaces allowed"
     },
     "vendorLimit": {
       "type": "number",
       "default": 0,
       "description": "Max vendors per marketplace"
-    },
-    "productLimit": {
-      "type": "number",
-      "default": 10,
-      "description": "Max listings per marketplace"
     },
     "customerLimit": {
       "type": "number",
@@ -73,6 +98,11 @@
       "default": false,
       "description": "Can feature listings"
     },
+    "premiumTemplatesAccess": {
+      "type": "boolean",
+      "default": false,
+      "description": "Allows access to premium templates"
+    },
     "supportLevel": {
       "type": "string",
       "enum": [
@@ -83,19 +113,30 @@
       "default": "basic",
       "description": "Support level included"
     },
+    "jvzooProductId": {
+      "type": "string",
+      "description": "JVZoo product ID for IPN integration"
+    },
+    "purchaseUrl": {
+      "type": "string",
+      "description": "External purchase link"
+    },
+    "thumbnailUrl": {
+      "type": "string",
+      "description": "Plan thumbnail image URL"
+    },
     "isActive": {
       "type": "boolean",
       "default": true,
-      "description": "Whether plan is publicly available"
+      "description": "Whether plan is active and assignable"
     },
-    "sortOrder": {
-      "type": "number",
-      "default": 0,
-      "description": "Display order"
+    "visibleToUsers": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether plan is shown to regular users"
     }
   },
   "required": [
-    "name",
-    "monthlyPrice"
+    "name"
   ]
 }

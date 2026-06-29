@@ -11,14 +11,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
+const PAGE_SIZE = 5;
+
 export default function UserManager() {
   const queryClient = useQueryClient();
   const [editUser, setEditUser] = useState(null);
-  const [editRole, setEditRole] = useState("");
+  const [editForm, setEditForm] = useState({ full_name: "", role: "user", planId: "" });
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
   const [inviting, setInviting] = useState(false);
   const [copied, setCopied] = useState({});
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
 
   const { data: allUsers = [], isLoading } = useQuery({
     queryKey: ["allUsers"],
@@ -59,13 +63,17 @@ export default function UserManager() {
     );
   };
 
-  const openEdit = (u) => { setEditUser(u); setEditRole(u.role || "user"); };
+  const openEdit = (u) => { setEditUser(u); setEditForm({ full_name: u.full_name || "", role: u.role || "user", planId: u.planId || "" }); };
   const handleEditSave = async () => {
     if (!editUser) return;
-    await base44.entities.User.update(editUser.id, { role: editRole });
+    await base44.entities.User.update(editUser.id, {
+      full_name: editForm.full_name,
+      role: editForm.role,
+      planId: editForm.planId || null,
+    });
     queryClient.invalidateQueries({ queryKey: ["allUsers"] });
     setEditUser(null);
-    toast.success(`Role updated for ${editUser.full_name || editUser.email}`);
+    toast.success(`User updated: ${editForm.full_name || editUser.email}`);
   };
   const handleDeleteUser = async (u) => {
     await base44.entities.User.delete(u.id);
@@ -91,6 +99,16 @@ export default function UserManager() {
   const owners = allUsers.filter(u => u.role === "marketplace_owner");
   const vendors = allUsers.filter(u => u.role === "vendor");
   const regular = allUsers.filter(u => u.role === "user" || u.role === "customer" || !u.role);
+
+  // Search by email (most recent first), then paginate 5 at a time.
+  const sortedUsers = [...allUsers].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+  const filteredUsers = search.trim()
+    ? sortedUsers.filter(u => (u.email || "").toLowerCase().includes(search.trim().toLowerCase()))
+    : sortedUsers;
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const pageClamped = Math.min(page, totalPages - 1);
+  const pagedUsers = filteredUsers.slice(pageClamped * PAGE_SIZE, pageClamped * PAGE_SIZE + PAGE_SIZE);
+  const planName = (id) => allPlans.find(p => p.id === id)?.name;
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
@@ -123,9 +141,15 @@ export default function UserManager() {
 
       {/* All Users */}
       <Card className="border-border/40 bg-card/60 backdrop-blur-xl">
-        <CardHeader><CardTitle className="text-base font-display flex items-center gap-2"><Users className="w-4 h-4 text-violet-400" />All Users<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allUsers.length}</Badge></CardTitle></CardHeader>
+        <CardHeader className="gap-3">
+          <CardTitle className="text-base font-display flex items-center gap-2"><Users className="w-4 h-4 text-violet-400" />Users & Access<Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30 text-[10px] ml-2">{allUsers.length}</Badge></CardTitle>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder="Search by email..." className="pl-9 h-9 bg-secondary/50 border-border/30 rounded-xl text-sm" />
+          </div>
+        </CardHeader>
         <CardContent className="divide-y divide-border/30">
-          {isLoading ? <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p> : allUsers.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No users found</p> : allUsers.map(u => (
+          {isLoading ? <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p> : filteredUsers.length === 0 ? <p className="text-sm text-muted-foreground py-4 text-center">No users found</p> : pagedUsers.map(u => (
             <div key={u.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-2">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-display font-bold text-muted-foreground shrink-0">{(u.full_name || u.email || "?")[0].toUpperCase()}</div>
@@ -133,6 +157,7 @@ export default function UserManager() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-medium truncate">{u.full_name || "Unnamed"}</p>
                     {roleBadge(u.role)}
+                    {planName(u.planId) && <Badge className="text-[10px] bg-amber-500/10 text-amber-400 border-amber-500/20 flex items-center gap-1"><Package className="w-2.5 h-2.5" />{planName(u.planId)}</Badge>}
                   </div>
                   <div className="flex items-center gap-1">
                     <p className="text-[11px] text-muted-foreground truncate">{u.email}</p>
@@ -142,11 +167,21 @@ export default function UserManager() {
                 </div>
               </div>
               <div className="flex gap-1 shrink-0">
-                {isSuperAdmin && <Button size="sm" variant="ghost" onClick={() => openEdit(u)} className="h-7 text-[11px] text-muted-foreground hover:text-foreground"><Pencil className="w-3 h-3 mr-1" />Role</Button>}
+                {isSuperAdmin && <Button size="sm" variant="ghost" onClick={() => openEdit(u)} className="h-7 text-[11px] text-muted-foreground hover:text-foreground"><Pencil className="w-3 h-3 mr-1" />Edit</Button>}
                 {isSuperAdmin && <Button size="sm" variant="ghost" onClick={() => handleDeleteUser(u)} className="h-7 text-[11px] text-red-400/60 hover:text-red-400"><Trash2 className="w-3 h-3" /></Button>}
               </div>
             </div>
           ))}
+          {/* Pagination */}
+          {filteredUsers.length > PAGE_SIZE && (
+            <div className="flex items-center justify-between pt-3">
+              <p className="text-[11px] text-muted-foreground">Page {pageClamped + 1} of {totalPages}</p>
+              <div className="flex gap-1">
+                <Button size="sm" variant="outline" disabled={pageClamped === 0} onClick={() => setPage(p => Math.max(0, p - 1))} className="h-7 text-[11px] border-border/40 rounded-lg">Prev</Button>
+                <Button size="sm" variant="outline" disabled={pageClamped >= totalPages - 1} onClick={() => setPage(p => p + 1)} className="h-7 text-[11px] border-border/40 rounded-lg">Next</Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -209,17 +244,28 @@ export default function UserManager() {
         </Card>
       )}
 
-      {/* Edit Role Dialog */}
+      {/* Edit User Dialog */}
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
-        <DialogContent className="bg-card border-border/40 max-w-sm rounded-2xl">
-          <DialogHeader><DialogTitle className="font-display flex items-center gap-2"><Shield className="w-4 h-4 text-violet-400" />Edit User Role</DialogTitle></DialogHeader>
+        <DialogContent className="bg-card border-border/40 max-w-md rounded-2xl">
+          <DialogHeader><DialogTitle className="font-display flex items-center gap-2"><Shield className="w-4 h-4 text-violet-400" />Edit User</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            {editUser && <p className="text-sm"><span className="text-muted-foreground">User:</span> <span className="font-medium">{editUser.full_name || editUser.email}</span></p>}
-            <div><label className="text-xs text-muted-foreground">Role</label><Select value={editRole} onValueChange={setEditRole}><SelectTrigger className="w-full bg-secondary/50 border-border/30 rounded-xl mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="super_admin">Super Admin</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="marketplace_owner">Marketplace Owner</SelectItem><SelectItem value="vendor">Vendor</SelectItem><SelectItem value="customer">Customer</SelectItem><SelectItem value="user">User</SelectItem></SelectContent></Select></div>
+            <div><label className="text-xs text-muted-foreground">Name</label><Input value={editForm.full_name} onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
+            <div><label className="text-xs text-muted-foreground">Email</label><Input value={editUser?.email || ""} disabled className="bg-secondary/30 border-border/30 rounded-xl mt-1 opacity-70" /></div>
+            <div><label className="text-xs text-muted-foreground">Role</label><Select value={editForm.role} onValueChange={v => setEditForm(f => ({ ...f, role: v }))}><SelectTrigger className="w-full bg-secondary/50 border-border/30 rounded-xl mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="super_admin">Super Admin</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="marketplace_owner">Marketplace Owner</SelectItem><SelectItem value="vendor">Vendor</SelectItem><SelectItem value="user">User</SelectItem></SelectContent></Select></div>
+            <div>
+              <label className="text-xs text-muted-foreground">Plan Assignment</label>
+              <Select value={editForm.planId || "none"} onValueChange={v => setEditForm(f => ({ ...f, planId: v === "none" ? "" : v }))}>
+                <SelectTrigger className="w-full bg-secondary/50 border-border/30 rounded-xl mt-1"><SelectValue placeholder="No plan" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No plan (0 stores)</SelectItem>
+                  {allPlans.map(p => <SelectItem key={p.id} value={p.id}>{p.name} — {p.storeLimit ?? 0} stores</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditUser(null)} className="border-border/40 rounded-xl">Cancel</Button>
-            <Button onClick={handleEditSave} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Save Role</Button>
+            <Button onClick={handleEditSave} className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl">Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

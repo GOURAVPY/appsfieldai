@@ -13,6 +13,7 @@ import SetupWizard from "@/components/marketplace/SetupWizard";
 import MyMarketplaceHub from "@/components/marketplace/MyMarketplaceHub";
 import OwnerStatsOverview from "@/components/dashboard/OwnerStatsOverview";
 import RecentReservations from "@/components/dashboard/RecentReservations";
+import UpgradePlanDialog from "@/components/marketplace/UpgradePlanDialog";
 
 export default function MarketplaceDashboard() {
   const queryClient = useQueryClient();
@@ -21,9 +22,18 @@ export default function MarketplaceDashboard() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const { data: currentUser } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
+
+  // Resolve the user's plan to know how many stores they're allowed (admins are unlimited).
+  const { data: userPlan = null } = useQuery({
+    queryKey: ["userPlan", currentUser?.planId],
+    queryFn: () => base44.entities.SubscriptionPlan.filter({ id: currentUser.planId }).then(r => r[0] || null),
+    enabled: !!currentUser?.planId,
+  });
+  const storeLimit = userPlan?.storeLimit ?? 0;
 
   // Admins see ALL marketplaces across every owner; regular owners see only their own.
   const { data: marketplaces = [], isLoading } = useQuery({
@@ -76,6 +86,13 @@ export default function MarketplaceDashboard() {
     queryKey: ["platformPlans"],
     queryFn: () => base44.entities.SubscriptionPlan.filter({ isActive: true }),
   });
+
+  // Gate store creation by plan limit (admins bypass). Owns-count comes from the user's own marketplaces.
+  const ownedCount = isAdmin ? 0 : marketplaces.filter(m => m.ownerId === currentUser?.id).length;
+  const startCreate = () => {
+    if (!isAdmin && ownedCount >= storeLimit) { setShowUpgrade(true); return; }
+    setSelectedMarketplace(null); setView("wizard");
+  };
   const { data: platformDomain = "" } = useQuery({
     queryKey: ["platformDomain"],
     queryFn: () => base44.functions.invoke("getPlatformDomain", {}).then(r => r.data?.platformDomain || ""),
@@ -120,7 +137,7 @@ export default function MarketplaceDashboard() {
               />
             </div>
           )}
-          <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 shrink-0"><Rocket className="w-4 h-4" /> New Marketplace</Button>
+          <Button onClick={startCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 shrink-0"><Rocket className="w-4 h-4" /> New Marketplace</Button>
         </div>
       </motion.div>
 
@@ -140,7 +157,7 @@ export default function MarketplaceDashboard() {
           <div className="w-20 h-20 rounded-2xl bg-violet-500/10 flex items-center justify-center mx-auto mb-4"><Store className="w-10 h-10 text-violet-400" /></div>
           <h2 className="text-xl font-display font-semibold">Launch Your First Marketplace</h2>
           <p className="text-sm text-muted-foreground mt-2 mb-6 max-w-md mx-auto">Create your own branded SaaS marketplace in minutes. Choose a plan, pick a template, and start listing.</p>
-          <Button onClick={() => { setSelectedMarketplace(null); setView("wizard"); }} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl"><Rocket className="w-4 h-4 mr-1.5" />Create Your First Marketplace</Button>
+          <Button onClick={startCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl"><Rocket className="w-4 h-4 mr-1.5" />Create Your First Marketplace</Button>
         </motion.div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -220,6 +237,8 @@ export default function MarketplaceDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradePlanDialog open={showUpgrade} onClose={() => setShowUpgrade(false)} storeLimit={storeLimit} hasPlan={!!currentUser?.planId} />
     </div>
   );
 }
