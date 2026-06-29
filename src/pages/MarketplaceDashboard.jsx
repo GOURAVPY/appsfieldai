@@ -12,6 +12,7 @@ import { toast } from "@/components/ui/use-toast";
 import SetupWizard from "@/components/marketplace/SetupWizard";
 import MyMarketplaceHub from "@/components/marketplace/MyMarketplaceHub";
 import OwnerStatsOverview from "@/components/dashboard/OwnerStatsOverview";
+import MarketplaceStoreCard from "@/components/dashboard/MarketplaceStoreCard";
 import RecentReservations from "@/components/dashboard/RecentReservations";
 import UpgradePlanDialog from "@/components/marketplace/UpgradePlanDialog";
 
@@ -163,56 +164,21 @@ export default function MarketplaceDashboard() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredMarketplaces.length === 0 ? (
             <p className="col-span-full text-center py-12 text-sm text-muted-foreground">No marketplaces match "{search}".</p>
-          ) : filteredMarketplaces.map((m, i) => {
-            const plan = plans.find(p => p.id === m.planId);
-            const owner = ownerMap[m.ownerId];
-            return (
-              <motion.div key={m.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-                <Card className="border-border/40 bg-card/60 backdrop-blur-xl hover:border-violet-500/30 transition-all">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-600 flex items-center justify-center"><Store className="w-5 h-5 text-white" /></div>
-                        <div>
-                          <CardTitle className="text-base font-display">{m.name}</CardTitle>
-                          <p className="text-[11px] text-muted-foreground">{platformDomain || "app"}/store/{m.subdomain || m.slug}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Badge className={`text-[10px] border ${m.status === "active" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : m.status === "draft" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{m.status}</Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
-                      <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{m.type === "multi_vendor" ? "Multi-Vendor" : "Single Vendor"}</span>
-                      {plan && <span className="flex items-center gap-1 text-violet-400"><Zap className="w-3 h-3" />{plan.name}</span>}
-                      {m.template && <span className="capitalize">{m.template}</span>}
-                    </div>
-                    {m.categories?.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {m.categories.slice(0, 3).map(c => <Badge key={c} variant="secondary" className="text-[9px]">{c}</Badge>)}
-                        {m.categories.length > 3 && <Badge variant="secondary" className="text-[9px]">+{m.categories.length - 3}</Badge>}
-                      </div>
-                    )}
-                    {isAdmin && (
-                      <div className="mb-3 p-2 rounded-lg bg-secondary/40 border border-border/40 space-y-1">
-                        <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><UserIcon className="w-3 h-3" />{owner?.full_name || "Unknown owner"}</p>
-                        <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><Mail className="w-3 h-3" />{owner?.email || "—"}</p>
-                      </div>
-                    )}
-                    <div className="flex gap-2 flex-wrap">
-                      <Button size="sm" onClick={() => { setSelectedMarketplace(m); setView("hub"); }} className="h-8 text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 hover:from-orange-600 hover:to-amber-600"><LayoutDashboard className="w-3 h-3 mr-1" />Manage</Button>
-                      <Button size="sm" variant="ghost" onClick={() => window.open(storeUrl(m), "_blank")} className="h-8 text-xs"><ExternalLink className="w-3 h-3 mr-1" />Visit</Button>
-                      {isAdmin && (
-                        <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(m)} className="h-8 text-xs text-red-400 hover:text-red-400 hover:bg-red-500/10"><Trash2 className="w-3 h-3 mr-1" />Delete</Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
+          ) : filteredMarketplaces.map((m, i) => (
+            <MarketplaceStoreCard
+              key={m.id}
+              m={m}
+              i={i}
+              plan={plans.find(p => p.id === m.planId)}
+              owner={ownerMap[m.ownerId]}
+              isAdmin={isAdmin}
+              platformDomain={platformDomain}
+              storeUrl={storeUrl}
+              onManage={(mp) => { setSelectedMarketplace(mp); setView("hub"); }}
+              onVisit={(mp) => window.open(storeUrl(mp), "_blank")}
+              onDelete={(mp) => setDeleteTarget(mp)}
+            />
+          ))}
         </div>
       )}
 
