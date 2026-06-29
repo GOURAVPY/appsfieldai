@@ -13,6 +13,20 @@ import { Button } from "@/components/ui/button";
 export default function MarketplaceStoreCard({ m, i, plan, owner, isAdmin, platformDomain, storeUrl, onManage, onVisit, onDelete }) {
   const cover = m.pageSections?.headerImageUrl || m.pageSections?.heroBgImageUrl || m.branding?.logo || "";
 
+  // When no cover image is set, fall back to the store's hero theme from page settings.
+  const ps = m.pageSections || {};
+  const themeBg = (() => {
+    if (ps.heroBgType === "solid" && ps.heroSolidColor) {
+      return { background: ps.heroSolidColor };
+    }
+    if (ps.heroBgType === "gradient" && (ps.heroGradientStart || ps.heroGradientEnd)) {
+      const start = ps.heroGradientStart || "#7c3aed";
+      const end = ps.heroGradientEnd || "#06b6d4";
+      return { background: `linear-gradient(135deg, ${start}, ${end})` };
+    }
+    return null;
+  })();
+
   const { data: stats } = useQuery({
     queryKey: ["storeCardStats", m.id],
     queryFn: async () => {
@@ -48,18 +62,17 @@ export default function MarketplaceStoreCard({ m, i, plan, owner, isAdmin, platf
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
       <Card className="border-border/40 bg-card/60 backdrop-blur-xl hover:border-violet-500/30 transition-all overflow-hidden">
-        {/* Cover thumbnail */}
-        <div className="relative h-28 w-full bg-gradient-to-br from-violet-600/40 via-card to-cyan-600/30">
-          {cover ? (
+        {/* Cover thumbnail — uses cover image, else the store's hero theme, else default gradient */}
+        <div
+          className={`relative h-28 w-full ${!cover && !themeBg ? "bg-gradient-to-br from-violet-600/40 via-card to-cyan-600/30" : ""}`}
+          style={!cover && themeBg ? themeBg : undefined}
+        >
+          {cover && (
             <img src={cover} alt={m.name} className="absolute inset-0 w-full h-full object-cover" />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Store className="w-8 h-8 text-white/30" />
-            </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-card/80 via-card/20 to-black/20" />
           {(m.pageSections?.headerTitle || m.name) && (
-            <p className="absolute bottom-2 left-3 right-3 text-sm font-display font-semibold text-white drop-shadow-lg truncate">
+            <p className="absolute inset-0 flex items-center justify-center px-3 text-center text-sm font-display font-semibold text-white drop-shadow-lg line-clamp-2">
               {m.pageSections?.headerTitle || m.name}
             </p>
           )}
