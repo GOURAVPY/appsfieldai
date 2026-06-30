@@ -72,6 +72,8 @@ export default function ThemeColorSettings() {
       const payload = { key: THEME_CONFIG_KEY, themeColors: colors };
       if (config?.id) await base44.entities.AppConfig.update(config.id, payload);
       else await base44.entities.AppConfig.create(payload);
+      // Tell the ThemeProvider to apply the new colors immediately (no reload).
+      window.dispatchEvent(new CustomEvent("theme-colors-updated", { detail: colors }));
       toast({ title: "Theme colors saved", description: "Your color scheme is now live across the app." });
     } catch (err) {
       toast({ title: "Save failed", description: err.message, variant: "destructive" });
