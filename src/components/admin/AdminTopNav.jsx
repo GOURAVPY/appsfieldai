@@ -93,6 +93,7 @@ const NAV_GROUPS = [
     items: [
       { id: "dashboard",       label: "Dashboard Editor",    icon: LayoutDashboard },
       { id: "hero_background", label: "Hero Background",     icon: Palette },
+      { id: "theme_colors",   label: "Theme Colors",        icon: Palette },
     ],
   },
   {

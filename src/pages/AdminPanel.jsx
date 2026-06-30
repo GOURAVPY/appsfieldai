@@ -16,6 +16,7 @@ import HookManagement from "@/components/admin/HookManagement";
 import DFYProductManager from "@/components/admin/DFYProductManager";
 import StorePageDefaultManager from "@/components/admin/StorePageDefaultManager";
 import GeneralSettings from "@/components/admin/settings/GeneralSettings";
+import ThemeColorSettings from "@/components/admin/settings/ThemeColorSettings";
 import ReservationsManager from "@/components/marketplace/ReservationsManager";
 import AcquisitionsRequestsManager from "@/components/marketplace/AcquisitionRequestsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -753,6 +754,16 @@ export default function AdminPanel() {
           <div className="space-y-5">
             <MarketplaceBannerEditor />
           </div>
+        );
+      case "theme_colors":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-border/40 bg-[#1a1a1a]">
+              <CardContent className="pt-6">
+                <ThemeColorSettings />
+              </CardContent>
+            </Card>
+          </motion.div>
         );
       case "ai":
         return (
