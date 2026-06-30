@@ -75,9 +75,9 @@ export default function Topbar() {
           )}
         </Link>
 
-        {/* Desktop Main Nav */}
+        {/* Desktop Main Nav — store-only links, hidden for logged-in users */}
         <nav className="hidden md:flex items-center gap-1">
-          {mainNavLinks.map(({ to, label }) => (
+          {!isAuthenticated && mainNavLinks.map(({ to, label }) => (
             <NavLink key={to} to={to}
               className={({ isActive }) => cn("px-4 py-2 text-sm font-medium rounded-lg transition-colors", isActive ? "text-orange-400" : "text-muted-foreground hover:text-foreground")}>
               {label}
@@ -153,7 +153,7 @@ export default function Topbar() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-white/5 bg-background/95 backdrop-blur-xl px-6 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
-          {mainNavLinks.map(({ to, label }) => (
+          {!isAuthenticated && mainNavLinks.map(({ to, label }) => (
             <NavLink key={to} to={to} onClick={() => setMobileOpen(false)}
               className={({ isActive }) => cn("block px-4 py-2.5 text-sm font-medium rounded-xl transition-colors", isActive ? "text-orange-400 bg-orange-500/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")}>
               {label}
