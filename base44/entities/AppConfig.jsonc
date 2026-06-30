@@ -20,7 +20,11 @@
     },
     "appLogoUrl": {
       "type": "string",
-      "description": "Custom app logo image URL"
+      "description": "Custom app logo image URL (light mode)"
+    },
+    "appLogoUrlDark": {
+      "type": "string",
+      "description": "Custom app logo image URL shown in dark mode"
     },
     "appFaviconUrl": {
       "type": "string",

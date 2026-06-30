@@ -25,6 +25,7 @@ const ToggleRow = ({ label, checked, onChange }) => (
 export default function GeneralSettings() {
   const [siteName, setSiteName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [logoUrlDark, setLogoUrlDark] = useState("");
   const [faviconUrl, setFaviconUrl] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
   const [platformDomain, setPlatformDomain] = useState("");
@@ -51,6 +52,7 @@ export default function GeneralSettings() {
         if (cfg?.siteName) setSiteName(cfg.siteName);
         if (cfg?.supportEmail) setSupportEmail(cfg.supportEmail);
         if (cfg?.appLogoUrl) setLogoUrl(cfg.appLogoUrl);
+        if (cfg?.appLogoUrlDark) setLogoUrlDark(cfg.appLogoUrlDark);
         if (cfg?.appFaviconUrl) setFaviconUrl(cfg.appFaviconUrl);
       } catch { /* none yet */ }
       try {
@@ -72,6 +74,7 @@ export default function GeneralSettings() {
         siteName,
         supportEmail,
         appLogoUrl: logoUrl,
+        appLogoUrlDark: logoUrlDark,
         appFaviconUrl: faviconUrl,
       };
       const configs = await base44.entities.AppConfig.filter({ key: "main" });
@@ -140,10 +143,16 @@ export default function GeneralSettings() {
       <div className="pt-2 border-t border-border/30">
         <h3 className="text-sm font-semibold text-foreground mb-3">App Branding</h3>
         <div className="grid sm:grid-cols-2 gap-6">
-          {/* App Logo */}
-          <Field label="App Logo">
+          {/* App Logo — Light mode */}
+          <Field label="App Logo (Light Mode)">
             <R2ImageUpload value={logoUrl} onChange={setLogoUrl} campaignId="app-logo" placeholder="https://example.com/logo.png" />
-            <p className="text-xs text-muted-foreground">PNG or SVG recommended.</p>
+            <p className="text-xs text-muted-foreground">Shown in light mode. PNG or SVG recommended.</p>
+          </Field>
+
+          {/* App Logo — Dark mode */}
+          <Field label="App Logo (Dark Mode)">
+            <R2ImageUpload value={logoUrlDark} onChange={setLogoUrlDark} campaignId="app-logo-dark" placeholder="https://example.com/logo-dark.png" />
+            <p className="text-xs text-muted-foreground">Shown in dark mode. Falls back to the light logo if empty.</p>
           </Field>
 
           {/* App Favicon */}

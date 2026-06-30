@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeToggle from "./ThemeToggle";
+import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
 
 const DEFAULT_LOGO = "https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/eb8ee9b31_3d-ai-robot-character-chat-bot-wink-mascot-icon.png";
@@ -33,6 +34,7 @@ export default function Topbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
@@ -45,7 +47,11 @@ export default function Topbar() {
     gcTime: Infinity,
   });
   const cfg = cfgs?.[0];
-  const branding = { logo: cfg?.appLogoUrl || "", siteName: cfg?.siteName || "" };
+  // Pick the logo for the active theme; fall back to the other one if only one is set.
+  const themedLogo = theme === "dark"
+    ? (cfg?.appLogoUrlDark || cfg?.appLogoUrl)
+    : (cfg?.appLogoUrl || cfg?.appLogoUrlDark);
+  const branding = { logo: themedLogo || "", siteName: cfg?.siteName || "" };
   const brandLoaded = isFetched;
 
   useEffect(() => {

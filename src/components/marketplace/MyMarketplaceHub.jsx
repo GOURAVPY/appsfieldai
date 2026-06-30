@@ -128,6 +128,7 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     language: marketplace?.language || "English",
     branding: {
       logo: marketplace?.branding?.logo || "",
+      logoDark: marketplace?.branding?.logoDark || "",
       favicon: marketplace?.branding?.favicon || "",
     },
   });
@@ -431,8 +432,13 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                     <div><label className="text-xs text-muted-foreground">Store Name</label><Input value={storeForm.name} onChange={e => setStoreForm(f => ({ ...f, name: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
                     <div><label className="text-xs text-muted-foreground">Store Slug</label><Input value={storeForm.slug} onChange={e => setStoreForm(f => ({ ...f, slug: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1" /></div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Store Logo</label>
+                      <label className="text-xs text-muted-foreground">Store Logo (Light Mode)</label>
                       <div className="mt-1"><R2ImageUpload value={storeForm.branding.logo} onChange={url => setStoreForm(f => ({ ...f, branding: { ...f.branding, logo: url } }))} campaignId="store-logo" placeholder="https://..." /></div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Store Logo (Dark Mode)</label>
+                      <div className="mt-1"><R2ImageUpload value={storeForm.branding.logoDark} onChange={url => setStoreForm(f => ({ ...f, branding: { ...f.branding, logoDark: url } }))} campaignId="store-logo-dark" placeholder="https://..." /></div>
+                      <p className="text-[11px] text-muted-foreground mt-1">Falls back to the light logo if empty.</p>
                     </div>
                     <div>
                       <label className="text-xs text-muted-foreground">Favicon</label>

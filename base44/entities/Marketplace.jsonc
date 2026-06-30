@@ -123,7 +123,12 @@
       "type": "object",
       "properties": {
         "logo": {
-          "type": "string"
+          "type": "string",
+          "description": "Store logo (light mode)"
+        },
+        "logoDark": {
+          "type": "string",
+          "description": "Store logo shown in dark mode"
         },
         "favicon": {
           "type": "string"

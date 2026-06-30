@@ -1,14 +1,20 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Store, Menu, X, User, LogOut, ChevronDown, Package, ShoppingCart } from "lucide-react";
+import { useTheme } from "@/lib/ThemeContext";
 
 // Top navigation bar for a customer's public store page — mirrors the main app's
 // top bar (logo + nav links), styled with the store's own branding.
 export default function StoreNavbar({ marketplace, sections = {}, customer, onOpenAuth, onLogout, onOpenAccount, cartCount = 0, onOpenCart, dashboardPath = "/dashboard" }) {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const goToDashboard = () => navigate(dashboardPath);
   const brandColor = marketplace.branding?.primaryColor || "#f97316";
-  const logo = sections.headerLogoUrl || marketplace.branding?.logo;
+  // Theme-aware logo: prefer the dark logo in dark mode, fall back gracefully.
+  const lightLogo = marketplace.branding?.logo;
+  const darkLogo = marketplace.branding?.logoDark;
+  const themedLogo = theme === "dark" ? (darkLogo || lightLogo) : (lightLogo || darkLogo);
+  const logo = sections.headerLogoUrl || themedLogo;
   const name = marketplace.name || "Store";
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [accountOpen, setAccountOpen] = React.useState(false);
