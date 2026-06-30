@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -12,6 +12,7 @@ import { toast } from "@/components/ui/use-toast";
 import SetupWizard from "@/components/marketplace/SetupWizard";
 import MyMarketplaceHub from "@/components/marketplace/MyMarketplaceHub";
 import OwnerStatsOverview from "@/components/dashboard/OwnerStatsOverview";
+import SalesAnalytics from "@/components/dashboard/SalesAnalytics";
 import MarketplaceStoreCard from "@/components/dashboard/MarketplaceStoreCard";
 import MarketplaceDashboardBanner from "@/components/dashboard/MarketplaceDashboardBanner";
 import RecentReservations from "@/components/dashboard/RecentReservations";
@@ -80,7 +81,7 @@ export default function MarketplaceDashboard() {
     [filteredMarketplaces, currentPage]
   );
   // Reset to first page whenever the search filter changes.
-  React.useEffect(() => { setPage(1); }, [search]);
+  useEffect(() => { setPage(1); }, [search]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -152,9 +153,16 @@ export default function MarketplaceDashboard() {
         <Button onClick={startCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 shrink-0"><Rocket className="w-4 h-4" /> New Marketplace</Button>
       </MarketplaceDashboardBanner>
 
-      {/* Owner product/sales overview — only for regular owners with marketplaces */}
+      {/* Owner product/sales overview — pulled up to overlap the hero banner */}
       {!isAdmin && !isLoading && marketplaces.length > 0 && (
-        <OwnerStatsOverview marketplaces={marketplaces} />
+        <div className="relative z-10 -mt-12 px-2">
+          <OwnerStatsOverview marketplaces={marketplaces} />
+        </div>
+      )}
+
+      {/* Sales analytics: chart with day/week/year + marketplace selector + profit/activity card */}
+      {!isAdmin && !isLoading && marketplaces.length > 0 && (
+        <SalesAnalytics marketplaces={marketplaces} />
       )}
 
       {!isAdmin && !isLoading && marketplaces.length > 0 && (
