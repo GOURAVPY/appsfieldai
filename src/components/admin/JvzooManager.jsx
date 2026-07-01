@@ -9,9 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-// The public IPN endpoint JVZoo posts to. Uses the app's own origin so it
-// works on the custom domain automatically.
-const IPN_URL = `${window.location.origin}/functions/jvzooIpn`;
+// The public IPN endpoint JVZoo posts to.
+const IPN_URL = "https://app.appsfieldai.com/functions/jvzooIpn";
 
 export default function JvzooManager() {
   const queryClient = useQueryClient();
