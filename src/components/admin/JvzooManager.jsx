@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ShoppingBag, Save, Copy, Check, RefreshCw, ShieldCheck, ShieldAlert, Trash2, Link2 } from "lucide-react";
+import { ShoppingBag, Copy, Check, RefreshCw, Trash2, Link2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,18 +15,7 @@ const IPN_URL = `${window.location.origin}/functions/jvzooIpn`;
 
 export default function JvzooManager() {
   const queryClient = useQueryClient();
-  const [secretKey, setSecretKey] = useState("");
-  const [configId, setConfigId] = useState(null);
-  const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  const { data: config } = useQuery({
-    queryKey: ["jvzooConfig"],
-    queryFn: async () => {
-      const rows = await base44.entities.AppConfig.filter({ key: "jvzoo" });
-      return rows[0] || null;
-    },
-  });
 
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["jvzooSales"],
@@ -37,26 +26,6 @@ export default function JvzooManager() {
     queryKey: ["subscriptionPlans"],
     queryFn: () => base44.entities.SubscriptionPlan.list("sortOrder"),
   });
-
-  useEffect(() => {
-    if (config) {
-      setSecretKey(config.jvzooSecretKey || "");
-      setConfigId(config.id);
-    }
-  }, [config]);
-
-  const handleSaveSecret = async () => {
-    setSaving(true);
-    if (configId) {
-      await base44.entities.AppConfig.update(configId, { jvzooSecretKey: secretKey });
-    } else {
-      const created = await base44.entities.AppConfig.create({ key: "jvzoo", jvzooSecretKey: secretKey });
-      setConfigId(created.id);
-    }
-    queryClient.invalidateQueries({ queryKey: ["jvzooConfig"] });
-    toast.success("JVZoo secret key saved");
-    setSaving(false);
-  };
 
   const copyUrl = () => {
     navigator.clipboard.writeText(IPN_URL);
@@ -99,16 +68,6 @@ export default function JvzooManager() {
                 </button>
               </div>
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground">JVZoo IPN Secret Key</label>
-              <p className="text-[11px] text-muted-foreground mb-1.5">Must match the secret key set in your JVZoo product IPN settings. Used to verify incoming requests.</p>
-              <div className="flex items-center gap-2">
-                <Input value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder="MyJVZIPNSecretKey" className="bg-[#252525] border-border/30 rounded-xl text-xs" />
-                <Button onClick={handleSaveSecret} disabled={saving} className="bg-amber-600 hover:bg-amber-700 rounded-xl text-xs gap-1.5 shrink-0">
-                  <Save className="w-3.5 h-3.5" />Save
-                </Button>
-              </div>
-            </div>
             <div className="flex items-start gap-2 p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
               <Link2 className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
               <p className="text-[11px] text-muted-foreground">Map each JVZoo product to a plan by setting the <span className="text-foreground">JVZoo Product ID</span> on the plan (Admin → Plans). When a sale arrives, that plan is auto-assigned to the customer.</p>
@@ -139,11 +98,6 @@ export default function JvzooManager() {
                     <p className="text-sm font-medium text-foreground">{s.ccustname || "Unknown"}</p>
                     <span className="text-xs text-muted-foreground">{s.ccustemail}</span>
                     <Badge className={`text-[10px] border ${txBadge(s.ctransaction)}`}>{s.ctransaction}</Badge>
-                    {s.verified ? (
-                      <span className="flex items-center gap-0.5 text-[10px] text-emerald-400"><ShieldCheck className="w-3 h-3" />Verified</span>
-                    ) : (
-                      <span className="flex items-center gap-0.5 text-[10px] text-amber-400"><ShieldAlert className="w-3 h-3" />Unverified</span>
-                    )}
                   </div>
                   <p className="text-xs text-violet-400">{s.cprodtitle || "—"} <span className="text-muted-foreground">(#{s.cproditem})</span></p>
                   <div className="flex items-center gap-3 flex-wrap">
