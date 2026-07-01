@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ShoppingBag, Copy, Check, RefreshCw, Trash2, Link2 } from "lucide-react";
+import { ShoppingBag, Copy, Check, RefreshCw, Trash2, Link2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,12 @@ import { toast } from "sonner";
 // The public IPN endpoint JVZoo posts to.
 const IPN_URL = "https://app.appsfieldai.com/functions/jvzooIpn";
 
+const PAGE_SIZE = 10;
+
 export default function JvzooManager() {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
+  const [page, setPage] = useState(1);
 
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["jvzooSales"],
@@ -45,6 +48,10 @@ export default function JvzooManager() {
     if (t === "RFND" || t === "CGBK" || t === "CANCEL-REBILL") return "bg-red-500/10 text-red-400 border-red-500/20";
     return "bg-secondary text-muted-foreground border-border/30";
   };
+
+  const totalPages = Math.max(1, Math.ceil(sales.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedSales = sales.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="space-y-5">
@@ -90,7 +97,7 @@ export default function JvzooManager() {
               <p className="text-sm text-muted-foreground py-4 text-center">Loading…</p>
             ) : sales.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No JVZoo transactions yet. They'll appear here once JVZoo starts posting to your IPN URL.</p>
-            ) : sales.map((s) => (
+            ) : pagedSales.map((s) => (
               <div key={s.id} className="flex items-start justify-between py-3 first:pt-0 last:pb-0 gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -108,6 +115,15 @@ export default function JvzooManager() {
                 <Button size="sm" variant="ghost" onClick={() => handleDelete(s)} className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 h-7 text-[11px] shrink-0"><Trash2 className="w-3 h-3" /></Button>
               </div>
             ))}
+            {sales.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between pt-3">
+                <span className="text-[11px] text-muted-foreground">Page {currentPage} of {totalPages} · {sales.length} total</span>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" disabled={currentPage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="h-7 text-xs border-border/40"><ChevronLeft className="w-3.5 h-3.5 mr-1" />Prev</Button>
+                  <Button size="sm" variant="outline" disabled={currentPage >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="h-7 text-xs border-border/40">Next<ChevronRight className="w-3.5 h-3.5 ml-1" /></Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
