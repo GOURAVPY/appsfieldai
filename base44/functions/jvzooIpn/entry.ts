@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
     let user = existingUsers[0] || null;
 
     if (transaction === 'SALE' || transaction === 'BILL') {
+      const isNewUser = !user;
       if (!user) {
         // Invite the user so they get a real, login-capable account.
         try {
@@ -55,6 +56,69 @@ Deno.serve(async (req) => {
         }
         const refetch = await base44.asServiceRole.entities.User.filter({ email });
         user = refetch[0] || null;
+      }
+
+      // Send a welcome / signup email to the customer for new purchases.
+      if (isNewUser) {
+        try {
+          // Pull branding from AppConfig (site name, support email, logo).
+          let siteName = 'Our Platform';
+          let supportEmail = '';
+          let logoUrl = '';
+          try {
+            const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'general' });
+            const cfg = cfgs[0];
+            if (cfg) {
+              siteName = cfg.siteName || siteName;
+              supportEmail = cfg.supportEmail || '';
+              logoUrl = cfg.appLogoUrl || '';
+            }
+          } catch (_) { /* config optional */ }
+
+          const appId = Deno.env.get('BASE44_APP_ID') || '';
+          const origin = req.headers.get('origin') || '';
+          // Prefer the request origin; otherwise fall back to the known live app domain.
+          const baseUrl = origin && origin.startsWith('http')
+            ? origin
+            : 'https://app.appsfieldai.com';
+          const signupLink = `${baseUrl}/register?email=${encodeURIComponent(email)}`;
+
+          const firstName = (fields['ccustname'] || '').split(' ')[0] || 'there';
+          const productTitle = fields['cprodtitle'] || 'your purchase';
+
+          const body = `
+            <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a1a;">
+              ${logoUrl ? `<img src="${logoUrl}" alt="${siteName}" style="height:40px;margin-bottom:24px;" />` : `<h2 style="margin:0 0 24px;">${siteName}</h2>`}
+              <h1 style="font-size:22px;margin:0 0 16px;">Welcome, ${firstName}! 🎉</h1>
+              <p style="font-size:15px;line-height:1.6;color:#444;">
+                Thank you for your purchase of <strong>${productTitle}</strong>. Your account access is ready —
+                just set up your login to get started.
+              </p>
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${signupLink}" style="background:#f97316;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:600;display:inline-block;">
+                  Complete Your Signup
+                </a>
+              </div>
+              <p style="font-size:13px;line-height:1.6;color:#777;">
+                Use the email <strong>${email}</strong> when signing up so your purchase is linked automatically.
+              </p>
+              <p style="font-size:13px;line-height:1.6;color:#777;">
+                If the button doesn't work, copy and paste this link into your browser:<br/>
+                <a href="${signupLink}" style="color:#f97316;">${signupLink}</a>
+              </p>
+              ${supportEmail ? `<p style="font-size:13px;color:#999;margin-top:24px;">Need help? Contact us at ${supportEmail}.</p>` : ''}
+            </div>
+          `;
+
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: email,
+            from_name: siteName,
+            subject: `Welcome to ${siteName} — Complete your signup`,
+            body,
+          });
+        } catch (e) {
+          console.error('welcome email failed:', e.message);
+        }
       }
 
       if (user && plan) {
