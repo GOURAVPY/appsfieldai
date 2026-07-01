@@ -110,11 +110,12 @@ Deno.serve(async (req) => {
             </div>
           `;
 
-          await base44.asServiceRole.integrations.Core.SendEmail({
+          await base44.functions.invoke('sendEmail', {
             to: email,
-            from_name: siteName,
+            fromName: siteName,
+            fromEmail: supportEmail || undefined,
             subject: `Welcome to ${siteName} — Complete your signup`,
-            body,
+            html: body,
           });
         } catch (e) {
           console.error('welcome email failed:', e.message);
