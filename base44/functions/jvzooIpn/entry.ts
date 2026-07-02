@@ -12,6 +12,55 @@ function randomPassword(len = 14): string {
   return Array.from(arr, (n) => chars[n % chars.length]).join('');
 }
 
+async function loadBranding(base44) {
+  let siteName = 'Our Platform';
+  let supportEmail = '';
+  let logoUrl = '';
+  try {
+    const cfgs = await base44.asServiceRole.entities.AppConfig.filter({ key: 'general' });
+    const cfg = cfgs[0];
+    if (cfg) {
+      siteName = cfg.siteName || siteName;
+      supportEmail = cfg.supportEmail || '';
+      logoUrl = cfg.appLogoUrl || '';
+    }
+  } catch (_) { /* config optional */ }
+  return { siteName, supportEmail, logoUrl };
+}
+
+// Sends a plan-change email (assigned or removed) to an existing customer.
+async function sendPlanUpdateEmail(base44, { email, firstName, planName, action, branding }) {
+  const { siteName, supportEmail, logoUrl } = branding;
+  const isRemoved = action === 'removed';
+  const heading = isRemoved ? 'Your plan has been updated' : `You're now on ${planName} 🎉`;
+  const intro = isRemoved
+    ? `Access to <strong>${planName}</strong> on your account has been removed. If this was unexpected, please reach out and we'll help.`
+    : `Your account has been upgraded to the <strong>${planName}</strong> plan. All its features are now active — no action needed.`;
+
+  const body = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a1a;">
+      ${logoUrl ? `<img src="${logoUrl}" alt="${siteName}" style="height:40px;margin-bottom:24px;" />` : `<h2 style="margin:0 0 24px;">${siteName}</h2>`}
+      <h1 style="font-size:22px;margin:0 0 16px;">Hi ${firstName},</h1>
+      <p style="font-size:15px;line-height:1.6;color:#444;">${intro}</p>
+      <div style="margin:24px 0;padding:16px 20px;border-radius:10px;background:#f6f6f6;border:1px solid #eee;">
+        <span style="font-size:13px;color:#777;">Plan</span><br/>
+        <span style="font-size:17px;font-weight:700;color:#1a1a1a;">${planName}</span>
+        <span style="font-size:13px;color:${isRemoved ? '#c2410c' : '#16a34a'};margin-left:8px;">${isRemoved ? 'Removed' : 'Active'}</span>
+      </div>
+      ${supportEmail ? `<p style="font-size:13px;color:#999;margin-top:24px;">Questions? Contact us at ${supportEmail}.</p>` : ''}
+    </div>
+  `;
+
+  await base44.functions.invoke('sendEmail', {
+    to: email,
+    fromName: siteName,
+    fromEmail: 'info@appsfieldai.com',
+    replyTo: supportEmail || undefined,
+    subject: isRemoved ? `${siteName} — ${planName} plan removed` : `${siteName} — You're now on ${planName}`,
+    html: body,
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -126,7 +175,8 @@ Deno.serve(async (req) => {
       if (user && plan) {
         // Append plan to user's plan list (support multiple plans as an array).
         const currentPlans = Array.isArray(user.jvzooPlanIds) ? user.jvzooPlanIds : [];
-        const nextPlans = currentPlans.includes(plan.id) ? currentPlans : [...currentPlans, plan.id];
+        const alreadyHadPlan = currentPlans.includes(plan.id);
+        const nextPlans = alreadyHadPlan ? currentPlans : [...currentPlans, plan.id];
         await base44.asServiceRole.entities.User.update(user.id, {
           planId: plan.id,
           jvzooPlanIds: nextPlans,
@@ -134,17 +184,50 @@ Deno.serve(async (req) => {
           status: 'active',
           full_name: user.full_name || fields['ccustname'] || undefined,
         });
+
+        // Notify existing users of a new plan assignment (new users already got the welcome email).
+        if (!isNewUser && !alreadyHadPlan) {
+          try {
+            const branding = await loadBranding(base44);
+            await sendPlanUpdateEmail(base44, {
+              email,
+              firstName: (user.full_name || fields['ccustname'] || '').split(' ')[0] || 'there',
+              planName: plan.name || 'your plan',
+              action: 'assigned',
+              branding,
+            });
+          } catch (e) {
+            console.error('plan-update (assigned) email failed:', e.message);
+          }
+        }
       }
     } else if (transaction === 'RFND' || transaction === 'CGBK' || transaction === 'CANCEL-REBILL') {
       // Remove the plan on refund/chargeback/cancellation.
       if (user && plan) {
         const currentPlans = Array.isArray(user.jvzooPlanIds) ? user.jvzooPlanIds : [];
+        const hadPlan = currentPlans.includes(plan.id);
         const nextPlans = currentPlans.filter((p) => p !== plan.id);
         await base44.asServiceRole.entities.User.update(user.id, {
           jvzooPlanIds: nextPlans,
           planId: nextPlans[0] || '',
           billingStatus: nextPlans.length ? 'active' : 'cancelled',
         });
+
+        // Notify the user that their plan was removed.
+        if (hadPlan) {
+          try {
+            const branding = await loadBranding(base44);
+            await sendPlanUpdateEmail(base44, {
+              email,
+              firstName: (user.full_name || fields['ccustname'] || '').split(' ')[0] || 'there',
+              planName: plan.name || 'your plan',
+              action: 'removed',
+              branding,
+            });
+          } catch (e) {
+            console.error('plan-update (removed) email failed:', e.message);
+          }
+        }
       }
     }
 
