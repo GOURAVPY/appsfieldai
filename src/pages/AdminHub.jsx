@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, LayoutDashboard, Package, ShoppingCart, Wallet, TicketPercent, MessageSquareText, Video, Users, Tags, Settings, Store } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Package, ShoppingCart, Wallet, TicketPercent, MessageSquareText, Video, Users, Tags, Settings, Store, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SoftwareManager from "@/components/marketplace/SoftwareManager";
@@ -15,6 +15,7 @@ import DemoRequestManager from "@/components/marketplace/DemoRequestManager";
 import CustomerManager from "@/components/marketplace/CustomerManager";
 import CategoryManager from "@/components/marketplace/CategoryManager";
 import VendorManagement from "@/components/vendor/VendorManagement";
+import LedgerManager from "@/components/marketplace/LedgerManager";
 
 const tabs = [
   { key: "software", label: "Software", icon: Package, color: "text-violet-400" },
@@ -26,6 +27,7 @@ const tabs = [
   { key: "demos", label: "Demos", icon: Video, color: "text-blue-400" },
   { key: "customers", label: "Customers", icon: Users, color: "text-green-400" },
   { key: "categories", label: "Categories", icon: Tags, color: "text-teal-400" },
+  { key: "ledger", label: "Audit Log", icon: ScrollText, color: "text-orange-400" },
 ];
 
 export default function AdminHub() {
@@ -113,6 +115,7 @@ export default function AdminHub() {
         {activeTab === "demos" && <DemoRequestManager marketplaceId={marketplaceId} />}
         {activeTab === "customers" && <CustomerManager marketplaceId={marketplaceId} />}
         {activeTab === "categories" && <CategoryManager marketplaceId={marketplaceId} />}
+        {activeTab === "ledger" && <LedgerManager marketplaceId={marketplaceId} />}
       </motion.div>
     </div>
   );

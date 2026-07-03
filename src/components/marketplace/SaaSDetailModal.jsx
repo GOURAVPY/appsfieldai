@@ -270,6 +270,37 @@ export default function SaaSDetailModal({ listingId, open, onClose, requireAuth,
                     <p className="text-sm text-muted-foreground leading-relaxed">{listing.fullDescription || "No description provided."}</p>
                   </div>
 
+                  {/* What's Included — clear buyer policies */}
+                  {(listing.usageLimits || listing.supportInfo || listing.refundPolicy || listing.redemptionInstructions) && (
+                    <div className="rounded-xl border border-border/40 bg-secondary/30 p-3 space-y-2">
+                      <p className="text-[11px] font-semibold text-muted-foreground uppercase">What's Included</p>
+                      {listing.usageLimits && (
+                        <div className="flex gap-2 text-xs">
+                          <Zap className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
+                          <span><span className="font-medium">Plan limits:</span> <span className="text-muted-foreground">{listing.usageLimits}</span></span>
+                        </div>
+                      )}
+                      {listing.supportInfo && (
+                        <div className="flex gap-2 text-xs">
+                          <Bot className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
+                          <span><span className="font-medium">Support:</span> <span className="text-muted-foreground">{listing.supportInfo}</span></span>
+                        </div>
+                      )}
+                      {listing.refundPolicy && (
+                        <div className="flex gap-2 text-xs">
+                          <Shield className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                          <span><span className="font-medium">Refund policy:</span> <span className="text-muted-foreground">{listing.refundPolicy}</span></span>
+                        </div>
+                      )}
+                      {listing.redemptionInstructions && (
+                        <div className="flex gap-2 text-xs">
+                          <FileText className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
+                          <span><span className="font-medium">How to redeem:</span> <span className="text-muted-foreground">{listing.redemptionInstructions}</span></span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Tags */}
                   {listing.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
