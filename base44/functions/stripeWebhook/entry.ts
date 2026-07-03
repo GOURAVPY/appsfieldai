@@ -54,6 +54,17 @@ Deno.serve(async (req) => {
     const { listingId, type, quantity, userId, amount } = metadata;
     const amountPaid = session.amount_total / 100;
 
+    // ═══ Idempotency guard ═══
+    // Stripe can deliver the same event more than once. Use the event id as a
+    // unique reference in the ledger; if we've already processed it, exit early
+    // so we never create duplicate orders/payouts.
+    const eventRef = event.id;
+    const seen = await base44.asServiceRole.entities.LedgerEntry.filter({ reference: eventRef });
+    if (seen.length > 0) {
+      console.log('Duplicate Stripe event ignored:', eventRef);
+      return Response.json({ received: true, duplicate: true });
+    }
+
     // Handle wallet deposits
     if (type === 'wallet_deposit') {
       if (!userId || !amount) {
@@ -127,6 +138,15 @@ Deno.serve(async (req) => {
           amount: amountPaid, commissionRate, commissionAmount, vendorEarning,
           paymentGateway: 'stripe', paymentStatus: 'paid', orderStatus: 'completed',
         });
+
+        // ═══ Audit ledger: record the sale + commission ═══
+        await base44.asServiceRole.entities.LedgerEntry.create({
+          marketplaceId, action: 'sale', amount: amountPaid, listingId,
+          vendorId: vendorId || '', reference: eventRef,
+          note: `Sale of ${listing.softwareName || 'product'} via Stripe`,
+          metadata: { commissionRate, commissionAmount, vendorEarning, type },
+        });
+
         await base44.asServiceRole.entities.Payout.create({
           marketplaceId, vendorId: vendorId || '', vendorName,
           amount: vendorEarning, status: 'pending',

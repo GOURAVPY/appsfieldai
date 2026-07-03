@@ -22,6 +22,19 @@
       "type": "string",
       "description": "Reviewer name"
     },
+    "storeCustomerId": {
+      "type": "string",
+      "description": "Store customer ID of the reviewer"
+    },
+    "orderId": {
+      "type": "string",
+      "description": "The completed order/reservation that proves purchase"
+    },
+    "verifiedBuyer": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the reviewer is a verified buyer of this product"
+    },
     "rating": {
       "type": "number",
       "minimum": 1,
@@ -55,7 +68,6 @@
   "required": [
     "marketplaceId",
     "softwareId",
-    "userId",
     "rating",
     "content"
   ]

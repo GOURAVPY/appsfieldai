@@ -60,6 +60,22 @@
       },
       "description": "List of key features"
     },
+    "usageLimits": {
+      "type": "string",
+      "description": "Plan limits included for the buyer (e.g. 5 users, 10k credits/mo, 3 seats)"
+    },
+    "supportInfo": {
+      "type": "string",
+      "description": "Support offered to the buyer (channels, hours, response time)"
+    },
+    "refundPolicy": {
+      "type": "string",
+      "description": "Refund policy shown clearly on the product page"
+    },
+    "redemptionInstructions": {
+      "type": "string",
+      "description": "How the buyer redeems / activates access after purchase"
+    },
     "pricingType": {
       "type": "string",
       "enum": [
@@ -133,6 +149,11 @@
       ],
       "default": "live",
       "description": "Deal lifecycle status"
+    },
+    "salesPaused": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, sales/checkout for this product are paused immediately"
     },
     "monthlyRevenue": {
       "type": "number",

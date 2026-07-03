@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2 } from "lucide-react";
+import { Package, Plus, Edit3, Trash2, CheckCircle, XCircle, Star, ExternalLink, Clock, Users, Download, Loader2, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -64,6 +64,16 @@ export default function SoftwareManager({ marketplaceId }) {
     await base44.entities.SaaSListing.update(listing.id, { featured: !listing.featured });
     queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
     toast.success(`${listing.softwareName} ${listing.featured ? "unfeatured" : "featured"}.`);
+  };
+
+  // Instantly pause/resume sales for a product — blocks checkout immediately.
+  const handlePauseToggle = async (listing) => {
+    setActionLoading(listing.id);
+    const paused = !listing.salesPaused;
+    await base44.entities.SaaSListing.update(listing.id, { salesPaused: paused });
+    queryClient.invalidateQueries({ queryKey: ["softwareListings", marketplaceId] });
+    setActionLoading(null);
+    toast.success(`Sales ${paused ? "paused" : "resumed"} for ${listing.softwareName}.`);
   };
 
   const handleImportDFY = async () => {
@@ -193,6 +203,7 @@ export default function SoftwareManager({ marketplaceId }) {
                     {statusBadge(item.status)}
                     {dealTypeBadge(item.dealType)}
                     {item.featured && <Star className="w-3 h-3 text-amber-400 fill-amber-400" />}
+                    {item.salesPaused && <Badge className="text-[10px] bg-orange-500/10 text-orange-400 border-orange-500/20">Sales Paused</Badge>}
                     {isExpired && <Badge className="text-[10px] bg-red-500/10 text-red-400 border-red-500/20">Expired</Badge>}
                   </div>
                 </div>
@@ -219,6 +230,9 @@ export default function SoftwareManager({ marketplaceId }) {
                       <Button size="sm" variant="ghost" onClick={() => handleAction(item, "rejected")} disabled={actionLoading === item.id} className="h-7 text-[10px] text-red-400"><XCircle className="w-3 h-3 mr-1" />Reject</Button>
                     </>
                   )}
+                  <Button size="sm" variant="ghost" onClick={() => handlePauseToggle(item)} disabled={actionLoading === item.id} className={`h-7 text-[10px] ${item.salesPaused ? "text-emerald-400" : "text-orange-400"}`}>
+                    {item.salesPaused ? <><Play className="w-3 h-3 mr-1" />Resume</> : <><Pause className="w-3 h-3 mr-1" />Pause</>}
+                  </Button>
                   <Button size="sm" variant="ghost" onClick={() => { setEditing(item); setShowForm(true); }} className="h-7 text-[10px]"><Edit3 className="w-3 h-3 mr-1" />Edit</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleFeatureToggle(item)} className={`h-7 text-[10px] ${item.featured ? "text-amber-400" : ""}`}><Star className="w-3 h-3 mr-1" />{item.featured ? "Unfeature" : "Feature"}</Button>
                   <Link to={`/saas/${item.id}`} target="_blank"><Button size="sm" variant="ghost" className="h-7 text-[10px]"><ExternalLink className="w-3 h-3 mr-1" />View</Button></Link>

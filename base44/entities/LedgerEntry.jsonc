@@ -1,0 +1,73 @@
+{
+  "name": "LedgerEntry",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "Marketplace this entry belongs to"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "sale",
+        "refund",
+        "chargeback",
+        "payout_created",
+        "payout_paid",
+        "payout_reversed",
+        "commission",
+        "vendor_credit",
+        "vendor_debit",
+        "access_revoked",
+        "product_paused",
+        "product_resumed"
+      ],
+      "description": "The financial/audit action recorded"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Amount involved (positive credit, negative debit)"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "orderId": {
+      "type": "string",
+      "description": "Related StoreOrder ID"
+    },
+    "vendorId": {
+      "type": "string",
+      "description": "Related vendor ID"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "Related listing ID"
+    },
+    "actorId": {
+      "type": "string",
+      "description": "User/admin ID who triggered the action"
+    },
+    "actorName": {
+      "type": "string",
+      "description": "Name of who triggered the action"
+    },
+    "reference": {
+      "type": "string",
+      "description": "External reference (transaction receipt, session id) used for idempotency"
+    },
+    "note": {
+      "type": "string",
+      "description": "Human-readable description of the action"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Extra structured detail about the action"
+    }
+  },
+  "required": [
+    "action"
+  ]
+}

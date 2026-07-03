@@ -39,14 +39,20 @@ Deno.serve(async (req) => {
     let total = 0;
     // Default delivery info from the products being purchased (single product = use its delivery).
     let defaultDelivery = null;
+    let vendorId = '';
     for (const it of items) {
       const ls = await base44.asServiceRole.entities.SaaSListing.filter({ id: it.listingId });
       const listing = ls[0];
       if (!listing) continue;
+      // Block checkout for products the admin/owner has paused, or that aren't approved/live.
+      if (listing.salesPaused) {
+        return Response.json({ error: `"${listing.softwareName}" is not available for purchase right now.` }, { status: 409 });
+      }
       const unitPrice = (listing.sharePrice || 0) * (listing.totalShares || 0);
       const quantity = Math.max(1, parseInt(it.quantity) || 1);
       lineItems.push({ listingId: listing.id, listingTitle: listing.softwareName || '', unitPrice, quantity });
       total += unitPrice * quantity;
+      if (!vendorId && listing.vendorId) vendorId = listing.vendorId;
       if (!defaultDelivery && listing.delivery && (listing.delivery.accessUrl || listing.delivery.instructions)) {
         defaultDelivery = { accessUrl: listing.delivery.accessUrl || '', instructions: listing.delivery.instructions || '' };
       }
@@ -68,6 +74,9 @@ Deno.serve(async (req) => {
       paymentMethod: method,
       paymentStatus: 'pending',
       status: 'placed',
+      accessStatus: 'locked',
+      payoutEligible: false,
+      vendorId: vendorId || undefined,
       delivery: defaultDelivery || undefined,
       notes: notes || '',
     });

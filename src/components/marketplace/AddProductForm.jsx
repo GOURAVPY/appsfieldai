@@ -69,6 +69,10 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
     status: "pending",
     isBestSeller: false,
     isLifetimeDeal: false,
+    usageLimits: "",
+    supportInfo: "",
+    refundPolicy: "",
+    redemptionInstructions: "",
     delivery: { accessUrl: "", instructions: "" },
   });
 
@@ -100,6 +104,10 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
         status: listing.status || "pending",
         isBestSeller: listing.isBestSeller || false,
         isLifetimeDeal: listing.isLifetimeDeal || false,
+        usageLimits: listing.usageLimits || "",
+        supportInfo: listing.supportInfo || "",
+        refundPolicy: listing.refundPolicy || "",
+        redemptionInstructions: listing.redemptionInstructions || "",
         delivery: {
           accessUrl: listing.delivery?.accessUrl || "",
           instructions: listing.delivery?.instructions || "",
@@ -251,6 +259,35 @@ export default function AddProductForm({ marketplaceId, listing, onClose, catego
                 <div>
                   <label className="text-xs text-muted-foreground">Access Instructions</label>
                   <Textarea value={form.delivery.instructions} onChange={e => update("delivery", { ...form.delivery, instructions: e.target.value })} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-20" placeholder="Login details, license key, redemption steps..." />
+                </div>
+              </div>
+            </div>
+
+            {/* Buyer-facing policies — shown clearly on the product page */}
+            <div className="pt-2 border-t border-border/30">
+              <div className="flex items-center gap-2 mb-1">
+                <Info className="w-4 h-4 text-orange-400" />
+                <p className="text-sm font-semibold">What Buyers See</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-3">
+                Displayed on the product page so buyers know exactly what's included.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Plan Limits</label>
+                  <Input value={form.usageLimits} onChange={e => update("usageLimits", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="e.g. 5 users, 10,000 credits/mo, 3 seats" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Support Included</label>
+                  <Input value={form.supportInfo} onChange={e => update("supportInfo", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="e.g. Email support, 24h response" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Refund Policy</label>
+                  <Textarea value={form.refundPolicy} onChange={e => update("refundPolicy", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-16" placeholder="e.g. 7-day money-back guarantee, no questions asked" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Redemption Instructions</label>
+                  <Textarea value={form.redemptionInstructions} onChange={e => update("redemptionInstructions", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-16" placeholder="How the buyer activates access after purchase" />
                 </div>
               </div>
             </div>

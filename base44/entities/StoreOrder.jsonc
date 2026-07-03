@@ -55,10 +55,15 @@
       "type": "string",
       "enum": [
         "paypal",
+        "stripe",
         "cod"
       ],
       "default": "cod",
       "description": "Selected payment method"
+    },
+    "paymentReference": {
+      "type": "string",
+      "description": "Gateway transaction/session reference used for idempotency"
     },
     "paymentStatus": {
       "type": "string",
@@ -81,6 +86,35 @@
       ],
       "default": "placed",
       "description": "Order fulfillment status"
+    },
+    "accessStatus": {
+      "type": "string",
+      "enum": [
+        "locked",
+        "granted",
+        "revoked"
+      ],
+      "default": "locked",
+      "description": "Buyer access to the product/license"
+    },
+    "paidAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When payment was confirmed (starts the refund/hold window)"
+    },
+    "refundedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the order was refunded"
+    },
+    "payoutEligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this order's funds have cleared the refund window and can be paid out to the vendor"
+    },
+    "vendorId": {
+      "type": "string",
+      "description": "Vendor who owns the purchased product (for payout attribution)"
     },
     "delivery": {
       "type": "object",

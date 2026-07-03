@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ShoppingBag, Loader2, KeyRound, Save, Truck } from "lucide-react";
+import { ShoppingBag, Loader2, KeyRound, Save, Truck, Undo2, ShieldOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,9 +71,28 @@ export default function StoreOrderManager({ marketplaceId }) {
     .filter((o) => o.paymentStatus === "paid")
     .reduce((sum, o) => sum + (o.total || 0), 0);
 
+  const [refunding, setRefunding] = useState(null);
+
   const updateStatus = async (id, field, value) => {
-    await base44.entities.StoreOrder.update(id, { [field]: value });
+    const payload = { [field]: value };
+    // Stamp paidAt when a payment is confirmed — starts the refund/hold window.
+    if (field === "paymentStatus" && value === "paid") payload.paidAt = new Date().toISOString();
+    await base44.entities.StoreOrder.update(id, payload);
     queryClient.invalidateQueries({ queryKey: ["storeOrders", marketplaceId] });
+  };
+
+  const handleRefund = async (order) => {
+    if (!confirm(`Refund this order for ${order.customerEmail}? This revokes their access and reverses any uncleared vendor payout.`)) return;
+    setRefunding(order.id);
+    try {
+      const res = await base44.functions.invoke("refundStoreOrder", { orderId: order.id });
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success("Order refunded — access revoked and ledger updated.");
+      queryClient.invalidateQueries({ queryKey: ["storeOrders", marketplaceId] });
+    } catch (e) {
+      toast.error(e.message || "Refund failed");
+    }
+    setRefunding(null);
   };
 
   const saveDelivery = async (order, delivery, markDelivered) => {
@@ -139,6 +158,12 @@ export default function StoreOrderManager({ marketplaceId }) {
               <div className="flex items-center gap-2 flex-wrap">
                 <StatusBadge status={o.paymentStatus} />
                 <StatusBadge status={o.status} />
+                {o.accessStatus === "revoked" && (
+                  <Badge className="text-[10px] border bg-red-500/10 text-red-400 border-red-500/20 gap-1"><ShieldOff className="w-3 h-3" /> access revoked</Badge>
+                )}
+                {o.payoutEligible && (
+                  <Badge className="text-[10px] border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">funds cleared</Badge>
+                )}
                 <div className="ml-auto flex gap-2">
                   <Select value={o.paymentStatus} onValueChange={(v) => updateStatus(o.id, "paymentStatus", v)}>
                     <SelectTrigger className="h-7 w-28 text-xs bg-secondary/50 border-border/30 rounded-lg"><SelectValue /></SelectTrigger>
@@ -160,6 +185,21 @@ export default function StoreOrderManager({ marketplaceId }) {
                   </Select>
                 </div>
               </div>
+
+              {o.paymentStatus === "paid" && (
+                <div className="mt-3">
+                  <Button
+                    onClick={() => handleRefund(o)}
+                    disabled={refunding === o.id}
+                    variant="outline"
+                    size="sm"
+                    className="border-red-500/30 text-red-400 hover:bg-red-500/10 rounded-lg text-xs gap-1.5 h-7"
+                  >
+                    {refunding === o.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Undo2 className="w-3.5 h-3.5" />}
+                    Refund & Revoke Access
+                  </Button>
+                </div>
+              )}
 
               <DeliveryEditor order={o} onSave={(delivery, markDelivered) => saveDelivery(o, delivery, markDelivered)} />
             </div>
