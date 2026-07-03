@@ -47,14 +47,55 @@ async function sendEmailDirect({ to, subject, html, fromName, fromEmail, replyTo
   }
 }
 
+// Builds a bullet list of what the plan includes, from the SubscriptionPlan fields.
+function buildPlanFeatures(plan) {
+  if (!plan) return [];
+  const feats = [];
+  const num = (v) => typeof v === 'number' ? v : parseFloat(v);
+  if (plan.description) feats.push(plan.description);
+  if (num(plan.storeLimit) > 0) feats.push(`${plan.storeLimit} store${num(plan.storeLimit) > 1 ? 's' : ''}`);
+  if (num(plan.productLimit) > 0) feats.push(`Up to ${plan.productLimit} products per store`);
+  if (num(plan.vendorLimit) > 0) feats.push(`Up to ${plan.vendorLimit} vendors`);
+  if (num(plan.customerLimit) > 0) feats.push(`Up to ${plan.customerLimit} customers`);
+  if (num(plan.orderLimit) > 0) feats.push(`Up to ${plan.orderLimit} orders`);
+  if (num(plan.storageLimit) > 0) feats.push(`${plan.storageLimit} MB storage`);
+  if (plan.customDomainAllowed) feats.push('Custom domain support');
+  if (plan.multiVendorAllowed) feats.push('Multi-vendor mode');
+  if (plan.whiteLabelAllowed) feats.push('White-label (remove platform branding)');
+  if (plan.commissionModuleAllowed) feats.push('Commission module');
+  if (plan.featuredListingsAllowed) feats.push('Featured listings');
+  if (plan.premiumTemplatesAccess) feats.push('Premium templates access');
+  if (plan.supportLevel) feats.push(`${plan.supportLevel.charAt(0).toUpperCase() + plan.supportLevel.slice(1)} support`);
+  return feats;
+}
+
 // Sends a plan-change email (assigned or removed) to an existing customer.
-async function sendPlanUpdateEmail(base44, { email, firstName, planName, action, branding }) {
+async function sendPlanUpdateEmail(base44, { email, firstName, planName, action, branding, plan, appUrl }) {
   const { siteName, supportEmail, logoUrl } = branding;
   const isRemoved = action === 'removed';
-  const heading = isRemoved ? 'Your plan has been updated' : `You're now on ${planName} 🎉`;
   const intro = isRemoved
     ? `Access to <strong>${planName}</strong> on your account has been removed. If this was unexpected, please reach out and we'll help.`
     : `Your account has been upgraded to the <strong>${planName}</strong> plan. All its features are now active — no action needed.`;
+
+  const features = isRemoved ? [] : buildPlanFeatures(plan);
+  const featuresBlock = features.length ? `
+      <div style="margin:24px 0;padding:18px 20px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;">
+        <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 12px;">What you get with ${planName}:</p>
+        <ul style="margin:0;padding-left:20px;color:#444;font-size:14px;line-height:1.8;">
+          ${features.map((f) => `<li>${f}</li>`).join('')}
+        </ul>
+      </div>` : '';
+
+  const ctaBlock = (!isRemoved && appUrl) ? `
+      <div style="text-align:center;margin:32px 0;">
+        <a href="${appUrl}" style="background:#f97316;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:600;display:inline-block;">
+          Access Your App Here
+        </a>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#777;">
+        If the button doesn't work, copy and paste this link into your browser:<br/>
+        <a href="${appUrl}" style="color:#f97316;">${appUrl}</a>
+      </p>` : '';
 
   const body = `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a1a;">
@@ -66,6 +107,8 @@ async function sendPlanUpdateEmail(base44, { email, firstName, planName, action,
         <span style="font-size:17px;font-weight:700;color:#1a1a1a;">${planName}</span>
         <span style="font-size:13px;color:${isRemoved ? '#c2410c' : '#16a34a'};margin-left:8px;">${isRemoved ? 'Removed' : 'Active'}</span>
       </div>
+      ${featuresBlock}
+      ${ctaBlock}
       ${supportEmail ? `<p style="font-size:13px;color:#999;margin-top:24px;">Questions? Contact us at ${supportEmail}.</p>` : ''}
     </div>
   `;
@@ -94,6 +137,10 @@ Deno.serve(async (req) => {
       const form = await req.formData();
       for (const [k, v] of form.entries()) fields[k] = String(v ?? '');
     }
+
+    // App URL used in emails — prefer the request origin, else the known live domain.
+    const reqOrigin = req.headers.get('origin') || '';
+    const appUrl = reqOrigin && reqOrigin.startsWith('http') ? reqOrigin : 'https://app.appsfieldai.com';
 
     const email = fields['ccustemail'];
     const transaction = fields['ctransaction'];
@@ -214,6 +261,8 @@ Deno.serve(async (req) => {
               planName: plan.name || 'your plan',
               action: 'assigned',
               branding,
+              plan,
+              appUrl,
             });
           } catch (e) {
             console.error('plan-update (assigned) email failed:', e.message);
