@@ -153,15 +153,15 @@ export default function MarketplaceDashboard() {
         <Button onClick={startCreate} className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl gap-1.5 shrink-0"><Rocket className="w-4 h-4" /> New Marketplace</Button>
       </MarketplaceDashboardBanner>
 
-      {/* Owner product/sales overview — pulled up to overlap the hero banner */}
-      {!isAdmin && !isLoading && marketplaces.length > 0 && (
+      {/* Product/sales overview stat cards — always shown, pulled up to overlap the hero banner */}
+      {!isLoading && (
         <div className="relative z-10 -mt-12 px-2">
           <OwnerStatsOverview marketplaces={marketplaces} />
         </div>
       )}
 
       {/* Sales analytics: chart with day/week/year + marketplace selector + profit/activity card */}
-      {!isLoading && marketplaces.length > 0 && (
+      {!isLoading && (
         <SalesAnalytics marketplaces={marketplaces} />
       )}
 
