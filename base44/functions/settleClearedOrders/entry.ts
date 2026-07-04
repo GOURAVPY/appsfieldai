@@ -42,6 +42,26 @@ Deno.serve(async (req) => {
           });
         }
       }
+      // Clear any affiliate commissions on this order (hold → sale = payable).
+      if (o.affiliateId) {
+        const comms = await base44.asServiceRole.entities.AffiliateCommission.filter({ orderId: o.id, status: 'hold' });
+        if (comms.length) {
+          const affs = await base44.asServiceRole.entities.Affiliate.filter({ id: o.affiliateId });
+          const aff = affs[0];
+          let clearedAmt = 0;
+          for (const c of comms) {
+            await base44.asServiceRole.entities.AffiliateCommission.update(c.id, { status: 'sale', clearedAt: new Date().toISOString() });
+            clearedAmt += c.amount || 0;
+          }
+          if (aff && clearedAmt > 0) {
+            await base44.asServiceRole.entities.Affiliate.update(aff.id, {
+              totalPending: Math.max(0, (aff.totalPending || 0) - clearedAmt),
+              totalEarned: (aff.totalEarned || 0) + clearedAmt,
+            });
+          }
+        }
+      }
+
       cleared++;
     }
 

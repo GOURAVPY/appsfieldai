@@ -256,6 +256,59 @@
         "type": "string"
       },
       "description": "URLs of revenue proof documents"
+    },
+    "affiliateEnabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this product is open for affiliates to promote and earn commission"
+    },
+    "affiliateCommissionRate": {
+      "type": "number",
+      "default": 30,
+      "description": "Commission percentage affiliates earn on each sale of this product"
+    },
+    "affiliateCommissionRule": {
+      "type": "string",
+      "description": "Notes/rules for affiliates (e.g. paid after refund window, minimum payout, allowed channels)"
+    },
+    "promotionKit": {
+      "type": "object",
+      "description": "Marketing assets provided to approved affiliates",
+      "properties": {
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Promotional image URLs (banners, creatives)"
+        },
+        "videos": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Promotional video URLs"
+        },
+        "emailSwipes": {
+          "type": "array",
+          "description": "Ready-to-send email swipe copy",
+          "items": {
+            "type": "object",
+            "properties": {
+              "subject": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "llmDescription": {
+          "type": "string",
+          "description": "Rich product description for affiliates to feed an LLM to write emails, ads and copy"
+        }
+      }
     }
   },
   "required": [
