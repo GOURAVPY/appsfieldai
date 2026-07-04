@@ -122,8 +122,17 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
         pageSections = defaults?.[0]?.pageSections;
       } catch { /* no default configured — skip */ }
       // Seed the hero theme colors from the chosen branding so the new store's
-      // hero matches the selected color theme out of the box.
+      // hero matches the selected color theme out of the box, and turn on all the
+      // store page sections by default so nothing is hidden if the owner skips setup.
       const seededPageSections = {
+        headerEnabled: true,
+        productsEnabled: true,
+        testimonialsEnabled: true,
+        testimonialsTitle: "What our customers say",
+        faqEnabled: true,
+        faqTitle: "Frequently Asked Questions",
+        trustBadgesEnabled: true,
+        footerEnabled: true,
         ...(pageSections || {}),
         heroBgType: "gradient",
         heroGradientStart: `${data.branding.primaryColor}33`,
