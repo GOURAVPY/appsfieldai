@@ -18,7 +18,7 @@ const SOCIALS = [
   { key: "tiktok", Icon: TikTokIcon },
 ];
 
-export default function StoreFooter({ marketplace, footerText, footerLogoUrl, socialLinks = {}, customPages = [], storeBasePath = "" }) {
+export default function StoreFooter({ marketplace, footerText, footerLogoUrl, socialLinks = {}, customPages = [], storeBasePath = "", affiliateEnabled = false }) {
   const brandColor = marketplace?.branding?.primaryColor || "#f97316";
   const year = new Date().getFullYear();
   const defaultText = `© ${year} ${marketplace?.name || "Our Store"}. All rights reserved.`;
@@ -29,13 +29,21 @@ export default function StoreFooter({ marketplace, footerText, footerLogoUrl, so
   return (
     <footer className="border-t border-border/40 bg-card/40 backdrop-blur-xl mt-8">
       <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6">
-        {footerPages.length > 0 && (
+        {(footerPages.length > 0 || affiliateEnabled) && (
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             {footerPages.map(p => (
               <Link key={p.id} to={`${storeBasePath}/page/${p.slug}`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                 {p.title}
               </Link>
             ))}
+            {affiliateEnabled && (
+              <button
+                onClick={() => document.getElementById("affiliate-program")?.scrollIntoView({ behavior: "smooth" })}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Affiliate Program
+              </button>
+            )}
           </div>
         )}
 
