@@ -1,11 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Store, Menu, X, User, LogOut, ChevronDown, Package, ShoppingCart } from "lucide-react";
+import { Store, Menu, X, User, LogOut, ChevronDown, Package, ShoppingCart, Share2 } from "lucide-react";
 import { useTheme } from "@/lib/ThemeContext";
 
 // Top navigation bar for a customer's public store page — mirrors the main app's
 // top bar (logo + nav links), styled with the store's own branding.
-export default function StoreNavbar({ marketplace, sections = {}, customer, onOpenAuth, onLogout, onOpenAccount, cartCount = 0, onOpenCart, dashboardPath = "/dashboard" }) {
+export default function StoreNavbar({ marketplace, sections = {}, customer, onOpenAuth, onLogout, onOpenAccount, onOpenAffiliate, affiliateEnabled = false, cartCount = 0, onOpenCart, dashboardPath = "/dashboard" }) {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const goToDashboard = () => navigate(dashboardPath);
@@ -68,10 +68,18 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
               </button>
               <button
                 onClick={() => { setAccountOpen(false); goToDashboard(); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-secondary/60 transition-colors border-b border-border/30 mb-1"
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-secondary/60 transition-colors ${affiliateEnabled ? "" : "border-b border-border/30 mb-1"}`}
               >
                 <Package className="w-4 h-4 text-muted-foreground" /> My Products
               </button>
+              {affiliateEnabled && (
+                <button
+                  onClick={() => { setAccountOpen(false); onOpenAffiliate?.(); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-secondary/60 transition-colors border-b border-border/30 mb-1"
+                >
+                  <Share2 className="w-4 h-4 text-muted-foreground" /> Affiliate Program
+                </button>
+              )}
               <button
                 onClick={() => { setAccountOpen(false); onLogout?.(); }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
@@ -187,6 +195,14 @@ export default function StoreNavbar({ marketplace, sections = {}, customer, onOp
               >
                 <User className="w-4 h-4" /> My Dashboard
               </button>
+              {affiliateEnabled && (
+                <button
+                  onClick={() => { setMenuOpen(false); onOpenAffiliate?.(); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium"
+                >
+                  <Share2 className="w-4 h-4" /> Affiliate Program
+                </button>
+              )}
               <button
                 onClick={() => { setMenuOpen(false); onLogout?.(); }}
                 className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-secondary/60 border border-white/5 text-sm font-medium text-red-400"

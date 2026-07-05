@@ -18,6 +18,7 @@ import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
 import StoreAccountPanel from "@/components/store/StoreAccountPanel";
+import StoreAffiliatePanel from "@/components/store/StoreAffiliatePanel";
 import StoreReserveModal from "@/components/store/StoreReserveModal";
 import StoreCartDrawer from "@/components/store/StoreCartDrawer";
 import StoreCheckoutModal from "@/components/store/StoreCheckoutModal";
@@ -38,6 +39,7 @@ export default function StorePage() {
   const [categoryFilter, setCategoryFilter] = useState(null);
   const [authModal, setAuthModal] = useState({ open: false, mode: "login" });
   const [accountPanel, setAccountPanel] = useState({ open: false, tab: "account" });
+  const [affiliatePanelOpen, setAffiliatePanelOpen] = useState(false);
   const [reserveListing, setReserveListing] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -134,6 +136,11 @@ export default function StorePage() {
   const footerEnabled = sections.footerEnabled ?? true;
   const faqEnabled = sections.faqEnabled ?? false;
   const trustBadgesEnabled = sections.trustBadgesEnabled ?? false;
+  const affiliateSettings = marketplace.affiliateSettings || null;
+  const affiliateEnabled = !!affiliateSettings?.enabled;
+  // Base URL for referral links — on a subdomain/custom domain it's the origin root,
+  // on a path-based store it includes /store/:slug.
+  const storeBaseUrl = typeof window !== "undefined" ? `${window.location.origin}${storeBasePath}` : storeBasePath;
 
   return (
     <div className="min-h-screen bg-background">
@@ -145,6 +152,8 @@ export default function StorePage() {
         cartCount={cart.count}
         onOpenCart={() => setCartOpen(true)}
         onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
+        onOpenAffiliate={() => (customer ? setAffiliatePanelOpen(true) : setAuthModal({ open: true, mode: "login" }))}
+        affiliateEnabled={affiliateEnabled}
         dashboardPath={`${storeBasePath}/dashboard`}
         onLogout={logout}
       />
@@ -251,6 +260,18 @@ export default function StorePage() {
         onClose={() => setAccountPanel((a) => ({ ...a, open: false }))}
         onLogout={logout}
       />
+
+      {affiliateEnabled && (
+        <StoreAffiliatePanel
+          open={affiliatePanelOpen}
+          marketplaceId={marketplaceId}
+          affiliateSettings={affiliateSettings}
+          listings={software}
+          storeBaseUrl={storeBaseUrl}
+          brandColor={brandColor}
+          onClose={() => setAffiliatePanelOpen(false)}
+        />
+      )}
 
       <StoreCartDrawer
         open={cartOpen}
