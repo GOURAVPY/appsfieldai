@@ -6,7 +6,7 @@ import { getStoreKeyFromHost, getCustomDomainFromHost } from "@/lib/storeHost";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
 import { fetchStoreCustomerOrders, fetchStoreCustomerProducts, fetchAffiliateDashboard } from "@/lib/storeCustomerAuth";
 import StoreOrderCard from "@/components/store/StoreOrderCard";
-import StoreAffiliatePanel from "@/components/store/StoreAffiliatePanel";
+import StoreAffiliateSection from "@/components/store/StoreAffiliateSection";
 
 const RES_STATUS = {
   pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
@@ -81,7 +81,6 @@ export default function StoreDashboard() {
   const [products, setProducts] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [affiliateDash, setAffiliateDash] = useState(null);
-  const [affiliatePanelOpen, setAffiliatePanelOpen] = useState(false);
 
   const affiliateSettings = marketplace?.affiliateSettings || null;
   const affiliateEnabled = !!affiliateSettings?.enabled;
@@ -206,9 +205,9 @@ export default function StoreDashboard() {
                     <TrendingUp className="w-4 h-4" /> ${(affiliateDash.totals.cleared || 0).toLocaleString()} earned
                   </div>
                 )}
-                <button onClick={() => setAffiliatePanelOpen(true)}
+                <button onClick={() => document.getElementById("affiliate-dashboard")?.scrollIntoView({ behavior: "smooth" })}
                   className="px-4 py-2 rounded-xl text-white text-sm font-medium hover:opacity-90" style={{ background: brandColor }}>
-                  {affiliateDash?.refCode ? "Open Dashboard" : "Become an Affiliate"}
+                  {affiliateDash?.refCode ? "View Dashboard" : "Become an Affiliate"}
                 </button>
               </div>
             </div>
@@ -231,7 +230,7 @@ export default function StoreDashboard() {
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-3">
-                  {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={() => setAffiliatePanelOpen(true)} />)}
+                  {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={() => document.getElementById("affiliate-dashboard")?.scrollIntoView({ behavior: "smooth" })} />)}
                 </div>
               )}
             </section>
@@ -246,6 +245,19 @@ export default function StoreDashboard() {
                   {products.map((p) => <ReservationRow key={p.id} p={p} brandColor={brandColor} />)}
                 </div>
               </section>
+            )}
+
+            {/* Affiliate dashboard — inline */}
+            {affiliateEnabled && (
+              <div id="affiliate-dashboard">
+                <StoreAffiliateSection
+                  marketplaceId={marketplaceId}
+                  affiliateSettings={affiliateSettings}
+                  listings={software}
+                  storeBaseUrl={storeBaseUrl}
+                  brandColor={brandColor}
+                />
+              </div>
             )}
 
             {/* Profile */}
@@ -271,18 +283,6 @@ export default function StoreDashboard() {
           </>
         )}
       </div>
-
-      {affiliateEnabled && (
-        <StoreAffiliatePanel
-          open={affiliatePanelOpen}
-          marketplaceId={marketplaceId}
-          affiliateSettings={affiliateSettings}
-          listings={software}
-          storeBaseUrl={storeBaseUrl}
-          brandColor={brandColor}
-          onClose={() => { setAffiliatePanelOpen(false); if (affiliateEnabled) fetchAffiliateDashboard(marketplaceId).then(setAffiliateDash); }}
-        />
-      )}
     </div>
   );
 }
