@@ -18,7 +18,6 @@ import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
 import StoreAccountPanel from "@/components/store/StoreAccountPanel";
-import StoreAffiliatePanel from "@/components/store/StoreAffiliatePanel";
 import { fetchAffiliateApplications } from "@/lib/storeCustomerAuth";
 import StoreReserveModal from "@/components/store/StoreReserveModal";
 import StoreCartDrawer from "@/components/store/StoreCartDrawer";
@@ -40,7 +39,6 @@ export default function StorePage() {
   const [categoryFilter, setCategoryFilter] = useState(null);
   const [authModal, setAuthModal] = useState({ open: false, mode: "login" });
   const [accountPanel, setAccountPanel] = useState({ open: false, tab: "account" });
-  const [affiliatePanelOpen, setAffiliatePanelOpen] = useState(false);
   // Approved affiliate applications for the logged-in customer → drives "Grab affiliate link" buttons.
   const [affiliateInfo, setAffiliateInfo] = useState({ refCode: null, approvedIds: new Set() });
   const [reserveListing, setReserveListing] = useState(null);
@@ -171,8 +169,8 @@ export default function StorePage() {
         cartCount={cart.count}
         onOpenCart={() => setCartOpen(true)}
         onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
-        onOpenAffiliate={() => (customer ? setAffiliatePanelOpen(true) : setAuthModal({ open: true, mode: "login" }))}
         affiliateEnabled={affiliateEnabled}
+        affiliatePath={`${storeBasePath}/affiliates`}
         dashboardPath={`${storeBasePath}/dashboard`}
         onLogout={logout}
       />
@@ -278,22 +276,10 @@ export default function StorePage() {
         customer={customer}
         brandColor={brandColor}
         affiliateEnabled={affiliateEnabled}
-        onOpenAffiliate={() => setAffiliatePanelOpen(true)}
+        affiliatePath={`${storeBasePath}/affiliates`}
         onClose={() => setAccountPanel((a) => ({ ...a, open: false }))}
         onLogout={logout}
       />
-
-      {affiliateEnabled && (
-        <StoreAffiliatePanel
-          open={affiliatePanelOpen}
-          marketplaceId={marketplaceId}
-          affiliateSettings={affiliateSettings}
-          listings={software}
-          storeBaseUrl={storeBaseUrl}
-          brandColor={brandColor}
-          onClose={() => { setAffiliatePanelOpen(false); loadAffiliateInfo(); }}
-        />
-      )}
 
       <StoreCartDrawer
         open={cartOpen}

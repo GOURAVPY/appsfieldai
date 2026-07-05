@@ -9,7 +9,7 @@ import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreFooter from "@/components/store/StoreFooter";
 import StoreAffiliateLanding from "@/components/store/StoreAffiliateLanding";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
-import StoreAffiliatePanel from "@/components/store/StoreAffiliatePanel";
+import StoreAffiliateSection from "@/components/store/StoreAffiliateSection";
 
 export default function StoreAffiliatePage() {
   const { slug: slugParam } = useParams();
@@ -21,7 +21,6 @@ export default function StoreAffiliatePage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [authModal, setAuthModal] = useState({ open: false, mode: "register" });
-  const [affiliatePanelOpen, setAffiliatePanelOpen] = useState(false);
 
   const marketplaceId = data?.marketplace?.id;
   const { customer, setCustomer, logout } = useStoreCustomer(marketplaceId);
@@ -81,24 +80,41 @@ export default function StoreAffiliatePage() {
         sections={sections}
         customer={customer}
         onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
-        onOpenAffiliate={() => (customer ? setAffiliatePanelOpen(true) : setAuthModal({ open: true, mode: "login" }))}
+        onOpenAffiliate={() => {}}
         affiliateEnabled={affiliateEnabled}
+        affiliateActive
         dashboardPath={`${storeBasePath}/dashboard`}
         onLogout={logout}
       />
 
       <div className="flex-1">
-        {affiliateEnabled ? (
-          <StoreAffiliateLanding
-            affiliateSettings={affiliateSettings}
-            brandColor={brandColor}
-            onApply={() => (customer ? setAffiliatePanelOpen(true) : setAuthModal({ open: true, mode: "register" }))}
-          />
-        ) : (
+        {!affiliateEnabled ? (
           <div className="max-w-2xl mx-auto px-6 py-24 text-center">
             <h1 className="text-xl font-display font-bold">No affiliate program</h1>
             <p className="text-sm text-muted-foreground mt-1">This store doesn't have an affiliate program yet.</p>
           </div>
+        ) : customer ? (
+          // Logged-in affiliate → full-page dashboard.
+          <div className="max-w-5xl mx-auto px-6 py-10">
+            <div className="mb-6">
+              <h1 className="text-2xl font-display font-bold">Affiliate Dashboard</h1>
+              <p className="text-sm text-muted-foreground mt-1">Track your commissions, grab links, and promote products.</p>
+            </div>
+            <StoreAffiliateSection
+              marketplaceId={marketplaceId}
+              affiliateSettings={affiliateSettings}
+              listings={software}
+              storeBaseUrl={storeBaseUrl}
+              brandColor={brandColor}
+            />
+          </div>
+        ) : (
+          // Logged-out visitor → marketing landing page with sign-up CTA.
+          <StoreAffiliateLanding
+            affiliateSettings={affiliateSettings}
+            brandColor={brandColor}
+            onApply={() => setAuthModal({ open: true, mode: "register" })}
+          />
         )}
       </div>
 
@@ -122,18 +138,6 @@ export default function StoreAffiliatePage() {
         onClose={() => setAuthModal((a) => ({ ...a, open: false }))}
         onAuthed={(c) => setCustomer(c)}
       />
-
-      {affiliateEnabled && (
-        <StoreAffiliatePanel
-          open={affiliatePanelOpen}
-          marketplaceId={marketplaceId}
-          affiliateSettings={affiliateSettings}
-          listings={software}
-          storeBaseUrl={storeBaseUrl}
-          brandColor={brandColor}
-          onClose={() => setAffiliatePanelOpen(false)}
-        />
-      )}
     </div>
   );
 }

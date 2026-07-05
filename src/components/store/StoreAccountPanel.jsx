@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, User, Package, Mail, Phone, LogOut, Loader2, CheckCircle2, Clock, CircleDollarSign, ShoppingBag, CalendarCheck, Share2 } from "lucide-react";
 import { fetchStoreCustomerProducts, fetchStoreCustomerOrders } from "@/lib/storeCustomerAuth";
 import StoreOrderCard from "@/components/store/StoreOrderCard";
@@ -73,7 +74,9 @@ function ProductRow({ p, brandColor }) {
   );
 }
 
-export default function StoreAccountPanel({ open, onClose, marketplaceId, customer, brandColor = "#f97316", onLogout, initialTab = "account", affiliateEnabled = false, onOpenAffiliate }) {
+export default function StoreAccountPanel({ open, onClose, marketplaceId, customer, brandColor = "#f97316", onLogout, initialTab = "account", affiliateEnabled = false, affiliatePath }) {
+  const navigate = useNavigate();
+  const goToAffiliate = () => { onClose(); if (affiliatePath) navigate(affiliatePath); };
   const [tab, setTab] = useState(initialTab);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -162,7 +165,7 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
                 <Package className="w-4 h-4" /> View My Products
               </button>
               {affiliateEnabled && (
-                <button onClick={() => { onClose(); onOpenAffiliate?.(); }}
+                <button onClick={goToAffiliate}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-colors hover:bg-secondary/40"
                   style={{ borderColor: `${brandColor}55`, color: brandColor }}>
                   <Share2 className="w-4 h-4" /> Affiliate Dashboard
@@ -213,7 +216,7 @@ export default function StoreAccountPanel({ open, onClose, marketplaceId, custom
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                         <ShoppingBag className="w-3.5 h-3.5" /> Purchases
                       </p>
-                      {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={() => { onClose(); onOpenAffiliate?.(); }} />)}
+                      {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={goToAffiliate} />)}
                     </div>
                   )}
                   {products.length > 0 && (
