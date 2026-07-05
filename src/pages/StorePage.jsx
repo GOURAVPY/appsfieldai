@@ -277,6 +277,8 @@ export default function StorePage() {
         marketplaceId={marketplaceId}
         customer={customer}
         brandColor={brandColor}
+        affiliateEnabled={affiliateEnabled}
+        onOpenAffiliate={() => setAffiliatePanelOpen(true)}
         onClose={() => setAccountPanel((a) => ({ ...a, open: false }))}
         onLogout={logout}
       />

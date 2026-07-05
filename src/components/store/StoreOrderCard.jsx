@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   CheckCircle2, Clock, Package, ChevronDown, KeyRound, ExternalLink,
-  Copy, Truck, CircleDot
+  Copy, Truck, CircleDot, TrendingUp, Share2
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,13 +20,15 @@ const PAY_STATUS = {
   refunded: { label: "Refunded", cls: "text-muted-foreground" },
 };
 
-export default function StoreOrderCard({ order, brandColor = "#f97316" }) {
+export default function StoreOrderCard({ order, brandColor = "#f97316", affiliateEnabled = false, onBecomeAffiliate }) {
   const [open, setOpen] = useState(false);
   const st = STATUS[order.status] || STATUS.placed;
   const pay = PAY_STATUS[order.paymentStatus] || PAY_STATUS.pending;
   const StIcon = st.icon;
   const delivered = order.status === "completed";
   const hasAccess = delivered && order.delivery && (order.delivery.accessUrl || order.delivery.instructions);
+  // Show the "make money" CTA once the order is paid (they own the product).
+  const canPromote = affiliateEnabled && order.paymentStatus === "paid" && order.status !== "cancelled";
 
   const copy = (text) => {
     navigator.clipboard?.writeText(text);
@@ -102,6 +104,25 @@ export default function StoreOrderCard({ order, brandColor = "#f97316" }) {
                   ? "This order was cancelled."
                   : "Your software access details will appear here once the store delivers your order."}
               </p>
+            </div>
+          )}
+
+          {/* Make money by promoting this product */}
+          {canPromote && (
+            <div className="rounded-xl border p-3" style={{ borderColor: `${brandColor}40`, background: `${brandColor}0d` }}>
+              <p className="text-xs font-semibold flex items-center gap-1.5 mb-1" style={{ color: brandColor }}>
+                <TrendingUp className="w-3.5 h-3.5" /> Make money with this product
+              </p>
+              <p className="text-[11px] text-muted-foreground mb-2.5">
+                Promote {(order.items || [])[0]?.listingTitle || "this product"} to others and earn commission on every sale.
+              </p>
+              <button
+                onClick={(e) => { e.stopPropagation(); onBecomeAffiliate?.(order); }}
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                style={{ background: brandColor }}
+              >
+                <Share2 className="w-3.5 h-3.5" /> Become an Affiliate
+              </button>
             </div>
           )}
         </div>
