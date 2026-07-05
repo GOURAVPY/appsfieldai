@@ -26,6 +26,8 @@ import CustomCodeEditor from "@/components/marketplace/CustomCodeEditor";
 import PaymentSettingsManager from "@/components/marketplace/PaymentSettingsManager";
 import EmailSettingsManager from "@/components/marketplace/EmailSettingsManager";
 import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
+import AffiliateProgramSettings from "@/components/marketplace/AffiliateProgramSettings";
+import AffiliateApplicationsManager from "@/components/marketplace/AffiliateApplicationsManager";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const LANGUAGES = [
@@ -74,6 +76,7 @@ const NAV_GROUPS = [
       { id: "auctions", label: "Auctions", icon: Gavel },
       { id: "tax", label: "Tax Information", icon: Receipt },
       { id: "customers", label: "Customers", icon: Users },
+      { id: "affiliates", label: "Affiliates", icon: Share2 },
     ]
   },
   {
@@ -439,6 +442,22 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
           {activeTab === "customers" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Customers</h2>
             <CustomerManager marketplaceId={marketplace?.id} /></div>
+          )}
+
+          {/* AFFILIATES */}
+          {activeTab === "affiliates" && (
+            <div className="space-y-5">
+              <div><h2 className="text-lg font-display font-bold">Affiliates</h2>
+              <p className="text-sm text-muted-foreground">Configure your affiliate program and review who applies to promote your products.</p></div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Program Settings</p>
+                <AffiliateProgramSettings marketplace={marketplace} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Applications</p>
+                <AffiliateApplicationsManager marketplaceId={marketplace?.id} />
+              </div>
+            </div>
           )}
 
           {/* CUSTOM DOMAIN */}
