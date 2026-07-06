@@ -1,0 +1,21 @@
+{
+  "name": "custom-domain-service",
+  "version": "1.0.0",
+  "description": "Standalone Node/Express service (deployed on Render) that registers customer-owned custom domains via Render's API for automatic SSL and reverse-proxies them to the AppsfieldAI Base44 app",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "http-proxy-middleware": "^3.0.3",
+    "mongodb": "^6.9.0"
+  }
+}
