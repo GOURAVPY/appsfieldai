@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { S3Client, DeleteObjectCommand } from 'npm:@aws-sdk/client-s3@3.600.0';
+import { AwsClient } from 'npm:aws4fetch@1.0.20';
 
-// Deletes one of the current user's uploads from Cloudflare R2.
+// Deletes one of the current user's uploads from Cloudflare R2 via a signed DELETE.
 // Only keys under uploads/{user_id}/ may be deleted (ownership check).
 Deno.serve(async (req) => {
   try {
@@ -17,16 +17,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const s3 = new S3Client({
+    const endpoint = (Deno.env.get('R2_ENDPOINT') || '').replace(/\/$/, '');
+    const bucket = Deno.env.get('R2_BUCKET_NAME');
+
+    const aws = new AwsClient({
+      accessKeyId: Deno.env.get('R2_ACCESS_KEY_ID'),
+      secretAccessKey: Deno.env.get('R2_SECRET_ACCESS_KEY'),
+      service: 's3',
       region: 'auto',
-      endpoint: Deno.env.get('R2_ENDPOINT'),
-      credentials: {
-        accessKeyId: Deno.env.get('R2_ACCESS_KEY_ID'),
-        secretAccessKey: Deno.env.get('R2_SECRET_ACCESS_KEY'),
-      },
     });
 
-    await s3.send(new DeleteObjectCommand({ Bucket: Deno.env.get('R2_BUCKET_NAME'), Key: key }));
+    const res = await aws.fetch(`${endpoint}/${bucket}/${key}`, { method: 'DELETE' });
+    if (!res.ok && res.status !== 404) {
+      const text = await res.text();
+      console.error('deleteR2Upload R2 error:', res.status, text);
+      return Response.json({ error: `Delete failed (${res.status})` }, { status: 500 });
+    }
 
     return Response.json({ success: true });
   } catch (error) {
