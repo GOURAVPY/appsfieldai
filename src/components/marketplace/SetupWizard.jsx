@@ -122,8 +122,17 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
         pageSections = defaults?.[0]?.pageSections;
       } catch { /* no default configured — skip */ }
       // Seed the hero theme colors from the chosen branding so the new store's
-      // hero matches the selected color theme out of the box.
+      // hero matches the selected color theme out of the box, and turn on all the
+      // store page sections by default so nothing is hidden if the owner skips setup.
       const seededPageSections = {
+        headerEnabled: true,
+        productsEnabled: true,
+        testimonialsEnabled: true,
+        testimonialsTitle: "What our customers say",
+        faqEnabled: true,
+        faqTitle: "Frequently Asked Questions",
+        trustBadgesEnabled: true,
+        footerEnabled: true,
         ...(pageSections || {}),
         heroBgType: "gradient",
         heroGradientStart: `${data.branding.primaryColor}33`,
@@ -199,8 +208,14 @@ export default function SetupWizard({ marketplace, onComplete, onCancel }) {
                     <div><label className="text-xs text-muted-foreground">Slug</label><Input value={data.slug} onChange={e => update("slug", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl mt-1" placeholder="my-saas-store" /></div>
                   </div>
                   <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-3">
-                    <label className="text-xs font-medium text-violet-400 flex items-center gap-1.5"><Rocket className="w-3.5 h-3.5" />Describe about your marketplace</label>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 mb-2">We'll use this to auto-build your store — headline, FAQs, testimonials & matching products.</p>
+                    <div className="flex items-center gap-2">
+                      <img src="https://media.base44.com/images/public/6a2402b3a9b98ed1e7bf2a16/137122e9e_ai.png" alt="Marketplace Agent" className="w-7 h-7 object-contain shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-violet-400 leading-tight">Marketplace Agent</p>
+                        <p className="text-[11px] text-muted-foreground leading-tight">AI-powered store builder</p>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2 mb-2">Describe your marketplace in a sentence or two and the Marketplace Agent will use it to auto-build your store — crafting a compelling headline, FAQs, testimonials, and matching the right products for you.</p>
                     <Textarea value={data.description} onChange={e => update("description", e.target.value)} className="bg-secondary/50 border-border/30 rounded-xl h-20 resize-none" placeholder="e.g. A marketplace for AI & marketing SaaS lifetime deals aimed at indie founders and small agencies..." />
                   </div>
                 </>

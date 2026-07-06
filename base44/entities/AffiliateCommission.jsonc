@@ -1,0 +1,69 @@
+{
+  "name": "AffiliateCommission",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace this commission belongs to"
+    },
+    "affiliateId": {
+      "type": "string",
+      "description": "The Affiliate who earned this commission"
+    },
+    "refCode": {
+      "type": "string",
+      "description": "The referral code that attributed the sale"
+    },
+    "orderId": {
+      "type": "string",
+      "description": "The StoreOrder that generated this commission"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "The product sold"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Product title at time of sale"
+    },
+    "orderTotal": {
+      "type": "number",
+      "default": 0,
+      "description": "Order amount the commission was computed from"
+    },
+    "commissionRate": {
+      "type": "number",
+      "default": 0,
+      "description": "Commission rate applied (percent)"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Commission amount earned"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "hold",
+        "sale",
+        "refunded"
+      ],
+      "default": "hold",
+      "description": "hold = within refund window, sale = cleared/payable, refunded = order was refunded"
+    },
+    "clearedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the commission cleared the hold window"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "affiliateId",
+    "orderId"
+  ]
+}

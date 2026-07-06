@@ -116,6 +116,14 @@
       "type": "string",
       "description": "Vendor who owns the purchased product (for payout attribution)"
     },
+    "affiliateId": {
+      "type": "string",
+      "description": "Affiliate credited for referring this order (via ?ref= link)"
+    },
+    "affiliateRefCode": {
+      "type": "string",
+      "description": "Referral code that attributed this order"
+    },
     "delivery": {
       "type": "object",
       "description": "Software access / delivery details sent to the customer once the order is delivered",

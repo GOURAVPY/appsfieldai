@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Store, User, Mail, Phone, Package, ShoppingBag, CalendarCheck, Loader2, ArrowLeft, LogOut, CheckCircle2, Clock, CircleDollarSign, KeyRound, ExternalLink } from "lucide-react";
+import { Store, User, Mail, Phone, Package, ShoppingBag, CalendarCheck, Loader2, ArrowLeft, LogOut, CheckCircle2, Clock, CircleDollarSign, KeyRound, ExternalLink, Share2, TrendingUp } from "lucide-react";
 import { getStoreKeyFromHost, getCustomDomainFromHost } from "@/lib/storeHost";
 import { useStoreCustomer } from "@/hooks/useStoreCustomer";
-import { fetchStoreCustomerOrders, fetchStoreCustomerProducts } from "@/lib/storeCustomerAuth";
+import { fetchStoreCustomerOrders, fetchStoreCustomerProducts, fetchAffiliateDashboard } from "@/lib/storeCustomerAuth";
 import StoreOrderCard from "@/components/store/StoreOrderCard";
 
 const RES_STATUS = {
@@ -70,6 +70,7 @@ export default function StoreDashboard() {
   const storeBasePath = slugParam ? `/store/${slugParam}` : "";
 
   const [marketplace, setMarketplace] = useState(null);
+  const [software, setSoftware] = useState([]);
   const [storeLoading, setStoreLoading] = useState(true);
 
   const marketplaceId = marketplace?.id;
@@ -78,13 +79,18 @@ export default function StoreDashboard() {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
+  const [affiliateDash, setAffiliateDash] = useState(null);
+
+  const affiliateSettings = marketplace?.affiliateSettings || null;
+  const affiliateEnabled = !!affiliateSettings?.enabled;
+  const storeBaseUrl = typeof window !== "undefined" ? `${window.location.origin}${storeBasePath}` : storeBasePath;
 
   useEffect(() => {
     let active = true;
     setStoreLoading(true);
     base44.functions
       .invoke("getMarketplacePublic", { slug, customDomain })
-      .then((res) => { if (active) setMarketplace(res.data?.marketplace || null); })
+      .then((res) => { if (active) { setMarketplace(res.data?.marketplace || null); setSoftware(res.data?.software || []); } })
       .finally(() => active && setStoreLoading(false));
     return () => { active = false; };
   }, [slug, customDomain]);
@@ -95,10 +101,11 @@ export default function StoreDashboard() {
     Promise.all([
       fetchStoreCustomerOrders(marketplaceId),
       fetchStoreCustomerProducts(marketplaceId),
+      affiliateEnabled ? fetchAffiliateDashboard(marketplaceId) : Promise.resolve(null),
     ])
-      .then(([o, p]) => { setOrders(o); setProducts(p); })
+      .then(([o, p, dash]) => { setOrders(o); setProducts(p); setAffiliateDash(dash); })
       .finally(() => setDataLoading(false));
-  }, [marketplaceId, customer]);
+  }, [marketplaceId, customer, affiliateEnabled]);
 
   const brandColor = marketplace?.branding?.primaryColor || "#f97316";
 
@@ -174,6 +181,38 @@ export default function StoreDashboard() {
           ))}
         </div>
 
+        {/* Affiliate summary — links to the full affiliate dashboard */}
+        {affiliateEnabled && (
+          <section className="rounded-2xl border p-5" style={{ borderColor: `${brandColor}40`, background: `${brandColor}0a` }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: brandColor }}>
+                  <Share2 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-display font-bold">Affiliate Program</p>
+                  <p className="text-xs text-muted-foreground">
+                    {affiliateDash?.refCode
+                      ? "Track your commissions and promote products."
+                      : "Earn commission by promoting products you love."}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {affiliateDash?.totals && (
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
+                    <TrendingUp className="w-4 h-4" /> ${(affiliateDash.totals.cleared || 0).toLocaleString()} earned
+                  </div>
+                )}
+                <button onClick={() => navigate(`${storeBasePath}/affiliates`)}
+                  className="px-4 py-2 rounded-xl text-white text-sm font-medium hover:opacity-90" style={{ background: brandColor }}>
+                  {affiliateDash?.refCode ? "Open Affiliate Dashboard" : "Become an Affiliate"}
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
         {dataLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
         ) : (
@@ -190,7 +229,7 @@ export default function StoreDashboard() {
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-3">
-                  {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} />)}
+                  {orders.map((o) => <StoreOrderCard key={o.id} order={o} brandColor={brandColor} affiliateEnabled={affiliateEnabled} onBecomeAffiliate={() => navigate(`${storeBasePath}/affiliates`)} />)}
                 </div>
               )}
             </section>

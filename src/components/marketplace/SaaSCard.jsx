@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video, ShoppingCart } from "lucide-react";
+import { Star, TrendingUp, Clock, Gavel, Shield, Bot, Zap, BadgeCheck, ExternalLink, Heart, Video, ShoppingCart, Link2, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -55,9 +55,18 @@ function AIScoreBadge({ score }) {
   );
 }
 
-export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot, onAddToCart, onBuyNow }) {
+export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserveSpot, onRequestAcquisition, onRequestDemo, onViewDetails, onFavoriteToggle, isFavorited, onBuySpot, onAddToCart, onBuyNow, affiliateLink }) {
   const navigate = useNavigate();
   const [favLoading, setFavLoading] = React.useState(false);
+  const [linkCopied, setLinkCopied] = React.useState(false);
+
+  const handleGrabLink = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(affiliateLink);
+    setLinkCopied(true);
+    toast.success("Affiliate link copied!");
+    setTimeout(() => setLinkCopied(false), 1500);
+  };
   const { softwareName, category, sellerName, resolvedSellerName, logo, screenshots, sharePrice = 0, totalShares = 0, soldShares = 0, monthlyRevenue = 0, growthRate = 0, rating = 5, imageGradient, status, auctionEndsAt, riskScore = 5, aiScore = 75, dealEndDate, noDayLimit, dealType } = listing || {};
   const thumbnail = logo || screenshots?.[0];
   const displaySeller = resolvedSellerName || sellerName;
@@ -236,6 +245,19 @@ export default function SaaSCard({ listing, marketplaceName, delay = 0, onReserv
               <ExternalLink className="w-3 h-3" />
             </Button>
           </div>
+        )}
+
+        {/* Affiliate link — shown to approved affiliates for this product */}
+        {affiliateLink && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleGrabLink}
+            className="w-full mt-2 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 rounded-lg text-[11px] h-8"
+          >
+            {linkCopied ? <Check className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+            {linkCopied ? "Link Copied" : "Grab Affiliate Link"}
+          </Button>
         )}
       </div>
     </motion.div>

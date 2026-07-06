@@ -84,3 +84,32 @@ export async function fetchStoreCustomerOrders(marketplaceId) {
   if (res.data?.error) return [];
   return res.data.orders || [];
 }
+
+// ── Affiliate program (store customer) ──
+
+// The affiliate's applications, referral code, and (for approved products) promotion kits.
+export async function fetchAffiliateApplications(marketplaceId) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) return { applications: [], refCode: null };
+  const res = await base44.functions.invoke("affiliateApplications", { marketplaceId, token });
+  if (res.data?.error) return { applications: [], refCode: null };
+  return res.data;
+}
+
+// The affiliate's earnings dashboard (cleared, held, refunded, transaction history).
+export async function fetchAffiliateDashboard(marketplaceId) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) return null;
+  const res = await base44.functions.invoke("affiliateDashboard", { marketplaceId, token });
+  if (res.data?.error) return null;
+  return res.data;
+}
+
+// Apply to promote a product as an affiliate.
+export async function applyAsAffiliate({ marketplaceId, listingId, answers }) {
+  const token = getStoredToken(marketplaceId);
+  if (!token) throw new Error("Please sign in to apply");
+  const res = await base44.functions.invoke("affiliateApply", { marketplaceId, token, listingId, answers });
+  if (res.data?.error) throw new Error(res.data.error);
+  return res.data;
+}

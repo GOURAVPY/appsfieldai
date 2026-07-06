@@ -1,11 +1,9 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Search, SlidersHorizontal, LayoutDashboard, LayoutGrid, Upload } from "lucide-react";
+import { Search, SlidersHorizontal, LayoutDashboard, LayoutGrid } from "lucide-react";
 import { buildHeroBackground } from "@/lib/heroBackground";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/lib/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SaaSCard from "@/components/marketplace/SaaSCard";
@@ -28,21 +26,6 @@ const revenueMap = {
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
-
-  // Store owners land on their own marketplace management dashboard instead of the
-  // public storefront, so they can administer their store.
-  const { data: ownedMarketplaces } = useQuery({
-    queryKey: ["ownerStoreRedirect", user?.id],
-    queryFn: () => base44.entities.Marketplace.filter({ ownerId: user?.id }),
-    enabled: !!user?.id,
-  });
-
-  useEffect(() => {
-    if (!isAuthenticated || !ownedMarketplaces || ownedMarketplaces.length === 0) return;
-    navigate("/dashboard", { replace: true });
-  }, [isAuthenticated, ownedMarketplaces, navigate]);
 
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");

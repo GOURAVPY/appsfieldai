@@ -7,7 +7,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { marketplaceId, token, items, paymentMethod, phone, notes } = await req.json();
+    const { marketplaceId, token, items, paymentMethod, phone, notes, refCode } = await req.json();
 
     if (!marketplaceId || !token || !Array.isArray(items) || items.length === 0) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -34,12 +34,27 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Manual payment is not enabled for this store' }, { status: 400 });
     }
 
+    // Resolve the referring affiliate (if a valid ref code came in via the ?ref= link).
+    let affiliate = null;
+    if (refCode) {
+      const affMatches = await base44.asServiceRole.entities.Affiliate.filter({ marketplaceId, refCode: String(refCode), status: 'active' });
+      affiliate = affMatches[0] || null;
+    }
+    // Approved product IDs for this affiliate (commission only paid on approved products).
+    let approvedByListing = {};
+    if (affiliate) {
+      const appList = await base44.asServiceRole.entities.AffiliateApplication.filter({ affiliateId: affiliate.id, status: 'approved' });
+      appList.forEach((a) => { approvedByListing[a.listingId] = a; });
+    }
+
     // Recompute every line item from the authoritative listing record.
     const lineItems = [];
     let total = 0;
     // Default delivery info from the products being purchased (single product = use its delivery).
     let defaultDelivery = null;
     let vendorId = '';
+    // Commission entries to create after the order is recorded.
+    const commissionDrafts = [];
     for (const it of items) {
       const ls = await base44.asServiceRole.entities.SaaSListing.filter({ id: it.listingId });
       const listing = ls[0];
@@ -50,11 +65,27 @@ Deno.serve(async (req) => {
       }
       const unitPrice = (listing.sharePrice || 0) * (listing.totalShares || 0);
       const quantity = Math.max(1, parseInt(it.quantity) || 1);
+      const lineTotal = unitPrice * quantity;
       lineItems.push({ listingId: listing.id, listingTitle: listing.softwareName || '', unitPrice, quantity });
-      total += unitPrice * quantity;
+      total += lineTotal;
       if (!vendorId && listing.vendorId) vendorId = listing.vendorId;
       if (!defaultDelivery && listing.delivery && (listing.delivery.accessUrl || listing.delivery.instructions)) {
         defaultDelivery = { accessUrl: listing.delivery.accessUrl || '', instructions: listing.delivery.instructions || '' };
+      }
+      // Affiliate commission — only for affiliate-enabled products the affiliate is approved for.
+      if (affiliate && listing.affiliateEnabled && approvedByListing[listing.id]) {
+        const app = approvedByListing[listing.id];
+        const rate = (app.commissionRate ?? listing.affiliateCommissionRate ?? 30);
+        const amount = Math.round((lineTotal * rate / 100) * 100) / 100;
+        if (amount > 0) {
+          commissionDrafts.push({
+            listingId: listing.id,
+            listingTitle: listing.softwareName || '',
+            orderTotal: lineTotal,
+            commissionRate: rate,
+            amount,
+          });
+        }
       }
     }
 
@@ -77,9 +108,37 @@ Deno.serve(async (req) => {
       accessStatus: 'locked',
       payoutEligible: false,
       vendorId: vendorId || undefined,
+      affiliateId: affiliate ? affiliate.id : undefined,
+      affiliateRefCode: affiliate ? affiliate.refCode : undefined,
       delivery: defaultDelivery || undefined,
       notes: notes || '',
     });
+
+    // Record affiliate commissions on hold (they clear once the refund window passes).
+    if (affiliate && commissionDrafts.length) {
+      let holdSum = 0;
+      for (const d of commissionDrafts) {
+        await base44.asServiceRole.entities.AffiliateCommission.create({
+          marketplaceId,
+          affiliateId: affiliate.id,
+          refCode: affiliate.refCode,
+          orderId: order.id,
+          listingId: d.listingId,
+          listingTitle: d.listingTitle,
+          orderTotal: d.orderTotal,
+          commissionRate: d.commissionRate,
+          amount: d.amount,
+          currency: marketplace.currency || 'USD',
+          status: 'hold',
+        });
+        holdSum += d.amount;
+      }
+      try {
+        await base44.asServiceRole.entities.Affiliate.update(affiliate.id, {
+          totalPending: (affiliate.totalPending || 0) + holdSum,
+        });
+      } catch (_) { /* non-fatal */ }
+    }
 
     return Response.json({
       success: true,

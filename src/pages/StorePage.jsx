@@ -9,13 +9,16 @@ import OneInALifetimeDeals from "@/components/store/OneInALifetimeDeals";
 import StoreTestimonials from "@/components/store/StoreTestimonials";
 import StoreCustomSection from "@/components/store/StoreCustomSection";
 import StoreFooter from "@/components/store/StoreFooter";
+import StoreTrustBadges from "@/components/store/StoreTrustBadges";
 import StoreFAQ from "@/components/store/StoreFAQ";
+import { useCustomCode } from "@/hooks/useCustomCode";
 import StoreHero from "@/components/store/StoreHero";
 import StoreNavbar from "@/components/store/StoreNavbar";
 import StoreCategories from "@/components/store/StoreCategories";
 import StoreVendorCTA from "@/components/store/StoreVendorCTA";
 import StoreAuthModal from "@/components/store/StoreAuthModal";
 import StoreAccountPanel from "@/components/store/StoreAccountPanel";
+import { fetchAffiliateApplications } from "@/lib/storeCustomerAuth";
 import StoreReserveModal from "@/components/store/StoreReserveModal";
 import StoreCartDrawer from "@/components/store/StoreCartDrawer";
 import StoreCheckoutModal from "@/components/store/StoreCheckoutModal";
@@ -63,6 +66,8 @@ export default function StorePage() {
   const [categoryFilter, setCategoryFilter] = useState(null);
   const [authModal, setAuthModal] = useState({ open: false, mode: "login" });
   const [accountPanel, setAccountPanel] = useState({ open: false, tab: "account" });
+  // Approved affiliate applications for the logged-in customer → drives "Grab affiliate link" buttons.
+  const [affiliateInfo, setAffiliateInfo] = useState({ refCode: null, approvedIds: new Set() });
   const [reserveListing, setReserveListing] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -70,6 +75,23 @@ export default function StorePage() {
   const marketplaceId = data?.marketplace?.id;
   const { customer, setCustomer, logout } = useStoreCustomer(marketplaceId);
   const cart = useStoreCart(marketplaceId);
+
+  // Load the customer's affiliate applications so approved products show a "Grab affiliate link" button.
+  const loadAffiliateInfo = React.useCallback(() => {
+    if (!marketplaceId || !customer) { setAffiliateInfo({ refCode: null, approvedIds: new Set() }); return; }
+    fetchAffiliateApplications(marketplaceId).then((res) => {
+      const approvedIds = new Set((res?.applications || []).filter((a) => a.status === "approved").map((a) => a.listingId));
+      setAffiliateInfo({ refCode: res?.refCode || null, approvedIds });
+    });
+  }, [marketplaceId, customer]);
+
+  useEffect(() => { loadAffiliateInfo(); }, [loadAffiliateInfo]);
+
+  // Inject the store owner's custom head/body code (FB/Google pixel, analytics, etc.).
+  useCustomCode(
+    data?.marketplace?.pageSections?.customCodeHead,
+    data?.marketplace?.pageSections?.customCodeBody
+  );
 
   // Reserve a spot: must be signed in. Opens the store reserve modal.
   const handleReserve = (listing) => {
@@ -152,6 +174,17 @@ export default function StorePage() {
   const testimonialsEnabled = sections.testimonialsEnabled ?? false;
   const footerEnabled = sections.footerEnabled ?? true;
   const faqEnabled = sections.faqEnabled ?? false;
+  const trustBadgesEnabled = sections.trustBadgesEnabled ?? false;
+  const affiliateSettings = marketplace.affiliateSettings || null;
+  const affiliateEnabled = !!affiliateSettings?.enabled;
+  // Base URL for referral links — on a subdomain/custom domain it's the origin root,
+  // on a path-based store it includes /store/:slug.
+  const storeBaseUrl = typeof window !== "undefined" ? `${window.location.origin}${storeBasePath}` : storeBasePath;
+  // Per-product affiliate link — only for products the customer is an approved affiliate on.
+  const affiliateLinkFor = (listing) =>
+    affiliateInfo.refCode && affiliateInfo.approvedIds.has(listing.id)
+      ? `${storeBaseUrl}/saas/${listing.id}?ref=${affiliateInfo.refCode}`
+      : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -163,6 +196,8 @@ export default function StorePage() {
         cartCount={cart.count}
         onOpenCart={() => setCartOpen(true)}
         onOpenAuth={(mode) => setAuthModal({ open: true, mode })}
+        affiliateEnabled={affiliateEnabled}
+        affiliatePath={`${storeBasePath}/affiliates`}
         dashboardPath={`${storeBasePath}/dashboard`}
         onLogout={logout}
       />
@@ -185,7 +220,7 @@ export default function StorePage() {
         <>
           {/* Best Sellers / 🔥 Deals Ending Soon */}
           <div id="store-best-sellers">
-            <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} />
+            <DealsEndingSoon listings={software} onViewDetails={setViewDetailListing} onReserveSpot={handleReserve} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} affiliateLinkFor={affiliateLinkFor} />
           </div>
 
           {/* Categories */}
@@ -201,6 +236,7 @@ export default function StorePage() {
               onReserveSpot={handleReserve}
               onAddToCart={handleAddToCart}
               onBuyNow={handleBuyNow}
+              affiliateLinkFor={affiliateLinkFor}
             />
           </div>
 
@@ -211,6 +247,9 @@ export default function StorePage() {
         </>
       )}
 
+      {/* Trust / policy badges */}
+      {trustBadgesEnabled && <StoreTrustBadges badges={sections.trustBadges} title={sections.trustBadgesTitle} brandColor={brandColor} />}
+
       {/* Testimonials */}
       {testimonialsEnabled && <StoreTestimonials testimonials={testimonials} reviews={reviews} brandColor={brandColor} title={sections.testimonialsTitle} />}
 
@@ -218,7 +257,7 @@ export default function StorePage() {
       {customBoxesEnabled && <StoreCustomSection boxes={sections.customBoxes} brandColor={brandColor} />}
 
       {/* Footer */}
-      {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} customPages={customPages} storeBasePath={storeBasePath} />}
+      {footerEnabled && <StoreFooter marketplace={marketplace} footerText={sections.footerText} footerLogoUrl={sections.footerLogoUrl} socialLinks={sections.socialLinks} customPages={customPages} storeBasePath={storeBasePath} affiliateEnabled={affiliateEnabled} />}
 
       {/* FAQ — below the footer */}
       {faqEnabled && <StoreFAQ faqs={sections.faqs} title={sections.faqTitle} brandColor={brandColor} />}
@@ -263,6 +302,8 @@ export default function StorePage() {
         marketplaceId={marketplaceId}
         customer={customer}
         brandColor={brandColor}
+        affiliateEnabled={affiliateEnabled}
+        affiliatePath={`${storeBasePath}/affiliates`}
         onClose={() => setAccountPanel((a) => ({ ...a, open: false }))}
         onLogout={logout}
       />

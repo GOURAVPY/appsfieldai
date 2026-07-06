@@ -1,0 +1,54 @@
+{
+  "name": "Affiliate",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace this affiliate belongs to"
+    },
+    "storeCustomerId": {
+      "type": "string",
+      "description": "The StoreCustomer account this affiliate is linked to"
+    },
+    "fullName": {
+      "type": "string",
+      "description": "Affiliate full name (copied from the store customer)"
+    },
+    "email": {
+      "type": "string",
+      "description": "Affiliate email"
+    },
+    "refCode": {
+      "type": "string",
+      "description": "Unique referral code used in ?ref= links for this affiliate in this store"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended"
+      ],
+      "default": "active",
+      "description": "Overall affiliate account status in this store"
+    },
+    "commissionRate": {
+      "type": "number",
+      "description": "Optional affiliate-wide commission override (percent). Product/application rate takes precedence when set."
+    },
+    "totalEarned": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime cleared commission earned"
+    },
+    "totalPending": {
+      "type": "number",
+      "default": 0,
+      "description": "Commission currently on hold (within refund window)"
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "storeCustomerId",
+    "refCode"
+  ]
+}

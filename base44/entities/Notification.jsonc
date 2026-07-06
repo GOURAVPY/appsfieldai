@@ -30,7 +30,12 @@
         "request_in_progress",
         "deal_closed",
         "listing_submitted",
-        "request_cancelled"
+        "request_cancelled",
+        "affiliate_application",
+        "affiliate_approved",
+        "affiliate_rejected",
+        "affiliate_message",
+        "affiliate_commission"
       ],
       "description": "Type of notification"
     },

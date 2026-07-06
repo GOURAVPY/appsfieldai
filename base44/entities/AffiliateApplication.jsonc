@@ -1,0 +1,98 @@
+{
+  "name": "AffiliateApplication",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "description": "The marketplace this application belongs to"
+    },
+    "affiliateId": {
+      "type": "string",
+      "description": "The Affiliate record who applied"
+    },
+    "storeCustomerId": {
+      "type": "string",
+      "description": "The StoreCustomer account of the applicant"
+    },
+    "affiliateName": {
+      "type": "string",
+      "description": "Applicant name at time of application"
+    },
+    "affiliateEmail": {
+      "type": "string",
+      "description": "Applicant email at time of application"
+    },
+    "listingId": {
+      "type": "string",
+      "description": "The SaaSListing being applied to promote"
+    },
+    "listingTitle": {
+      "type": "string",
+      "description": "Listing title at time of application"
+    },
+    "answers": {
+      "type": "array",
+      "description": "Answers to the affiliate application questions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Approval status for this product"
+    },
+    "commissionRate": {
+      "type": "number",
+      "description": "Custom commission rate (percent) the owner set for this affiliate on this product. Falls back to the product's rate when empty."
+    },
+    "reviewNotes": {
+      "type": "string",
+      "description": "Owner's notes when approving/rejecting"
+    },
+    "messages": {
+      "type": "array",
+      "description": "Contact/message thread between affiliate and store owner on this application",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "enum": [
+              "affiliate",
+              "owner"
+            ]
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "marketplaceId",
+    "affiliateId",
+    "listingId"
+  ]
+}

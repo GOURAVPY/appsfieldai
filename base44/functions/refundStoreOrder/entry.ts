@@ -63,6 +63,27 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 2b. Reverse affiliate commissions on this order (hold or already-cleared → refunded).
+    if (order.affiliateId) {
+      const comms = await base44.asServiceRole.entities.AffiliateCommission.filter({ orderId: order.id });
+      const affs = await base44.asServiceRole.entities.Affiliate.filter({ id: order.affiliateId });
+      const aff = affs[0];
+      let holdBack = 0;
+      let earnedBack = 0;
+      for (const c of comms) {
+        if (c.status === 'refunded') continue;
+        if (c.status === 'hold') holdBack += c.amount || 0;
+        else if (c.status === 'sale') earnedBack += c.amount || 0;
+        await base44.asServiceRole.entities.AffiliateCommission.update(c.id, { status: 'refunded' });
+      }
+      if (aff && (holdBack > 0 || earnedBack > 0)) {
+        await base44.asServiceRole.entities.Affiliate.update(aff.id, {
+          totalPending: Math.max(0, (aff.totalPending || 0) - holdBack),
+          totalEarned: Math.max(0, (aff.totalEarned || 0) - earnedBack),
+        });
+      }
+    }
+
     // 3. Audit ledger for the refund itself + access revocation.
     await base44.asServiceRole.entities.LedgerEntry.create({
       marketplaceId: order.marketplaceId, action: 'refund', amount: -(order.total || 0),

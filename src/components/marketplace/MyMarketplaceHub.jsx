@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Layout, Package, Tag, Zap, Gavel, Receipt, Users, Settings,
-  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, CreditCard, Mail, ShoppingBag
+  Save, Globe, Layers, MessageSquare, Image, ToggleLeft, ToggleRight, PanelBottom, Palette, FileText, HelpCircle, Tags, CreditCard, Mail, ShoppingBag, ShieldCheck, Code2, Share2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,9 +21,13 @@ import FaqSectionEditor from "@/components/marketplace/FaqSectionEditor";
 import CustomPagesManager from "@/components/marketplace/CustomPagesManager";
 import TestimonialsManager from "@/components/marketplace/TestimonialsManager";
 import FooterPagesList from "@/components/marketplace/FooterPagesList";
+import TrustBadgesEditor from "@/components/marketplace/TrustBadgesEditor";
+import CustomCodeEditor from "@/components/marketplace/CustomCodeEditor";
 import PaymentSettingsManager from "@/components/marketplace/PaymentSettingsManager";
 import EmailSettingsManager from "@/components/marketplace/EmailSettingsManager";
 import StoreOrderManager from "@/components/marketplace/StoreOrderManager";
+import AffiliateProgramSettings from "@/components/marketplace/AffiliateProgramSettings";
+import AffiliateApplicationsManager from "@/components/marketplace/AffiliateApplicationsManager";
 import R2ImageUpload from "@/components/marketplace/R2ImageUpload";
 
 const LANGUAGES = [
@@ -72,6 +76,7 @@ const NAV_GROUPS = [
       { id: "auctions", label: "Auctions", icon: Gavel },
       { id: "tax", label: "Tax Information", icon: Receipt },
       { id: "customers", label: "Customers", icon: Users },
+      { id: "affiliates", label: "Affiliates", icon: Share2 },
     ]
   },
   {
@@ -115,8 +120,15 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
     faqTitle: marketplace?.pageSections?.faqTitle || "",
     faqs: marketplace?.pageSections?.faqs || [],
     customBoxesEnabled: marketplace?.pageSections?.customBoxesEnabled ?? false,
+    trustBadgesEnabled: marketplace?.pageSections?.trustBadgesEnabled ?? false,
+    trustBadgesTitle: marketplace?.pageSections?.trustBadgesTitle || "",
+    trustBadges: marketplace?.pageSections?.trustBadges || [],
     footerEnabled: marketplace?.pageSections?.footerEnabled ?? true,
     footerText: marketplace?.pageSections?.footerText || "",
+    footerLogoUrl: marketplace?.pageSections?.footerLogoUrl || "",
+    socialLinks: marketplace?.pageSections?.socialLinks || {},
+    customCodeHead: marketplace?.pageSections?.customCodeHead || "",
+    customCodeBody: marketplace?.pageSections?.customCodeBody || "",
   });
 
   const [storeForm, setStoreForm] = useState({
@@ -242,9 +254,31 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                   enabled={pageForm.customBoxesEnabled} onToggle={() => setPageForm(f => ({ ...f, customBoxesEnabled: !f.customBoxesEnabled }))}>
                   <p className="text-xs text-muted-foreground">Custom content boxes can be managed from your Admin Hub.</p>
                 </SectionCard>
+                <SectionCard title="Trust & Policy Badges" icon={ShieldCheck}
+                  enabled={pageForm.trustBadgesEnabled} onToggle={() => setPageForm(f => ({ ...f, trustBadgesEnabled: !f.trustBadgesEnabled }))}>
+                  <TrustBadgesEditor form={pageForm} setForm={setPageForm} />
+                </SectionCard>
                 <SectionCard title="Footer" icon={PanelBottom}
                   enabled={pageForm.footerEnabled} onToggle={() => setPageForm(f => ({ ...f, footerEnabled: !f.footerEnabled }))}>
                   <div><label className="text-xs text-muted-foreground">Footer Text</label><Textarea value={pageForm.footerText} onChange={e => setPageForm(f => ({ ...f, footerText: e.target.value }))} className="bg-secondary/50 border-border/30 rounded-xl mt-1 h-20 resize-none" placeholder="© 2025 Your Store. All rights reserved." /></div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Footer Logo (optional — falls back to store logo)</label>
+                    <div className="mt-1"><R2ImageUpload value={pageForm.footerLogoUrl} onChange={url => setPageForm(f => ({ ...f, footerLogoUrl: url }))} campaignId="store-footer-logo" placeholder="https://..." /></div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mb-2"><Share2 className="w-3.5 h-3.5" /> Social Media Links</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["facebook", "instagram", "twitter", "linkedin", "youtube", "tiktok"].map(key => (
+                        <Input
+                          key={key}
+                          value={pageForm.socialLinks?.[key] || ""}
+                          onChange={e => setPageForm(f => ({ ...f, socialLinks: { ...(f.socialLinks || {}), [key]: e.target.value } }))}
+                          className="bg-secondary/50 border-border/30 rounded-xl text-xs"
+                          placeholder={key.charAt(0).toUpperCase() + key.slice(1) + " URL"}
+                        />
+                      ))}
+                    </div>
+                  </div>
                   <div className="flex items-center justify-between gap-2 pt-1">
                     <p className="text-[11px] text-muted-foreground">Add custom pages (Privacy, Terms…) as footer links.</p>
                     <Button onClick={() => setActiveTab("custom_pages")} variant="outline" size="sm" className="border-border/40 rounded-lg gap-1.5 text-xs shrink-0">
@@ -253,6 +287,22 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
                   </div>
                   <FooterPagesList marketplaceId={marketplace?.id} />
                 </SectionCard>
+
+                {/* Custom Code — always available (no enable toggle needed; empty = nothing runs) */}
+                <div className="rounded-xl border border-border/30 bg-secondary/20">
+                  <div className="flex items-center gap-2.5 p-4">
+                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center">
+                      <Code2 className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Custom Code (Pixels & Scripts)</span>
+                      <p className="text-[11px] text-muted-foreground">FB / Google pixel, analytics, verification tags</p>
+                    </div>
+                  </div>
+                  <div className="px-4 pb-4 border-t border-border/20 pt-3">
+                    <CustomCodeEditor form={pageForm} setForm={setPageForm} />
+                  </div>
+                </div>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button onClick={handleSavePage} disabled={saving} className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl gap-1.5 text-white border-0">
@@ -392,6 +442,22 @@ export default function MyMarketplaceHub({ marketplace, onBack }) {
           {activeTab === "customers" && (
             <div><h2 className="text-lg font-display font-bold mb-4">Customers</h2>
             <CustomerManager marketplaceId={marketplace?.id} /></div>
+          )}
+
+          {/* AFFILIATES */}
+          {activeTab === "affiliates" && (
+            <div className="space-y-5">
+              <div><h2 className="text-lg font-display font-bold">Affiliates</h2>
+              <p className="text-sm text-muted-foreground">Configure your affiliate program and review who applies to promote your products.</p></div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Program Settings</p>
+                <AffiliateProgramSettings marketplace={marketplace} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Applications</p>
+                <AffiliateApplicationsManager marketplaceId={marketplace?.id} />
+              </div>
+            </div>
           )}
 
           {/* CUSTOM DOMAIN */}
