@@ -19,7 +19,7 @@ Customer's domain (deals.yourbrand.com)
    Caddy (80/443) — on-demand TLS, gated by /api/ask
       ▼
    Node/Express (port 4000, internal)
-      1. Look up Host header in local SQLite → verified + active?
+      1. Look up Host header in MongoDB → verified + active?
       2. Reverse-proxy to UPSTREAM_ORIGIN (https://app.appsfieldai.com)
       3. Rewrite <title>/canonical/OG tags in the HTML shell only
       ▼
@@ -80,8 +80,8 @@ cp .env.example .env   # then edit .env
 npm start              # or: npm run dev  (node --watch)
 ```
 
-Requires **Node 22.5+** — domain mappings are stored via Node's built-in
-`node:sqlite` module (no native compilation needed, unlike `better-sqlite3`).
+Requires **Node 18+**. Domain mappings are stored in **MongoDB** (collection
+`domain_mappings`); the service creates its indexes on startup.
 
 ### Environment variables
 
@@ -89,11 +89,13 @@ Requires **Node 22.5+** — domain mappings are stored via Node's built-in
 |-----|---------|
 | `PORT` | Internal Node port (default `4000`). Caddy is the public entry point. |
 | `VERIFICATION_SECRET` | Shared bearer token the Base44 frontend must send for admin calls. |
+| `MONGODB_URI` | MongoDB connection string (e.g. an Atlas `mongodb+srv://...` URI). |
+| `MONGODB_DB` | Database name (default `appsfieldai`). |
+| `MONGODB_COLLECTION` | Collection name (default `domain_mappings`). |
 | `UPSTREAM_ORIGIN` | The live Base44 app to proxy verified custom-domain traffic to (`https://app.appsfieldai.com`). Must be a normal HTTPS origin — do not point this at `base44.onrender.com` directly, Cloudflare blocks mismatched Host/SNI requests as domain fronting. |
 | `BASE44_FUNCTIONS_ORIGIN` | Base44 app host used to call `getMarketplacePublic` for SEO tag rewriting. |
 | `PUBLIC_SERVICE_HOST` | This service's own public hostname — the CNAME target for subdomain custom domains. |
 | `PUBLIC_SERVICE_IP` | This service's own public static IP — the A-record target for apex/root custom domains. |
-| `SQLITE_PATH` | Path to the domain-mappings SQLite file. |
 | `CORS_ORIGIN` | Optional — lock CORS to one origin instead of `*`. |
 
 The main Base44 app also needs two Vite env vars (`.env` at the repo root) to
@@ -133,7 +135,7 @@ curl "https://connect.appsfieldai.com/api/domain-for-store?slug=my-test-saas"
 It does **not** call any generic Base44 entities REST API (none exists for
 external callers) — the only Base44 dependency is calling the existing public
 `getMarketplacePublic` function over HTTP for SEO tag data. Domain mapping and
-verification state live entirely in this service's own SQLite database.
+verification state live entirely in this service's own MongoDB collection.
 
 The main app's `Marketplace.customDomain` field is still kept in sync from
 `DomainManager.jsx` (since `getMarketplacePublic` resolves stores by that
@@ -153,12 +155,14 @@ certs for arbitrary customer-supplied hostnames this way.
 docker build -t custom-domain-service .
 docker run -d -p 80:80 -p 443:443 \
   --env-file .env \
-  -v $(pwd)/data:/data \
+  -v caddy_data:/data \
   custom-domain-service
 ```
 
-Point your customer domains' CNAME/A records at wherever this container is
-publicly reachable (`PUBLIC_SERVICE_HOST` / `PUBLIC_SERVICE_IP`).
+The `caddy_data` volume persists issued TLS certificates across restarts.
+Domain mappings persist in MongoDB (`MONGODB_URI`), so they survive independently
+of the container. Point your customer domains' CNAME/A records at wherever this
+container is publicly reachable (`PUBLIC_SERVICE_HOST` / `PUBLIC_SERVICE_IP`).
 
 ## Local testing without real DNS/TLS
 
