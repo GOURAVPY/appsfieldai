@@ -1,0 +1,32 @@
+{
+  "name": "fieldsite",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Fieldsite — AI website builder (prompt → SitePlan → assets → deterministic Composer → published static site)",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "backend",
+    "workers",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build -w shared && npm run build -w backend && npm run build -w workers && npm run build -w frontend",
+    "dev": "concurrently -n shared,backend,workers,frontend -c blue,green,magenta,cyan \"npm run dev -w shared\" \"npm run dev -w backend\" \"npm run dev -w workers\" \"npm run dev -w frontend\"",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w backend && npm run typecheck -w workers && npm run typecheck -w frontend",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "seed": "npm run seed -w backend",
+    "infra:up": "docker-compose up -d",
+    "infra:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
