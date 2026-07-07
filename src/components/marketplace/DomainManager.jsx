@@ -14,6 +14,11 @@ const DOMAIN_SERVICE_URL = import.meta.env.VITE_DOMAIN_SERVICE_URL || "";
 const DOMAIN_SERVICE_SECRET = import.meta.env.VITE_DOMAIN_SERVICE_SECRET || "";
 
 async function domainServiceFetch(path, options = {}) {
+  // Without a configured service URL the fetch would hit this app's own origin
+  // and get a misleading 405 from the static host. Fail with a clear message.
+  if (!DOMAIN_SERVICE_URL) {
+    throw new Error("Custom domain service is not configured. Set VITE_DOMAIN_SERVICE_URL and VITE_DOMAIN_SERVICE_SECRET.");
+  }
   const res = await fetch(`${DOMAIN_SERVICE_URL}${path}`, {
     ...options,
     headers: {
