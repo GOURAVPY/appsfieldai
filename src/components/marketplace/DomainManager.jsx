@@ -8,10 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 // Standalone custom-domain service (verification + SSL + reverse proxy) —
-// see custom-domain-service/. Requires VITE_DOMAIN_SERVICE_URL and
-// VITE_DOMAIN_SERVICE_SECRET to be set in this app's .env.
-const DOMAIN_SERVICE_URL = import.meta.env.VITE_DOMAIN_SERVICE_URL || "";
-const DOMAIN_SERVICE_SECRET = import.meta.env.VITE_DOMAIN_SERVICE_SECRET || "";
+// see custom-domain-service/. Uses VITE_ env vars for local dev, and falls back
+// to the deployed values so it works in the Base44-hosted build too (which does
+// not inject custom VITE_ vars). The secret is embedded in client-side JS either
+// way — that is inherent to calling the service directly from the browser.
+const DOMAIN_SERVICE_URL =
+  import.meta.env.VITE_DOMAIN_SERVICE_URL || "https://appsfieldai.onrender.com";
+const DOMAIN_SERVICE_SECRET =
+  import.meta.env.VITE_DOMAIN_SERVICE_SECRET ||
+  "c81eb879bca1bd6c10522df3a0429de333ac2d28cd2986e90de982bc46dc71ab";
 
 async function domainServiceFetch(path, options = {}) {
   // Without a configured service URL the fetch would hit this app's own origin
