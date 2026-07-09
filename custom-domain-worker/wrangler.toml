@@ -1,0 +1,35 @@
+name = "custom-domain-worker"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# KV namespace holding the domain→store mappings.
+# Create it once with:  wrangler kv namespace create DOMAINS
+# then paste the returned id below.
+[[kv_namespaces]]
+binding = "DOMAINS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+# The live Base44 app that custom-domain traffic is proxied to.
+UPSTREAM_ORIGIN = "https://app.appsfieldai.com"
+# Base44 host used to fetch getMarketplacePublic for SEO tags.
+BASE44_FUNCTIONS_ORIGIN = "https://share-saas-hq.base44.app"
+# The appsfieldai.com Cloudflare zone id (Overview page).
+CLOUDFLARE_ZONE_ID = "REPLACE_WITH_ZONE_ID"
+# The CNAME value customers point their domain at (fallback origin hostname).
+CF_CNAME_TARGET = "custom.appsfieldai.com"
+# Dedicated admin API hostname (a proxied DNS record on your zone → this Worker).
+# The Base44 app calls this stable URL. Create a proxied A record api.appsfieldai.com
+# (dummy IP like 192.0.2.1 is fine — the Worker intercepts via the */* route).
+ADMIN_HOST = "api.appsfieldai.com"
+
+# Secrets (set via `wrangler secret put NAME`, NOT here):
+#   VERIFICATION_SECRET   — bearer token the Base44 frontend sends for admin calls
+#   CLOUDFLARE_API_TOKEN  — token scoped to the zone: SSL and Certificates: Edit + Zone: Read
+
+# Route: catch ALL traffic on the zone (including customer custom hostnames) → this Worker.
+# A wildcard route matches custom hostnames too. Add a second route in the dashboard for
+# app.appsfieldai.com/* with Worker = None to exclude the main app from proxying.
+[[routes]]
+pattern = "*/*"
+zone_name = "appsfieldai.com"

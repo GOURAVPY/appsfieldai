@@ -13,7 +13,7 @@ import { toast } from "sonner";
 // not inject custom VITE_ vars). The secret is embedded in client-side JS either
 // way — that is inherent to calling the service directly from the browser.
 const DOMAIN_SERVICE_URL =
-  import.meta.env.VITE_DOMAIN_SERVICE_URL || "https://appsfieldai.onrender.com";
+  import.meta.env.VITE_DOMAIN_SERVICE_URL || "https://api.appsfieldai.com";
 const DOMAIN_SERVICE_SECRET =
   import.meta.env.VITE_DOMAIN_SERVICE_SECRET ||
   "c81eb879bca1bd6c10522df3a0429de333ac2d28cd2986e90de982bc46dc71ab";
@@ -263,15 +263,17 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
               </div>
             ) : (
               <>
-                {/* DNS record to add */}
+                {/* DNS records to add (routing CNAME, plus any ownership/SSL records) */}
                 <div className="space-y-3 p-4 rounded-xl border border-border/30 bg-secondary/20">
-                  <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add this DNS record at your domain provider</p>
+                  <p className="text-xs font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 text-blue-400" />Add {(dns?.records?.length || 1) > 1 ? "these DNS records" : "this DNS record"} at your domain provider</p>
 
-                  <div className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
-                    <CopyField label="Type" value={dns?.type || "CNAME"} />
-                    <CopyField label="Host / Name" value={dns?.name || ""} />
-                    <CopyField label="Value" value={dns?.target || "—"} />
-                  </div>
+                  {(dns?.records || []).map((rec, i) => (
+                    <div key={i} className="grid sm:grid-cols-3 gap-2 items-end p-3 rounded-lg bg-card/40">
+                      <CopyField label="Type" value={rec.type || "CNAME"} />
+                      <CopyField label="Host / Name" value={rec.name || ""} />
+                      <CopyField label="Value" value={rec.value || "—"} />
+                    </div>
+                  ))}
 
                   <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
                     <Clock className="w-3 h-3 mt-0.5 shrink-0" />
