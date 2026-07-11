@@ -1,6 +1,7 @@
 name = "custom-domain-worker"
 main = "src/index.js"
 compatibility_date = "2026-07-01"
+account_id = "e0ba17c79cf41eb548b1148b9b31a805"
 
 # KV: hostname → tenant mapping.
 # Create with:  npx wrangler kv namespace create DOMAINS
@@ -13,7 +14,7 @@ preview_id = "PREVIEW_KV_ID"
 
 [vars]
 # The appsfieldai.com Cloudflare zone id (dashboard → Overview).
-ZONE_ID = "your_zone_id"
+ZONE_ID = "56a9ee499441145d46e6516e26b25048"
 # Origins (Render/Base44 backends). Only these are ever proxied to.
 APP_ORIGIN = "https://app.appsfieldai.com"
 BASE44_ORIGIN = "https://share-saas-hq.base44.app"

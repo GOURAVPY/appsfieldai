@@ -19,15 +19,15 @@ function firstError(body) {
 }
 
 // Create a custom hostname with HTTP DCV (single CNAME; cert auto-issues once
-// DNS resolves through Cloudflare). tenantId is stored in custom_metadata.
-export async function createCustomHostname(env, hostname, tenantId) {
+// DNS resolves through Cloudflare). The tenant mapping is kept in our own KV —
+// Cloudflare's custom_metadata is a plan-gated feature we don't rely on.
+export async function createCustomHostname(env, hostname, _tenantId) {
   try {
     const res = await fetch(base(env), {
       method: "POST",
       headers: headers(env),
       body: JSON.stringify({
         hostname,
-        custom_metadata: { tenantId },
         ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
       }),
     });
