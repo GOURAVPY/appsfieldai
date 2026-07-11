@@ -7,33 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-// Standalone custom-domain service (verification + SSL + reverse proxy) —
-// see custom-domain-service/. Uses VITE_ env vars for local dev, and falls back
-// to the deployed values so it works in the Base44-hosted build too (which does
-// not inject custom VITE_ vars). The secret is embedded in client-side JS either
-// way — that is inherent to calling the service directly from the browser.
-const DOMAIN_SERVICE_URL =
-  import.meta.env.VITE_DOMAIN_SERVICE_URL || "https://api.appsfieldai.com";
-const DOMAIN_SERVICE_SECRET =
-  import.meta.env.VITE_DOMAIN_SERVICE_SECRET ||
-  "c81eb879bca1bd6c10522df3a0429de333ac2d28cd2986e90de982bc46dc71ab";
-
-async function domainServiceFetch(path, options = {}) {
-  // Without a configured service URL the fetch would hit this app's own origin
-  // and get a misleading 405 from the static host. Fail with a clear message.
-  if (!DOMAIN_SERVICE_URL) {
-    throw new Error("Custom domain service is not configured. Set VITE_DOMAIN_SERVICE_URL and VITE_DOMAIN_SERVICE_SECRET.");
-  }
-  const res = await fetch(`${DOMAIN_SERVICE_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${DOMAIN_SERVICE_SECRET}`,
-      ...options.headers,
-    },
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+// Custom-domain admin calls go through the Base44 `customDomainProxy` function,
+// which holds the Worker's bearer secret server-side and verifies ownership.
+// No secret ever lives in this browser code. `action` is register|status|delete.
+async function domainProxy(action, params) {
+  const res = await base44.functions.invoke("customDomainProxy", { action, ...params });
+  const data = res?.data || {};
+  if (data.error) throw new Error(data.error);
   return data;
 }
 
@@ -98,8 +78,8 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   // Restore status + DNS instructions for an already-connected domain.
   useEffect(() => {
     const existing = marketplaceProp?.customDomain;
-    if (!existing || !DOMAIN_SERVICE_URL) return;
-    domainServiceFetch(`/api/custom-domains/status?hostname=${encodeURIComponent(existing)}`)
+    if (!existing) return;
+    domainProxy("status", { hostname: existing, marketplaceId: marketplaceProp.id })
       .then(setDomainState)
       .catch(() => {});
   }, [marketplaceProp?.customDomain]);
@@ -123,15 +103,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
     setSaving(true);
     const clean = customDomain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
     try {
-      const res = await domainServiceFetch("/api/custom-domains/register", {
-        method: "POST",
-        body: JSON.stringify({
-          hostname: clean,
-          tenantId: marketplace.id,
-          originType: "app",
-          storeSlug: marketplace?.subdomain || marketplace?.slug,
-        }),
-      });
+      const res = await domainProxy("register", { hostname: clean, marketplaceId: marketplace.id, originType: "app" });
       // Keep Base44's own customDomain field in sync — getMarketplacePublic still
       // resolves stores by this field for the SPA's client-side custom-domain detection.
       await base44.entities.Marketplace.update(marketplace.id, { customDomain: clean });
@@ -156,9 +128,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const handleVerify = async () => {
     setVerifying(true);
     try {
-      const data = await domainServiceFetch(
-        `/api/custom-domains/status?hostname=${encodeURIComponent(domain)}`
-      );
+      const data = await domainProxy("status", { hostname: domain, marketplaceId: marketplace.id });
       if (data.status === "active") toast.success("Your domain is connected successfully.");
       else toast.error("Not verified yet. Check your DNS record and try again shortly.");
       setDomainState((prev) => ({ ...prev, ...data }));
@@ -172,7 +142,7 @@ export default function DomainManager({ marketplace: marketplaceProp, onUpdate }
   const handleDisconnect = async () => {
     setSaving(true);
     try {
-      await domainServiceFetch(`/api/custom-domains?hostname=${encodeURIComponent(domain)}`, { method: "DELETE" });
+      await domainProxy("delete", { hostname: domain, marketplaceId: marketplace.id });
       await base44.entities.Marketplace.update(marketplace.id, { customDomain: "" });
       setCustomDomain("");
       setDomainState(null);
