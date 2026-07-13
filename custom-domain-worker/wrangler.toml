@@ -9,8 +9,8 @@ account_id = "e0ba17c79cf41eb548b1148b9b31a805"
 # then paste the ids below.
 [[kv_namespaces]]
 binding = "DOMAINS"
-id = "PRODUCTION_KV_ID"
-preview_id = "PREVIEW_KV_ID"
+id = "3067cf4dc6a149e6b3d55793975c84ac"
+preview_id = "9deb29d1daaf4d128116cd4ed189b784"
 
 [vars]
 # The appsfieldai.com Cloudflare zone id (dashboard → Overview).
@@ -27,9 +27,14 @@ CNAME_TARGET = "custom.appsfieldai.com"
 #   VERIFICATION_SECRET   — bearer token the AppsfieldAI dashboard sends for admin calls
 #   ORIGIN_PROXY_SECRET   — shared secret the origin checks to trust the Worker
 
-# Route: catch ALL traffic on the zone (including customer custom hostnames) → this Worker.
-# In the dashboard, add a second route `app.appsfieldai.com/*` → Worker: None so the
-# main app is served normally and never proxied through this Worker.
-[[routes]]
-pattern = "*/*"
-zone_name = "appsfieldai.com"
+# Routes are added MANUALLY in the dashboard AFTER deploy, in this order, to avoid
+# ever catching app.appsfieldai.com (the live app) with the wildcard before the
+# exclusion exists:
+#   1. app.appsfieldai.com/*  → Worker: None   (exclusion — more specific, wins)
+#   2. api.appsfieldai.com/*  → custom-domain-worker   (admin API host)
+#   3. *.appsfieldai.com/*    → custom-domain-worker   (or */*  for customer domains)
+# More specific routes take precedence over the wildcard, so the app stays safe.
+#
+# [[routes]]
+# pattern = "*/*"
+# zone_name = "appsfieldai.com"
