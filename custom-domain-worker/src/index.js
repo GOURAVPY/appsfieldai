@@ -19,6 +19,7 @@ import {
   handleDomainForStore,
 } from "./routes/domainApi.js";
 import { handlePublicRequest, proxyToOrigin } from "./services/proxy.js";
+import { handleAdminCompat } from "./routes/adminCompat.js";
 
 // The platform's OWN hosts must never be treated as tenant custom domains. Even
 // if the `*/*` route catches them (e.g. the exclusion route is missing), we serve
@@ -53,6 +54,11 @@ export default {
     // Public storefront-redirect helper (no auth).
     if (path === "/api/domain-for-store" && request.method === "GET") {
       return handleDomainForStore(env, url);
+    }
+    // Compatibility API for the existing Base44 app (old /api/admin/domains shape).
+    if (path.startsWith("/api/admin/domains")) {
+      const resp = await handleAdminCompat(request, env, url);
+      if (resp) return resp;
     }
     // Any other /api/custom-domains/* → method/route not found.
     if (path.startsWith("/api/custom-domains")) {
